@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "terrestria:rubber_planks",
+      "required": false
+    }
+  ]
+}

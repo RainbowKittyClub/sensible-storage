@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "enderscape:veiled_planks",
+      "required": false
+    }
+  ]
+}

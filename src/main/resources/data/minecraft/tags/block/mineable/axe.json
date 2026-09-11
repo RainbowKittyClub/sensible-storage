@@ -1,0 +1,29 @@
+{
+  "replace": false,
+  "values": [
+    "plankedchests:oak_chest",
+    "plankedchests:oak_trapped_chest",
+    "plankedchests:spruce_chest",
+    "plankedchests:spruce_trapped_chest",
+    "plankedchests:birch_chest",
+    "plankedchests:birch_trapped_chest",
+    "plankedchests:jungle_chest",
+    "plankedchests:jungle_trapped_chest",
+    "plankedchests:acacia_chest",
+    "plankedchests:acacia_trapped_chest",
+    "plankedchests:dark_oak_chest",
+    "plankedchests:dark_oak_trapped_chest",
+    "plankedchests:mangrove_chest",
+    "plankedchests:mangrove_trapped_chest",
+    "plankedchests:cherry_chest",
+    "plankedchests:cherry_trapped_chest",
+    "plankedchests:pale_oak_chest",
+    "plankedchests:pale_oak_trapped_chest",
+    "plankedchests:bamboo_chest",
+    "plankedchests:bamboo_trapped_chest",
+    "plankedchests:crimson_chest",
+    "plankedchests:crimson_trapped_chest",
+    "plankedchests:warped_chest",
+    "plankedchests:warped_trapped_chest"
+  ]
+}

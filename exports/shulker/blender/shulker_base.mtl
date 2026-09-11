@@ -1,0 +1,7 @@
+newmtl texture
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+d 1.000
+illum 1
+map_Kd shulker.png
+map_d shulker.png

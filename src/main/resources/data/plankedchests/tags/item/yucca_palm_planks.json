@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "terrestria:yucca_palm_planks",
+      "required": false
+    }
+  ]
+}

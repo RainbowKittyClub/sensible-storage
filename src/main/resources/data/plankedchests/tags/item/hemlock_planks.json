@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "terrestria:hemlock_planks",
+      "required": false
+    }
+  ]
+}

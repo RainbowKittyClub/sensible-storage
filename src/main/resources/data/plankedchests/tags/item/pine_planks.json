@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "woods_and_mires:pine_planks",
+      "required": false
+    }
+  ]
+}
