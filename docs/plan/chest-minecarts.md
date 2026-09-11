@@ -26,8 +26,18 @@ also expected to wait on a piece of hand-authored art, which turned out to be de
 vanilla's own two cart sprites — see its as-built. S7 needs only S3 and was built straight after it,
 out of numeric order — it is the same display pointed at one more sprite. S8 (guard the cargo, and
 barrel / shulker box / copper chest carts) came out of S4 and was wanted rather than needed, so it
-went last. **Every stage is done.** Ship order is `rkcore` first (`publishToMavenLocal`), then this
-mod, for S1, S3, S4, S6 and S8 alike.
+went last. S9–S13 each take one cargo further than S8 left it and run in that order: S9 (shulker
+boxes draw their own box) and S10 (one rule for every cart icon) are independent of each other, S11
+(barrel carts open) needs S10 for its icon, S12 (copper chest carts draw their own chest) needs
+nothing but S8, and S13 (copper cargo weathers) needs S12. **Every stage is done.** Ship order is
+`rkcore` first (`publishToMavenLocal`), then this mod, for S1, S3, S4, S6 and S8 alike; S9–S13 are
+this mod alone.
+
+S9–S12 were written up after the work rather than before it, from the code and from the session that
+built them — so their **Build** text is what was decided at the time and not a plan that preceded
+the stage, and the delta the "As built" sections usually carry is smaller than it looks. Everything
+in them was re-verified against the files before it went in. S13 is the first of this run written
+the intended way round.
 
 Chest boats were assessed alongside this and deferred; the findings that decided that are kept in
 "Reference: chest boats" so the question does not have to be re-researched.
@@ -1124,6 +1134,293 @@ one. S6 flagged it for "the next time this file is opened for another reason"; t
 file but had no reason to edit it, and deleting an override while changing how cargo is accepted is
 the shape of edit that caused S6's crash.
 
+## S9 — Shulker box carts draw their own box — **done**
+
+S8 put the seventeen shulker boxes in on the strength of "vanilla already renders all of them in a
+cart", which is true and insufficient: vanilla renders them *shut*. A box's openness lives on its
+block entity, a cart has none, and `AbstractMinecartRenderer` resolves a block state with nowhere to
+put one — so a shulker cart drawn vanilla's way is a sealed cube however many players are in it.
+
+**Build.** The chest's bargain again, for the same reason: blank vanilla's cargo slot to air and
+draw the box ourselves. A `ShulkerCartDisplay` beside `ChestCartDisplay`, two `ItemDisplayElement`s,
+a `ShulkerModels` naming class, and a `ShulkerElementModelProvider` transcribing
+`ShulkerModel.createShellMesh` — which is exactly two cubes, a 16×8×16 base at `texOffs(0,28)` and a
+16×12×16 lid at `texOffs(0,0)`, overlapping through four pixels, which is why a closed box reads as
+a full cube. The lid needs none of the chest's hinge arithmetic: a display entity rotates about its
+model cube's centre, and a shulker lid turns about the box's vertical axis, for which x and z are
+already centred at 8.
+
+Vanilla's own lid motion, not an approximation of it: rise half a block and turn 270°
+(`ShulkerBoxRenderer$ShulkerBoxModel#setupAnim`), ramped 0.1 a tick with no easing curve on top
+(`ShulkerBoxBlockEntity#updateAnimation`) — unlike the chest, which eases.
+
+The sheets are vanilla's, referenced rather than copied. They live on the `shulker_boxes` atlas,
+which only the special renderers read, and an item model can only name a sprite on the block atlas —
+so `ShulkerAtlasProvider` writes `assets/minecraft/atlases/blocks.json` to *add* the seventeen to
+vanilla's own. That is a merge rather than an override (`SpriteSourceList.load` appends every pack's
+sources), and vanilla already pulls entity textures onto that atlas the same way —
+`entity/bell/bell_body` and `entity/enchantment/enchanting_table_book` are both `minecraft:single`
+sources in its own `blocks.json`.
+
+**Done when.** A cart carrying any of the seventeen draws that colour's box; the lid rises and turns
+when a player opens it and returns when they close it; and the box sits level with a chest cart's
+chest parked beside it rather than riding proud of it.
+
+### As built
+
+**The finding that cost the most, and the one worth keeping: a block model culls back faces and the
+shulker renderer does not.** A faithful transcription of the two cubes therefore shows nothing of
+the box's own interior, which for an open one is most of what there is to see. The first attempt
+answered that by inventing geometry — a hollowed base, inner walls, bespoke UV constants — and it
+never read right, because it was reproducing a guess at what no-cull draws rather than what no-cull
+draws.
+
+What does reproduce it exactly is a second copy of each cube with `from` and `to` swapped:
+`ElementModels#invertedTwin`. Every wall gets an inward-facing surface coincident with its outward
+one, so only ever one of the pair faces the camera and the two never fight over a pixel. The swap
+works because of how the baker reads the file, not because of a quirk in the format —
+`FaceBakery`'s vertex picker takes `from` for every `MIN_*` extent and `to` for every `MAX_*` with
+no sorting, `CuboidModelElement.Deserializer.getPosition` validates only that each component falls
+in −16..32, and `recalculateWinding` leaves the twin alone because each quad already agrees with its
+own computed normal. Each face moves to its opposite key and takes one mirrored axis, since a quad
+seen from behind is a quad mirrored: the four sides swap their v pair, up and down their u. All the
+bespoke UV arithmetic went with it, and `ShulkerElementModelProvider#addGeometry` is now four lines.
+
+**Disabling culling instead is not reachable from here**, and was checked rather than assumed before
+the twin was built. The item render path is `Sheets.cutoutBlockItemSheet()` → `RenderTypes.itemCutout`
+→ `RenderPipelines.ITEM_CUTOUT` ← `ITEM_SNIPPET`, and `RenderPipeline.Builder` defaults
+`this.cull.orElse(true)`. There is no no-cull item pipeline and no JSON field that selects a
+pipeline, so a server-side mod has nothing to reach for.
+
+**A model tool came out of it**, in `exports/shulker/`: `export_model.py` rewrites the generated
+models into a resource-pack layout Blockbench opens clean (texture bound to a real path,
+`texture_size [64,64]` so it shows texels while the file keeps vanilla's 0–16), plus OBJ/MTL, and
+`preview.py` renders them headless. Two traps recorded there: EEVEE segfaults under `blender -b` for
+want of a GL context, so it renders through Cycles on CPU; and OBJ import converts Y-up to Z-up, so
+the camera and the lid transform are derived from world bounds rather than from authored axes. The
+preview deletes polygons facing away from its fixed orthographic camera, which makes it cull exactly
+like the game — that is what turned it into a substitute for launching a client, and what made the
+twin verifiable without one.
+
+**Two pose numbers depart from vanilla's cargo transform, and both are recorded as derivations
+rather than as dialled-in values.** The scale is 0.745 rather than 0.75: a chest model is 14 wide
+inside its 16-wide block so vanilla's figure leaves it clear of the cart, where a shulker box fills
+the block edge to edge and at 0.75 one side lands exactly on the cart's wall, leaving which of the
+two draws to float rounding. And `CARGO_CENTRE_Y` is computed from `ChestCartDisplay`'s own scale
+and model top rather than from vanilla's 0.75, because a box that fills its block rides two model
+pixels proud of every chest cart beside it — deriving it means changing either scale keeps the two
+tops level instead of quietly drifting apart.
+
+## S10 — One rule for every cart icon — **done**
+
+S5 built the per-wood icons by *deriving* the cart art: vanilla ships the same cart twice, as
+`item/minecart.png` and `item/chest_minecart.png`, so the chest's pixels are exactly the ones the
+two differ in and a wash could be computed from vanilla's own shading. That was the right answer
+while the only cargo was a chest made of planks. It does not extend to a shulker box, a barrel or a
+copper chest, and it cannot express a cut-out.
+
+**Build.** One rule, hand-authored art, two providers. An overlay drawn once per cargo shape lies
+over whatever texture the cargo is read through — a wood's planks for
+`ChestMinecartTextureProvider`, a vanilla block's own texture for `CargoCartTextureProvider` — and
+everything after that point is shared in `CartIcons`. Straight source-over, so transparent is the
+cargo at its own colour, opaque is the overlay's own pixel, and anything between is shading over the
+cargo. No trimming to the overlay's shape: the silhouette comes from the overlay painting `#FF00FF`
+where there is nothing, which is the one thing source-over cannot express. Delete the derivation and
+the two vanilla icons vendored to feed it.
+
+**Done when.** `generateAssets` writes a sprite, a `minecraft:item/generated` model and an item
+definition for every wood and for every vanilla cargo; each reads as a cart carrying that cargo
+rather than as a plain cart; and nothing under `plankedchests_vanilla/` is a vanilla item icon any
+more.
+
+### As built
+
+**The chroma key is read off the overlay, not off the result.** Same pixels either way today, and
+not the same rule: reading it off the composite would let a base that happened to contain the same
+magenta punch holes in itself, which for art that follows whatever resource pack the player has on
+top is a real case rather than a hypothetical one.
+
+**More was deleted than the request asked for, and it was flagged at the time.** Removing the two
+vendored icons meant the derivation had nothing left to read, so `ChestMinecartTextureProvider` lost
+about seventy lines — `washOverlay`, `wash`, `luminance`, the reference-pixel constants, the
+grey-spread bounds. The reasoning is kept in that class's Javadoc so the idea is recoverable; S5's
+own text is untouched, since the record is that it was built that way and later replaced.
+
+**The barrel icon was wrong and looked right.** It was built over `barrel_bottom.png` —
+verified md5-identical to the jar's, so not a misnamed file — and read as a barrel lying on its
+side. `composite` samples the base 1:1, and the underside's plank gaps fall exactly where the
+*side's* iron hoops do, so the eye reads hoops. `barrel_top.png` is both the fix and the honest
+choice, since it is the face a cart's barrel actually turns up — see S11.
+
+## S11 — Barrel carts lie on their back, and open — **done**
+
+**Build.** Two things S8 left as vanilla's default rather than as decisions. A barrel's default
+state is `facing=north`, which is what it is *registered* with rather than a considered choice for
+cargo — a placed barrel takes the direction it was placed from, and a cargo block has none — so a
+cart carries an opening pointing out of one side. Lay it on its back: `facing=up`. And a barrel's
+openness is a block state, so unlike every other cargo here it is something the cart can simply
+send: set `BarrelBlock.OPEN` from `isCargoOpen()` and re-send the state on the open and close
+transitions. Sounds with it, from `BarrelBlockEntity`'s own pair.
+
+**Done when.** A barrel cart shows a lid facing up. Opening it creaks, pops the lid open for
+everyone watching, and closing it reverses both.
+
+### As built
+
+**The one cargo whose `DisplayState` changes over a cart's life.** `CartCargoSupport` writes that
+state once, when the cargo is applied, because for every other cargo it never changes again — so the
+barrel needed `PlankedChestMinecart#refreshCargoState`, gated on the cargo being a barrel rather
+than made a generic `CartCargoSupport#refresh`. Two reasons, and the second is the load-bearing one:
+for a cargo this mod draws itself the applied state is deliberately `AIR`, so pushing the real block
+over it would draw the cargo twice; and a refresh would avoid that only by rebuilding the stand-in
+from scratch on every open, resetting a chest or shulker lid mid-swing.
+
+**One sound call for every cargo.** `ChestBlockEntity#playSound`, `ShulkerBoxBlockEntity#startOpen`
+and `BarrelBlockEntity#playSound` all use half volume, `nextFloat() * 0.1 + 0.9` of pitch, and
+`SoundSource.BLOCKS` — only the event differs, so `playLidSound` is shared and `lidSound` answers
+the event alone. A chest is asked for its own pair through `ChestBlock#getOpenChestSound`, which is
+why a wood shipping custom chest sounds is heard through them, and why the copper chests of S12
+arrive with their weathered hinges already working. A cargo that is none of the three gets silence
+rather than a guess.
+
+**An addition rather than a fix, and worth saying so:** a vanilla chest minecart is silent. Nothing
+in `MinecartChest` or `ContainerEntity` plays anything, because the lid it draws never moves. This
+mod's lids move, which is what made the silence audible.
+
+**The finding this stage produced, which is about every other cart.** A barrel's cargo tracks the
+cart through a curve perfectly — no perceptible lag even at 120 fps — and the reason is that it is
+the one cargo here with *no second entity*. It rides vanilla's own cargo slot, so it does not have a
+rotation of its own to keep in step; it is part of the cart being drawn. Every cargo this mod draws
+instead poses from where the cart was `DEFAULT_RENDER_LAG` ticks ago (2.8), and S3 already recorded
+why no constant closes it: a cart interpolates its rotation *within* a tick and a display element
+with an interpolation duration of zero cannot, leaving half a tick of error that oscillates at frame
+rate. So the barrel is not better tuned than the others — it is exempt, and the residue is the price
+of drawing a cargo at all rather than a bug on the vanilla path. Assessed and declined: there is
+nothing to close for a vanilla client, and closing it for a client running this mod is a feature
+rather than a mixin — per-connection holder suppression, an openness to sync, a renderer, and a
+pose-math refactor. It sharpens the client-mod entry under Open decisions and changes nothing here.
+
+## S12 — Copper chest carts draw their own chest — **done**
+
+**Build.** The second of S8's three cargoes to need what S8 said none of them would — the shulker
+boxes were the first, in S9, and the barrel is the one that genuinely did not. S8 read
+`BuiltInBlockModels` correctly: it does register `ChestSpecialRenderer.COPPER.pick(state)` for both
+halves of the collection (`BuiltInBlockModels.java:89-95`), so a copper chest cart drawn vanilla's
+way is at least the right metal. The wrong conclusion was drawn from it, because that path bakes the
+lid shut exactly as it does for a plain chest. Route copper chests through `ChestCartDisplay` like
+the vanilla chest, with per-state art.
+
+Eight blocks, four variants: a waxed copper chest is the same metal as its unwaxed twin and vanilla
+draws the pair from one sheet. So `ChestModels.COPPER` is a `WeatheringCopperCollection<String>`
+built with `same`, naming its four after vanilla's own sheets, `ChestCarts#copperChestId` maps a
+cargo block onto one, and the two providers walk `.weathering()` rather than the whole collection.
+
+**Done when.** A cart carrying any of the eight draws a copper chest of the right weather state,
+with a lid that opens and closes like a wooden one and the hinge sound to match.
+
+### As built
+
+Twenty generated files: four 64×64 sheets copied through from vanilla, eight models, eight item
+definitions. Checked that `copper_exposed_chest_lid.json` binds
+`"chest": "plankedchests:block/chest/copper_exposed"`, and that the display-part ids
+(`copper_chest_base`, `copper_chest_lid`) do not collide with the flat icon id that S10 writes for
+the same block (`copper_chest_minecart`).
+
+**A naming hazard left in place on purpose.** `plankedchests_vanilla/` now holds `copper.png` — the
+chest *sheet* — beside `copper_block.png`, the block texture S10's icon is composited over; and
+`copper_exposed.png` beside `exposed_copper.png`. Both halves of each pair are vanilla's own name
+for the file, so renaming either would trade a confusing pair for a name that matches nothing
+upstream. Worth knowing about before editing one.
+
+## S13 — Copper cargo weathers — **done**
+
+Reverses S8's answer to its own open question. S8 recorded that a copper chest cart does not
+weather, "and no code says so"; this stage says so. It needs S12, which is what gave a copper cargo
+a chest of its own to draw.
+
+**Build.** Model the placed block, not the copper golem. Both are vanilla behaviours this could
+inherit, and the golem is the closer fit on paper — it is vanilla's own copper *entity*, and it
+solves exactly the problem of a copper thing that moves. It ages on a wall clock instead:
+`CopperGolem.java:61-62` schedules the next state 504000–552000 ticks out, seven real hours a stage,
+with no reference to what is around it. That is right for a pet and wrong here. A cart's cargo is a
+copper chest, and the comparison a player actually makes is with the copper chest standing beside
+the rail — so take the block's rules whole: its random-tick cadence, its neighbour scan, its game
+rule, and its refusal to age while someone has it open.
+
+- **Ageing.** A new `CargoWeathering` in the `cart` package, driven from `PlankedChestMinecart#tick`.
+  Two rolls stand in for the random tick the cargo would have been picked for — `randomTickSpeed`
+  out of a section's 4096 blocks, then `ChangeOverTimeBlock`'s own per-tick chance — and what
+  follows is vanilla's `getNextState`, *called* rather than transcribed, so the four-block scan runs
+  against the real world at the cart's position. Gate on `isCargoOpen()`, which is
+  `WeatheringCopperChestBlock#randomTick`'s own gate.
+- **Waxing and scraping.** Override `interact` on the cart, ahead of the container's click, main
+  hand only. Honeycomb through `HoneycombItem.WAXABLES`, axe through `WeatheringCopper.getPrevious`
+  then `HoneycombItem.WAX_OFF_BY_BLOCK` — `AxeItem#evaluateNewBlockState`'s order, so one click on a
+  waxed oxidized cargo takes the wax and leaves the oxidation. Require a sneaking player, because
+  that is the placed block's gate: an ordinary right-click on a copper chest runs the block's use
+  and opens it, and only a secondary-use click reaches the item's `useOn`.
+- **Nothing new is saved.** The weather state and the wax together are just which of the eight
+  copper chest blocks the cart carries, and the cargo block is saved already. Ageing is a
+  `setCargo`; so is waxing. A waxed cargo stops ageing for free by not being a `ChangeOverTimeBlock`.
+
+**Done when.** With `random_tick_speed` wound up, a summoned `minecraft:copper_chest` cart walks its
+`Cargo` through the weather states and stops at `oxidized`, renaming itself as it goes; a
+`waxed_copper_chest` cart does not move at all; and a cart parked next to unaffected copper blocks
+holds where it is until they are removed. In world, honeycomb and an axe on a sneak-click wax and
+scrape the cargo with the block's own particles and sounds, and an ordinary click still opens it.
+
+### As built
+
+Every clause of "Done when" observed: the ageing half over rcon against the dev server, and waxing
+and scraping in world, which is the only way to reach them — rcon cannot send a right-click.
+
+**The numbers.** At `random_tick_speed 4096` a cart aged unaffected → weathered inside two seconds
+and reached oxidized by the fourth, then stayed there; a waxed cart sat unchanged through the same
+window and through eight seconds more. The neighbour scan was the one worth proving, because a
+version of this that never read the world would look identical at a glance: a cart on a rail at
+`0 -59 12` with unaffected copper blocks filled in at `0..2 -59..-57 13..14` held at `exposed` for
+eighteen seconds while an unobstructed cart aged twice in four, and oxidized within six seconds of
+the copper being replaced with air. Restored to 3 afterwards. At that default the cadence works out
+at roughly a state every twenty minutes of loaded, ticking time for an isolated cargo — the same
+arithmetic as an isolated copper block, which is the whole point.
+
+**One transcribed constant, and it is a maintenance hazard.** `ChangeOverTimeBlock#changeOverTime`
+keeps its per-tick chance in a *local* called `eachBlockOncePerDayChance`
+(`ChangeOverTimeBlock.java:17-18`), not in a field this could read, so `CargoWeathering.AGE_CHANCE`
+is a copy of `0.05688889F` that a Minecraft version could silently invalidate. The section size is
+the same kind of copy: `ServerLevel#tickChunk` picks `randomTickSpeed` positions out of each 16³
+section every tick (`ServerLevel.java:495-522`, with the rule read at `ServerChunkCache.java:377`),
+which is the arithmetic behind `SECTION_BLOCKS`. Everything else is called, not copied.
+
+**Which level events carry their own sound.** `LevelEventHandler.java:426-434`: 3003 spawns the
+wax-on particles *and* plays `HONEYCOMB_WAX_ON`, while 3004 and 3005 are particles alone. So waxing
+plays nothing of its own — vanilla's `HoneycombItem#useOn` does not either — and the two axe
+branches play `AXE_WAX_OFF` and `AXE_SCRAPE` themselves, as `AxeItem#spawnSoundAndParticle` does.
+All three are broadcast with a null actor rather than vanilla's "everyone except the player who did
+it": a vanilla client has no idea this entity is copper and predicted nothing to play twice.
+
+**A decompiler artifact worth knowing about.** `CopperGolem.java` reads `itemStack.is(Items.SHEARS)`
+and `itemStack.is(ItemTags.AXES)`, and neither compiles: `javap` on the 26.2 deobf jar shows
+`ItemStack` has exactly one `is`, taking `Predicate<Holder<Item>>`, and neither `Item` nor `TagKey`
+implements it. The forms that do compile are `stack.getItem() == Items.HONEYCOMB` and
+`stack.typeHolder().is(ItemTags.AXES)`, which is what CLAUDE.md already says. Vineflower output is
+a reliable guide to *behaviour* and not to what will build.
+
+**The creative tab caught up while this was open.** S8's `ChestCarts#carts` left the barrel and the
+eight copper chests out on the grounds that neither had an icon, "and give them icons and they
+belong here" — which S10 had quietly satisfied. They are in now, after the 27
+woods and before the shulker boxes, in the order `ChestRecipeProvider` writes the vanilla cargoes'
+recipes in, so the mod has one order for them rather than one per place they are listed. All nine
+icon definitions exist under `src/main/generated/assets/plankedchests/items/`, so no entry resolves
+to a missing model. A tab stack is baked once for every player and never ticks, so a copper entry
+does not age in the menu.
+
+**Left for a later hand.** Nothing here names copper chests, so any cargo vanilla knows how to
+weather ages — which today is the eight copper chests and tomorrow is whatever a datapack adds to
+`plankedchests:cart_cargo`. And the cart *item* does not age, deliberately: no copper item ages in
+an inventory, and a cargo that aged in a chest would be the one place this stopped mirroring the
+block it is named after.
+
 ## Open decisions
 
 - **Client-mod parity — moved out, and no longer an unknown.** A client running this jar renders
@@ -1134,7 +1431,10 @@ the shape of edit that caused S6's crash.
   dropped tracked-data route is unnecessary for the same reason, since the cargo can then ride a
   synched accessor on this mod's own entity class. What is left is a scoping call, not research, and
   the cost is the lid rather than the geometry. Vanilla clients keep the stand-in and its tuned
-  constant either way, so nothing in this document depends on the answer.
+  constant either way, so nothing in this document depends on the answer. S11 added a second thing
+  such a client would gain besides fidelity: a cargo it renders itself is part of the cart being
+  drawn, so it sheds the half-tick of rotation residue that no value of `DEFAULT_RENDER_LAG` can
+  close — the barrel already demonstrates what that looks like, by riding vanilla's cargo slot.
 - **Trapped chest minecarts.** Not built, per S2. After S4 this is 27 more recipe files and no code
   at all — a trapped chest is just another `Holder<Block>` — but vanilla has no trapped chest
   minecart and a trapped chest has no redstone meaning inside one. Revisit only if a use appears.
@@ -1289,3 +1589,28 @@ drop per-combination items needs that supplier to read a field that does not exi
   that rule off a broken cart still spills while dropping no cart item. Anything that empties the
   inventory to move it onto a stack has to check the same rule or it becomes the one path that truly
   destroys items.
+- **`ItemStack` has exactly one `is`, and it takes `Predicate<Holder<Item>>`.** Verified with `javap`
+  against the 26.2 deobf jar; neither `Item` nor `TagKey` implements that interface. The decompiled
+  `CopperGolem.java` nevertheless reads `itemStack.is(Items.SHEARS)` and
+  `itemStack.is(ItemTags.AXES)`, neither of which compiles — Vineflower output is a guide to
+  behaviour, not to what will build. The
+  forms that do compile are `stack.getItem() == Items.HONEYCOMB` and
+  `stack.typeHolder().is(ItemTags.AXES)`.
+- Random ticks, for anything that wants a block's cadence without being a block:
+  `ServerChunkCache` reads `GameRules.RANDOM_TICK_SPEED` once a tick (`:377`) and hands it to
+  `ServerLevel#tickChunk`, which picks that many positions out of **each 16³ section** every tick
+  (`:495-522`) — so a given block's chance of being random-ticked is `randomTickSpeed / 4096`.
+  `ChangeOverTimeBlock#changeOverTime` then rolls `0.05688889F` for the copper family, a figure that
+  lives in a *local* (`:17-18`) rather than a readable constant. `getNextState` is public and
+  side-effect-free: it does the four-block Manhattan scan and returns the next state, leaving the
+  caller to place it.
+- Copper's two lookup tables are both public suppliers of a Guava `BiMap<Block, Block>`:
+  `WeatheringCopper.NEXT_BY_BLOCK` / `PREVIOUS_BY_BLOCK` (with `getPrevious(Block)` and
+  `getPrevious(BlockState)` overloads), and `HoneycombItem.WAXABLES` / `WAX_OFF_BY_BLOCK`. Waxed
+  blocks appear in neither weathering map, which is what makes `AxeItem#evaluateNewBlockState`'s
+  order — scrape, then unwax — take one step per click rather than two.
+- Level events 3003/3004/3005 are `LevelEvent.PARTICLES_AND_SOUND_WAX_ON`, `PARTICLES_WAX_OFF`,
+  `PARTICLES_SCRAPE`. Only the first plays a sound of its own client-side
+  (`LevelEventHandler.java:426-434`); the other two are particles, which is why vanilla's axe path
+  plays `AXE_WAX_OFF` and `AXE_SCRAPE` itself. `ServerLevel#levelEvent(Entity, …)` excludes its
+  source from the broadcast only when that source is a `Player`, so passing null sends to everyone.
