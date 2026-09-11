@@ -230,17 +230,18 @@ public final class ChestCarts {
 
     /**
      * Every cart this server can hand out, for the creative tab: the plain chest first, then one
-     * per wood in {@link WoodType} order, then the seventeen shulker boxes.
+     * per wood in {@link WoodType} order, then the vanilla cargoes — the barrel, the eight copper
+     * chests and the seventeen shulker boxes.
      *
      * <p>Only woods this build registered a chest for, so a server without a wood's mod offers no
      * cart for it — the same gate {@code ChestBlocks#init} applies to the chests themselves. The
-     * shulker carts need no such gate, being vanilla's own blocks, and come last because they are
-     * the odd ones out: a chest cart is this mod's subject and a shulker cart is a guest.
+     * vanilla cargoes need no such gate, being vanilla's own blocks, and come last because they are
+     * the odd ones out: a chest cart is this mod's subject and the rest are guests.
      *
-     * <p>Barrel and copper chest carts are deliberately absent. Both are craftable, but neither has
-     * an icon of its own, so a tab entry for either would be a plain chest cart wearing someone
-     * else's name — worse than not offering it, since the tab is also where a player learns what a
-     * cart looks like. Give them icons and they belong here.
+     * <p>The barrel and the copper chests were held out of here for as long as they had no icon of
+     * their own. A tab entry for such a cargo is a plain chest cart wearing someone else's name,
+     * which is worse than not offering it at all — the tab is also where a player learns what a
+     * cart looks like. Each has an icon now, so each belongs here.
      *
      * <p>Each stack carries its own name and model, which no other cart stack has to. Everywhere
      * else a cart reaches a client through Polymer's item conversion, which reads both off the
@@ -261,8 +262,11 @@ public final class ChestCarts {
             }
         }
 
-        // The same two collections the icons and the recipes are generated from, in their own
-        // order, so the tab reads the way vanilla's own shulker box run does.
+        // The same collections the icons and the recipes are generated from, in the order
+        // ChestRecipeProvider writes those recipes in, so the mod has one order for its vanilla
+        // cargoes rather than one per place they are listed.
+        stacks.add(presented(Blocks.BARREL.builtInRegistryHolder()));
+        Blocks.COPPER_CHEST.forEach(chest -> stacks.add(presented(chest.builtInRegistryHolder())));
         stacks.add(presented(Blocks.SHULKER_BOX.builtInRegistryHolder()));
         Blocks.DYED_SHULKER_BOX.forEach(box -> stacks.add(presented(box.builtInRegistryHolder())));
         return stacks;

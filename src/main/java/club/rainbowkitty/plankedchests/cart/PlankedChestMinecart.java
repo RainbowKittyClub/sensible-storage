@@ -7,11 +7,15 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.ContainerUser;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.Block;
@@ -19,6 +23,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 import club.rainbowkitty.plankedchests.display.ChestModels;
 import club.rainbowkitty.plankedchests.wood.WoodType;
@@ -28,9 +33,10 @@ import club.rainbowkitty.rkcore.common.vehicle.CargoMinecartChest;
 /**
  * A chest minecart whose chest is made of one of this mod's woods.
  *
- * <p>Everything that is not about wood is {@link CargoMinecartChest}'s. What is left here is the
- * chest's own two concerns: which per-wood model the stand-in draws, and the open count its lid
- * follows.
+ * <p>Everything about carrying a block is {@link CargoMinecartChest}'s; what is left here is what
+ * the block <em>means</em>. Which model the stand-in draws for it, the open count its lid follows,
+ * the sound that opening makes, the facing a barrel is laid at, and — through
+ * {@link CargoWeathering} — the fact that copper ages.
  */
 public class PlankedChestMinecart extends CargoMinecartChest {
     // Menus open on this cart, since MinecartChest keeps no such count of its own and the lid has
@@ -43,6 +49,41 @@ public class PlankedChestMinecart extends CargoMinecartChest {
      */
     public PlankedChestMinecart(EntityType<? extends PlankedChestMinecart> type, Level level) {
         super(type, level, ChestCarts::item);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Waxing and scraping a copper cargo come first, and only for a sneaking player — see
+     * {@link CargoWeathering#useTool}. Every other click is the container's, as it was.
+     *
+     * <p>Main hand only, which is {@link CargoMinecartChest#interact}'s own rule and is
+     * load-bearing here rather than tidy: a click on a cart drawing a stand-in arrives once per
+     * hand, and an axe answered twice would take two weather states off one scrape.
+     */
+    @Override
+    public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
+        if (hand == InteractionHand.MAIN_HAND) {
+            InteractionResult copper = CargoWeathering.useTool(this, player, hand);
+            if (copper != null) {
+                return copper;
+            }
+        }
+        return super.interact(player, hand, location);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Where a copper cargo ages. Every tick, because a block's random tick is rolled every tick
+     * too; {@link CargoWeathering#age} is what makes it as rare as a placed block's.
+     */
+    @Override
+    public void tick() {
+        super.tick();
+        if (level() instanceof ServerLevel level) {
+            CargoWeathering.age(this, level);
+        }
     }
 
     /**
