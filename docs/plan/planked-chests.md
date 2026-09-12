@@ -367,7 +367,10 @@ entity are not used for it.
   needs the lid as its own display element with a rotating transform, which needs hand-built
   base/lid geometry and a blocks-atlas texture path (the reason S4 chose the special model).
 - **Right-click ghost-placement flicker.** Barrier client state: a block-in-hand right-click
-  predicts a placement for one frame before the server corrects. `polymer-blocks` states that
+  predicts a placement for one frame before the server corrects — whether the block is placed
+  against an existing chest or is a chest itself, since the client predicts from the item in hand
+  and cannot know the server will answer with a barrier plus a display entity. Observed again on a
+  vanilla client 2026-09-12; ping-bound, so it cannot be shortened from the server side. `polymer-blocks` states that
   would consume the interaction were all unusable on 26.2 — the plain `PolymerBlockModel` form
   blanks every unclaimed variant of the borrowed block, and the `MultiPolymerBlockModel` form
   emits a blockstate file with both `variants` and `multipart`, which the client resolves to the
