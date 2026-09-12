@@ -98,31 +98,6 @@ final class ElementModels {
         return element(faces, x, y, z, w, h, d);
     }
 
-    private static JsonObject element(JsonObject faces, float x, float y, float z,
-            float w, float h, float d) {
-        JsonObject element = new JsonObject();
-        element.add("from", vec(x, y, z));
-        element.add("to", vec(x + w, y + h, z + d));
-        element.add("faces", faces);
-        return element;
-    }
-
-    private static void putFace(JsonObject faces, String textureKey, Direction face,
-            @Nullable Direction hidden, float u0, float v0, float u1, float v1) {
-        if (face == hidden) {
-            return;
-        }
-        JsonArray uv = new JsonArray();
-        uv.add(u0 * UV_SCALE);
-        uv.add(v0 * UV_SCALE);
-        uv.add(u1 * UV_SCALE);
-        uv.add(v1 * UV_SCALE);
-        JsonObject faceObj = new JsonObject();
-        faceObj.add("uv", uv);
-        faceObj.addProperty("texture", "#" + textureKey);
-        faces.add(face.getSerializedName(), faceObj);
-    }
-
     /**
      * The inward-facing twin of a transcribed cube — the same box with {@code from} and {@code to}
      * swapped — which is the only way a block model can show a cube's inside.
@@ -163,40 +138,6 @@ final class ElementModels {
         return twin;
     }
 
-    // One face of the twin: the same patch of sheet with a single axis mirrored, which is what the
-    // original quad looks like from the other side.
-    private static JsonObject mirroredFace(JsonObject face, boolean vertical) {
-        JsonArray uv = face.getAsJsonArray("uv");
-        JsonArray mirrored = new JsonArray();
-        // Vertical faces are mirrored in u and the four sides in v, which is the vertex order the
-        // baker walks each by rather than anything about the texture.
-        int[] order = vertical ? new int[] {2, 1, 0, 3} : new int[] {0, 3, 2, 1};
-        for (int index : order) {
-            mirrored.add(uv.get(index).getAsFloat());
-        }
-
-        JsonObject result = new JsonObject();
-        result.add("uv", mirrored);
-        result.addProperty("texture", face.get("texture").getAsString());
-        return result;
-    }
-
-    private static JsonArray copyVec(JsonArray source) {
-        JsonArray copy = new JsonArray();
-        for (JsonElement value : source) {
-            copy.add(value.getAsFloat());
-        }
-        return copy;
-    }
-
-    private static JsonArray vec(float x, float y, float z) {
-        JsonArray array = new JsonArray();
-        array.add(x);
-        array.add(y);
-        array.add(z);
-        return array;
-    }
-
     // {"textures":{"particle":"#<key>"},"elements":[...]}
     static JsonObject model(String textureKey, JsonObject... elements) {
         JsonObject textures = new JsonObject();
@@ -229,5 +170,68 @@ final class ElementModels {
         JsonObject root = new JsonObject();
         root.add("model", def);
         return root;
+    }
+
+    // Constructs an element with bounding box and faces.
+    private static JsonObject element(JsonObject faces, float x, float y, float z,
+            float w, float h, float d) {
+        JsonObject element = new JsonObject();
+        element.add("from", vec(x, y, z));
+        element.add("to", vec(x + w, y + h, z + d));
+        element.add("faces", faces);
+        return element;
+    }
+
+    // Adds a scaled face to the faces object, or skips it if hidden.
+    private static void putFace(JsonObject faces, String textureKey, Direction face,
+            @Nullable Direction hidden, float u0, float v0, float u1, float v1) {
+        if (face == hidden) {
+            return;
+        }
+        JsonArray uv = new JsonArray();
+        uv.add(u0 * UV_SCALE);
+        uv.add(v0 * UV_SCALE);
+        uv.add(u1 * UV_SCALE);
+        uv.add(v1 * UV_SCALE);
+        JsonObject faceObj = new JsonObject();
+        faceObj.add("uv", uv);
+        faceObj.addProperty("texture", "#" + textureKey);
+        faces.add(face.getSerializedName(), faceObj);
+    }
+
+    // One face of the twin: the same patch of sheet with a single axis mirrored, which is what the
+    // original quad looks like from the other side.
+    private static JsonObject mirroredFace(JsonObject face, boolean vertical) {
+        JsonArray uv = face.getAsJsonArray("uv");
+        JsonArray mirrored = new JsonArray();
+        // Vertical faces are mirrored in u and the four sides in v, which is the vertex order the
+        // baker walks each by rather than anything about the texture.
+        int[] order = vertical ? new int[] {2, 1, 0, 3} : new int[] {0, 3, 2, 1};
+        for (int index : order) {
+            mirrored.add(uv.get(index).getAsFloat());
+        }
+
+        JsonObject result = new JsonObject();
+        result.add("uv", mirrored);
+        result.addProperty("texture", face.get("texture").getAsString());
+        return result;
+    }
+
+    // Copies a JSON array of floats.
+    private static JsonArray copyVec(JsonArray source) {
+        JsonArray copy = new JsonArray();
+        for (JsonElement value : source) {
+            copy.add(value.getAsFloat());
+        }
+        return copy;
+    }
+
+    // Creates a JSON array from three coordinates.
+    private static JsonArray vec(float x, float y, float z) {
+        JsonArray array = new JsonArray();
+        array.add(x);
+        array.add(y);
+        array.add(z);
+        return array;
     }
 }

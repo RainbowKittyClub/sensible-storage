@@ -37,15 +37,12 @@ public final class ChestModels {
     // Sprite/model-id suffix per ChestType, indexed by ordinal (SINGLE, LEFT, RIGHT).
     private static final String[] SUFFIX = {"", "_left", "_right"};
 
+    // Static-utility class; not instantiable.
     private ChestModels() {}
 
     /** The chest id a variant base's base and lid models are named from. */
     public static String chestId(String variantBase) {
         return variantBase + "_chest";
-    }
-
-    private static String suffix(ChestType type) {
-        return SUFFIX[type.ordinal()];
     }
 
     /**
@@ -115,5 +112,10 @@ public final class ChestModels {
      */
     public static Identifier cargoCartModel(String cargoPath) {
         return PlankedChests.id(cargoPath + "_minecart");
+    }
+
+    // Looks up the suffix for a chest type.
+    private static String suffix(ChestType type) {
+        return SUFFIX[type.ordinal()];
     }
 }

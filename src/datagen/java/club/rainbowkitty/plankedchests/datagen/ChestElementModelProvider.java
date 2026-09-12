@@ -61,6 +61,11 @@ public final class ChestElementModelProvider implements DataProvider {
                 .toArray(CompletableFuture[]::new));
     }
 
+    @Override
+    public String getName() {
+        return "Planked Chests Element Models";
+    }
+
     // The shared, wood-independent base + lid geometry for one ChestType, in the animated display
     // entities' hinge-relative form (ChestElementHolder rotates the lid about the hinge). Every
     // ChestType gets one, unconditionally — unlike addWholeGeometry, which is a different consumer
@@ -149,25 +154,24 @@ public final class ChestElementModelProvider implements DataProvider {
         files.put(this.items.json(itemDefId), itemDefinition(modelId));
     }
 
+    // Delegates to ElementModels to create a thin per-wood variant model.
     private static JsonObject variantModel(Identifier geometry, Identifier sprite) {
         return ElementModels.variantModel(geometry, TEXTURE_KEY, sprite);
     }
 
+    // Delegates to ElementModels to create an item definition.
     private static JsonObject itemDefinition(Identifier model) {
         return ElementModels.itemDefinition(model);
     }
 
+    // Delegates to ElementModels to create a model with the given element boxes.
     private static JsonObject model(JsonObject... elements) {
         return ElementModels.model(TEXTURE_KEY, elements);
     }
 
+    // Delegates to ElementModels to create a textured box element for a model.
     private static JsonObject box(float x, float y, float z, float w, float h, float d,
             float texU, float texV, @Nullable Direction hidden) {
         return ElementModels.box(TEXTURE_KEY, x, y, z, w, h, d, texU, texV, hidden);
-    }
-
-    @Override
-    public String getName() {
-        return "Planked Chests Element Models";
     }
 }

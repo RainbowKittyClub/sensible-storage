@@ -58,25 +58,6 @@ final class CartIcons {
         return out;
     }
 
-    // One pixel of source-over: `top` composited onto `base`, both premultiplied out again so the
-    // result is a plain ARGB pixel. Handles the fully transparent and fully opaque ends without
-    // special cases, which is why composite has none.
-    private static int over(int base, int top) {
-        double topAlpha = (top >>> 24) / 255.0;
-        double baseAlpha = (base >>> 24) / 255.0;
-        double alpha = topAlpha + baseAlpha * (1.0 - topAlpha);
-        if (alpha <= 0.0) {
-            return 0;
-        }
-        int out = (int) Math.round(alpha * 255.0) << 24;
-        for (int shift = 16; shift >= 0; shift -= 8) {
-            double mixed = ((top >> shift & 0xFF) * topAlpha
-                    + (base >> shift & 0xFF) * baseAlpha * (1.0 - topAlpha)) / alpha;
-            out |= (int) Math.round(mixed) << shift;
-        }
-        return out;
-    }
-
     /**
      * Checks one composite input is the icon's own size.
      *
@@ -108,5 +89,24 @@ final class CartIcons {
     // geometry helpers.
     static JsonObject itemDefinition(Identifier model) {
         return ElementModels.itemDefinition(model);
+    }
+
+    // One pixel of source-over: `top` composited onto `base`, both premultiplied out again so the
+    // result is a plain ARGB pixel. Handles the fully transparent and fully opaque ends without
+    // special cases, which is why composite has none.
+    private static int over(int base, int top) {
+        double topAlpha = (top >>> 24) / 255.0;
+        double baseAlpha = (base >>> 24) / 255.0;
+        double alpha = topAlpha + baseAlpha * (1.0 - topAlpha);
+        if (alpha <= 0.0) {
+            return 0;
+        }
+        int out = (int) Math.round(alpha * 255.0) << 24;
+        for (int shift = 16; shift >= 0; shift -= 8) {
+            double mixed = ((top >> shift & 0xFF) * topAlpha
+                    + (base >> shift & 0xFF) * baseAlpha * (1.0 - topAlpha)) / alpha;
+            out |= (int) Math.round(mixed) << shift;
+        }
+        return out;
     }
 }
