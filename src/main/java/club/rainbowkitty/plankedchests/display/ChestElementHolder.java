@@ -16,6 +16,7 @@ import net.minecraft.world.phys.Vec3;
 
 import club.rainbowkitty.plankedchests.PlankedChests;
 import club.rainbowkitty.plankedchests.block.PlankedChestBlock;
+import club.rainbowkitty.rkcore.common.display.ItemDisplayPose;
 
 /**
  * The visible chest for a placed block: a {@link ChestVisual} bound to the (client-invisible) chest
@@ -108,7 +109,7 @@ public class ChestElementHolder extends ElementHolder {
         shownYaw = yaw;
         shownOpenness = easedOpenness;
 
-        Quaternionf orientation = ChestVisual.orientation(yaw);
+        Quaternionf orientation = ItemDisplayPose.orientation(yaw);
         visual.applyTransforms(orientation, easedOpenness);
     }
 }

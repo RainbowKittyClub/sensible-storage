@@ -2,22 +2,22 @@ package club.rainbowkitty.plankedchests.display;
 
 import com.mojang.math.Axis;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
-import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.state.properties.ChestType;
 
+import club.rainbowkitty.rkcore.common.display.LidTween;
+
 /**
  * The two item-display elements a visible chest is made of — a static base and a lid rotated about
- * its hinge — with the model naming, the lid tween and the pose maths they share.
+ * its hinge — with the model naming and the hinge geometry they share.
  *
  * <p>Two holders use this: {@link ChestElementHolder} for a placed chest, and the cart-bound one
  * for a chest riding a minecart. They differ in where the yaw comes from, where "is it open" comes
@@ -37,18 +37,13 @@ public final class ChestVisual {
         void place(Vector3f hinge);
     }
 
-    // ItemDisplayRenderer#submitInner bakes this extra 180° Y turn into every rendered
-    // Display$ItemDisplay; orientation() and HINGE's sign each have to account for it, so it gets
-    // one name instead of two independent re-derivations.
-    private static final float RENDERER_YAW_OFFSET = 180.0f;
-
     // Hinge position relative to the block's centre: a display entity's Transformation always
     // rotates about the model cube's own centre (block coordinate (8,8,8)), never its authored
     // origin, regardless of ItemDisplayContext — the lid's geometry (ChestElementModelProvider) is
     // authored so ChestModel's (0,9,1) pivot sits exactly there. Y is the plain
     // block-centre-relative form (9/16 - 0.5); Z carries the opposite sign, because every
-    // orientation includes RENDERER_YAW_OFFSET, which rotates this vector along with the visible
-    // geometry.
+    // orientation includes ItemDisplayPose.RENDERER_YAW_OFFSET, which rotates this vector along
+    // with the visible geometry.
     private static final Vector3f HINGE = new Vector3f(0.0f, 1.0f / 16.0f, 7.0f / 16.0f);
 
     private final String chestId;
@@ -56,11 +51,9 @@ public final class ChestVisual {
     private final ItemDisplayElement lid = newElement();
     private final HingePlacement hingePlacement;
 
-    // Lid openness, tweened here because the server never ticks ChestBlockEntity's client-only lid
-    // controller (getOpenNess reads 0 server-side). Ramps ±0.1/tick toward open/closed exactly as
-    // vanilla ChestLidController; tweenOpenness then applies vanilla's ease-out curve
-    // (ChestRenderer#submit) continuously, not quantised to a baked model.
-    private float openness;
+    // The lid's own progress, which the server has to run itself; see LidTween. Eased here
+    // continuously rather than quantised to a baked model, as vanilla's renderer would.
+    private final LidTween tween = new LidTween();
 
     // Last chest type whose models were pushed, so applyItems only re-sends on a real change.
     private @Nullable ChestType shownType;
@@ -85,17 +78,6 @@ public final class ChestVisual {
         return lid;
     }
 
-    /**
-     * The rotation to pose a chest turned {@code yaw} degrees about Y, corrected for the turn the
-     * item-display renderer bakes in.
-     *
-     * @param yaw the chest's facing as a {@link Axis#YP} rotation — which is the opposite sign from
-     *     a Minecraft yaw, so a block's facing arrives here as {@code -facing.toYRot()}
-     */
-    public static Quaternionf orientation(float yaw) {
-        return Axis.YP.rotationDegrees(RENDERER_YAW_OFFSET + yaw);
-    }
-
     /** Swaps in the models for a chest half, if they are not already showing. */
     public void applyItems(ChestType type) {
         if (type == shownType) {
@@ -113,9 +95,8 @@ public final class ChestVisual {
      * @return the eased openness, 0 closed to 1 fully open, for {@link #applyTransforms}
      */
     public float tweenOpenness(boolean open) {
-        openness = Mth.approach(openness, open ? 1.0f : 0.0f, 0.1f);
-        float closed = 1.0f - openness;
-        return 1.0f - closed * closed * closed;
+        tween.advance(open);
+        return LidTween.easeOut(tween.progress());
     }
 
     /**
@@ -134,8 +115,8 @@ public final class ChestVisual {
 
         hingePlacement.place(orientation.transform(new Vector3f(HINGE)));
         lid.setLeftRotation(orientation);
-        // RENDERER_YAW_OFFSET (see orientation, HINGE) is also why this reads as the opposite sign
-        // from vanilla's own lid.xRot = -(open * pi/2).
+        // ItemDisplayPose.RENDERER_YAW_OFFSET (see HINGE) is also why this reads as the opposite
+        // sign from vanilla's own lid.xRot = -(open * pi/2).
         lid.setRightRotation(Axis.XP.rotationDegrees(easedOpenness * 90.0f));
         lid.startInterpolationIfDirty();
     }

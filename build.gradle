@@ -54,6 +54,7 @@ tasks.register('rkcoreSharedJar', Jar) {
 		include 'club/rainbowkitty/rkcore/common/net/**'
 		include 'club/rainbowkitty/rkcore/common/client/**'
 		include 'club/rainbowkitty/rkcore/common/vehicle/**'
+		include 'club/rainbowkitty/rkcore/common/display/**'
 	}
 }
 

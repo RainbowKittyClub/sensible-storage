@@ -7,12 +7,12 @@ import org.joml.Vector3f;
 
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import club.rainbowkitty.plankedchests.display.ShulkerModels;
+import club.rainbowkitty.rkcore.common.display.LidTween;
 import club.rainbowkitty.rkcore.common.vehicle.CargoDisplayHolder;
 
 /**
@@ -62,10 +62,6 @@ public class ShulkerCartDisplay extends CargoDisplayHolder {
     private static final float LID_RISE = 0.5f;
     private static final float LID_TURN = 270.0f;
 
-    // ShulkerBoxBlockEntity#updateAnimation ramps progress by this much a tick, and — unlike a
-    // chest — applies no easing curve on top, so the value is used raw.
-    private static final float LID_STEP = 0.1f;
-
     private final PlankedChestMinecart cart;
     private final ItemDisplayElement base;
     private final ItemDisplayElement lid;
@@ -79,7 +75,9 @@ public class ShulkerCartDisplay extends CargoDisplayHolder {
     // it swings with the cart on a slope. Reused rather than reallocated; setTranslation copies.
     private final Vector3f origin = new Vector3f();
 
-    private float progress;
+    // ShulkerBoxBlockEntity#updateAnimation applies no easing curve over the ramp, unlike a
+    // chest, so this progress is drawn raw.
+    private final LidTween lidTween = new LidTween();
 
     /**
      * @param cart the cart this box rides
@@ -108,9 +106,7 @@ public class ShulkerCartDisplay extends CargoDisplayHolder {
 
     @Override
     protected void onTick() {
-        float next = Mth.approach(progress, cart.isCargoOpen() ? 1.0f : 0.0f, LID_STEP);
-        if (next != progress) {
-            progress = next;
+        if (lidTween.advance(cart.isCargoOpen())) {
             // The lid's rise and turn both live in the pose, and the cart may not have moved.
             markPoseDirty();
         }
@@ -142,14 +138,14 @@ public class ShulkerCartDisplay extends CargoDisplayHolder {
         // box square instead of shearing out of it — the same reason the centre is measured through
         // cartFrame. Scaled with the cargo, since half a block of a 0.75-scale box is 0.375.
         Vector3f lift = cartFrame.transform(
-                new Vector3f(0.0f, progress * LID_RISE * CARGO_SCALE, 0.0f));
+                new Vector3f(0.0f, lidTween.progress() * LID_RISE * CARGO_SCALE, 0.0f));
         lid.setTranslation(new Vector3f(origin).add(lift));
 
         // A right rotation is the lid's own, inside the box's frame. Y is the one axis the
         // renderer's baked 180° Y turn cannot disturb: conjugating a Y rotation by a Y rotation
         // leaves it alone, so unlike the chest's hinge there is no sign to correct for here.
         lid.setLeftRotation(orientation);
-        lid.setRightRotation(Axis.YP.rotationDegrees(LID_TURN * progress));
+        lid.setRightRotation(Axis.YP.rotationDegrees(LID_TURN * lidTween.progress()));
         lid.startInterpolationIfDirty();
     }
 
