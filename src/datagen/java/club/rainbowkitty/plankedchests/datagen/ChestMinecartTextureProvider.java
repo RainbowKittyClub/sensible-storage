@@ -19,6 +19,7 @@ import net.minecraft.resources.Identifier;
 import club.rainbowkitty.plankedchests.PlankedChests;
 import club.rainbowkitty.plankedchests.display.ChestModels;
 import club.rainbowkitty.plankedchests.wood.WoodType;
+import club.rainbowkitty.rkcore.common.datagen.PackJson;
 import club.rainbowkitty.rkcore.common.datagen.PngAssets;
 
 /**
@@ -83,7 +84,7 @@ public final class ChestMinecartTextureProvider implements DataProvider {
         // and an item with no definition of its own draws as a missing model on one. Vanilla's cart
         // icon is the right one for it, since every cargo without an icon here is drawn by vanilla.
         json.put(this.items.json(PlankedChests.id("chest_minecart")),
-                ElementModels.itemDefinition(
+                PackJson.itemDefinition(
                         Identifier.withDefaultNamespace("item/chest_minecart")));
 
         writes.add(DataProvider.saveAll(cache, file -> file, path -> path, json));

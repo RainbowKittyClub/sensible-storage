@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.Blocks;
 import club.rainbowkitty.plankedchests.PlankedChests;
 import club.rainbowkitty.plankedchests.display.ShulkerModels;
 import club.rainbowkitty.rkcore.common.datagen.EntityModelBoxes;
+import club.rainbowkitty.rkcore.common.datagen.PackJson;
 
 /**
  * Geometry and item-model definitions for the two-part (base + lid) display-entity shulker box that
@@ -109,9 +110,8 @@ public final class ShulkerElementModelProvider implements DataProvider {
     private void addPart(Map<Path, JsonObject> files, Identifier itemDefId, Identifier geometry,
             Identifier sheet) {
         Identifier modelId = PlankedChests.id("block/" + itemDefId.getPath());
-        files.put(this.models.json(modelId),
-                ElementModels.variantModel(geometry, TEXTURE_KEY, sheet));
-        files.put(this.items.json(itemDefId), ElementModels.itemDefinition(modelId));
+        files.put(this.models.json(modelId), PackJson.model(geometry, TEXTURE_KEY, sheet));
+        files.put(this.items.json(itemDefId), PackJson.itemDefinition(modelId));
     }
 
     private static Identifier geometryId(String part) {

@@ -20,6 +20,7 @@ import club.rainbowkitty.plankedchests.PlankedChests;
 import club.rainbowkitty.plankedchests.display.ChestModels;
 import club.rainbowkitty.plankedchests.wood.WoodType;
 import club.rainbowkitty.rkcore.common.datagen.EntityModelBoxes;
+import club.rainbowkitty.rkcore.common.datagen.PackJson;
 
 /**
  * Geometry and item-model definitions for the two-part (base + lid) display-entity chest. Base and
@@ -150,12 +151,12 @@ public final class ChestElementModelProvider implements DataProvider {
                 PlankedChests.id("block/chest/" + ChestModels.sprite(variantBase, type));
         Identifier modelId = PlankedChests.id("block/" + itemDefId.getPath());
         files.put(this.models.json(modelId), variantModel(geometry, sprite));
-        files.put(this.items.json(itemDefId), ElementModels.itemDefinition(modelId));
+        files.put(this.items.json(itemDefId), PackJson.itemDefinition(modelId));
     }
 
-    // Delegates to ElementModels to create a thin per-wood variant model.
+    // Binds this mod's texture key to the shared model shape.
     private static JsonObject variantModel(Identifier geometry, Identifier sprite) {
-        return ElementModels.variantModel(geometry, TEXTURE_KEY, sprite);
+        return PackJson.model(geometry, TEXTURE_KEY, sprite);
     }
 
     // Delegates to EntityModelBoxes to create a model with the given element boxes.

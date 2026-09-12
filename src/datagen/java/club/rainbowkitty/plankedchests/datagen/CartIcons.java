@@ -13,6 +13,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.resources.Identifier;
 
 import club.rainbowkitty.plankedchests.PlankedChests;
+import club.rainbowkitty.rkcore.common.datagen.PackJson;
 import club.rainbowkitty.rkcore.common.datagen.PngAssets;
 
 /**
@@ -29,6 +30,9 @@ final class CartIcons {
     /** Edge of every cart icon, and of every texture composited into one. */
     static final int SIZE = 16;
 
+    // The flat item model every icon parents, vanilla's own.
+    private static final Identifier GENERATED = Identifier.withDefaultNamespace("item/generated");
+
     private CartIcons() {
     }
 
@@ -41,16 +45,6 @@ final class CartIcons {
      */
     static BufferedImage sized(BufferedImage image, String name) {
         return PngAssets.sized(image, SIZE, name);
-    }
-
-    // {"parent":"minecraft:item/generated","textures":{"layer0":"<sprite>"}}
-    static JsonObject generatedModel(Identifier sprite) {
-        JsonObject textures = new JsonObject();
-        textures.addProperty("layer0", sprite.toString());
-        JsonObject root = new JsonObject();
-        root.addProperty("parent", "minecraft:item/generated");
-        root.add("textures", textures);
-        return root;
     }
 
     // Where one provider run puts its icons: the three pack paths it writes to, plus the
@@ -66,8 +60,8 @@ final class CartIcons {
             Identifier sprite = PlankedChests.id("item/" + itemDefId.getPath());
             this.writes.add(PngAssets.save(this.cache, this.textures.file(itemDefId, "png"),
                     PngAssets.composite(base, overlay), saveName));
-            this.json.put(this.models.json(sprite), generatedModel(sprite));
-            this.json.put(this.items.json(itemDefId), ElementModels.itemDefinition(sprite));
+            this.json.put(this.models.json(sprite), PackJson.model(GENERATED, "layer0", sprite));
+            this.json.put(this.items.json(itemDefId), PackJson.itemDefinition(sprite));
         }
     }
 }

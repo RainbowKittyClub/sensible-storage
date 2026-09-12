@@ -15,13 +15,13 @@ import net.minecraft.resources.Identifier;
 
 import club.rainbowkitty.plankedchests.PlankedChests;
 import club.rainbowkitty.plankedchests.wood.WoodType;
+import club.rainbowkitty.rkcore.common.datagen.PackJson;
 
 /**
- * Blockstate + particle-only block model for every chest block. Only a client that also runs this
- * mod ever resolves the real block state (see {@code PlankedChests.HANDSHAKE}); without these files
- * it would render a missing-model cube behind the real chest the {@code BlockEntityRenderer} draws.
- * Each model has only a {@code particle} texture and no {@code elements}, so the block itself draws
- * nothing while break/landing particles still match the wood.
+ * Blockstate + particle-only block model for every chest block, both shapes from
+ * {@code PackJson}, which carries why a Polymer block needs them. The particle texture is the
+ * wood's own planks, so break and landing particles match it (see {@code PlankedChests.HANDSHAKE}
+ * for which clients resolve the real block state at all).
  */
 public final class ChestBlockStateProvider implements DataProvider {
     private final PackOutput.PathProvider blockStates;
@@ -44,33 +44,14 @@ public final class ChestBlockStateProvider implements DataProvider {
             Identifier model = PlankedChests.id("block/" + wood.chestId());
             Identifier planks = Identifier.fromNamespaceAndPath(
                     wood.planksNamespace(), "block/" + wood.id() + "_planks");
-            files.put(this.models.json(model), particleModel(planks));
-            files.put(this.blockStates.json(PlankedChests.id(wood.chestId())), variants(model));
+            files.put(this.models.json(model), PackJson.particleOnlyModel(planks));
+            files.put(this.blockStates.json(PlankedChests.id(wood.chestId())),
+                    PackJson.singleVariantBlockState(model));
             files.put(this.blockStates.json(PlankedChests.id(wood.trappedChestId())),
-                    variants(model));
+                    PackJson.singleVariantBlockState(model));
         }
 
         return DataProvider.saveAll(cache, json -> json, path -> path, files);
-    }
-
-    // {"variants":{"":{"model":"<model>"}}}
-    private static JsonObject variants(Identifier model) {
-        JsonObject entry = new JsonObject();
-        entry.addProperty("model", model.toString());
-        JsonObject variants = new JsonObject();
-        variants.add("", entry);
-        JsonObject root = new JsonObject();
-        root.add("variants", variants);
-        return root;
-    }
-
-    // {"textures":{"particle":"<planks>"}}
-    private static JsonObject particleModel(Identifier planks) {
-        JsonObject textures = new JsonObject();
-        textures.addProperty("particle", planks.toString());
-        JsonObject root = new JsonObject();
-        root.add("textures", textures);
-        return root;
     }
 
     @Override
