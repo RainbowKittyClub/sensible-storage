@@ -151,17 +151,12 @@ public final class ChestElementModelProvider implements DataProvider {
                 PlankedChests.id("block/chest/" + ChestModels.sprite(variantBase, type));
         Identifier modelId = PlankedChests.id("block/" + itemDefId.getPath());
         files.put(this.models.json(modelId), variantModel(geometry, sprite));
-        files.put(this.items.json(itemDefId), itemDefinition(modelId));
+        files.put(this.items.json(itemDefId), ElementModels.itemDefinition(modelId));
     }
 
     // Delegates to ElementModels to create a thin per-wood variant model.
     private static JsonObject variantModel(Identifier geometry, Identifier sprite) {
         return ElementModels.variantModel(geometry, TEXTURE_KEY, sprite);
-    }
-
-    // Delegates to ElementModels to create an item definition.
-    private static JsonObject itemDefinition(Identifier model) {
-        return ElementModels.itemDefinition(model);
     }
 
     // Delegates to ElementModels to create a model with the given element boxes.

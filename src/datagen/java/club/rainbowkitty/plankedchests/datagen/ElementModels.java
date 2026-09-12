@@ -163,6 +163,8 @@ final class ElementModels {
     }
 
     // {"model":{"type":"minecraft:model","model":"<model>"}}
+    // Every item definition this mod writes has this one-model shape, whether it points at a
+    // flat icon or at a display-entity part.
     static JsonObject itemDefinition(Identifier model) {
         JsonObject def = new JsonObject();
         def.addProperty("type", "minecraft:model");

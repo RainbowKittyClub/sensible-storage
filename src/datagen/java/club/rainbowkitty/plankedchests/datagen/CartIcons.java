@@ -1,10 +1,19 @@
 package club.rainbowkitty.plankedchests.datagen;
 
 import java.awt.image.BufferedImage;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import com.google.gson.JsonObject;
 
+import net.minecraft.data.CachedOutput;
+import net.minecraft.data.PackOutput;
 import net.minecraft.resources.Identifier;
+
+import club.rainbowkitty.plankedchests.PlankedChests;
+import club.rainbowkitty.rkcore.common.datagen.PngAssets;
 
 /**
  * The pixel and JSON work the cart-icon providers share: laying a wash overlay over the texture the
@@ -84,13 +93,6 @@ final class CartIcons {
         return root;
     }
 
-    // Every item definition this mod writes has the same one-model shape, whether it points at a
-    // flat icon or at a display-entity part, so there is one of these and it lives next to the
-    // geometry helpers.
-    static JsonObject itemDefinition(Identifier model) {
-        return ElementModels.itemDefinition(model);
-    }
-
     // One pixel of source-over: `top` composited onto `base`, both premultiplied out again so the
     // result is a plain ARGB pixel. Handles the fully transparent and fully opaque ends without
     // special cases, which is why composite has none.
@@ -108,5 +110,23 @@ final class CartIcons {
             out |= (int) Math.round(mixed) << shift;
         }
         return out;
+    }
+
+    // Where one provider run puts its icons: the three pack paths it writes to, plus the
+    // collections the run accumulates into. Built once per run, then handed each icon in turn.
+    record IconSink(PackOutput.PathProvider textures, PackOutput.PathProvider models,
+            PackOutput.PathProvider items, CachedOutput cache,
+            List<CompletableFuture<?>> writes, Map<Path, JsonObject> json) {
+
+        // Writes one icon: `base` with `overlay` laid over it as the texture, the generated model
+        // pointing at that texture, and the item definition pointing at that model.
+        void write(Identifier itemDefId, BufferedImage base, BufferedImage overlay,
+                String saveName) {
+            Identifier sprite = PlankedChests.id("item/" + itemDefId.getPath());
+            this.writes.add(PngAssets.save(this.cache, this.textures.file(itemDefId, "png"),
+                    composite(base, overlay), saveName));
+            this.json.put(this.models.json(sprite), generatedModel(sprite));
+            this.json.put(this.items.json(itemDefId), ElementModels.itemDefinition(sprite));
+        }
     }
 }

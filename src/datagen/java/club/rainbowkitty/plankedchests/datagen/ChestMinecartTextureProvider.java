@@ -69,15 +69,13 @@ public final class ChestMinecartTextureProvider implements DataProvider {
 
         List<CompletableFuture<?>> writes = new ArrayList<>();
         Map<Path, JsonObject> json = new HashMap<>();
+        CartIcons.IconSink sink = new CartIcons.IconSink(
+                this.textures, this.models, this.items, cache, writes, json);
         for (WoodType wood : WoodType.values()) {
             String planksFile = PLANK_DIR + wood.id() + "_planks.png";
             BufferedImage planks = CartIcons.sized(PngAssets.read(loader, planksFile), planksFile);
-            Identifier itemDefId = ChestModels.cartModel(wood.id());
-            Identifier sprite = PlankedChests.id("item/" + itemDefId.getPath());
-            writes.add(PngAssets.save(cache, this.textures.file(itemDefId, "png"),
-                    CartIcons.composite(planks, overlay), "plankedChestsCartIcons"));
-            json.put(this.models.json(sprite), CartIcons.generatedModel(sprite));
-            json.put(this.items.json(itemDefId), CartIcons.itemDefinition(sprite));
+            sink.write(ChestModels.cartModel(wood.id()), planks, overlay,
+                    "plankedChestsCartIcons");
         }
 
         // The cart item's own definition, which is not a per-wood icon and is needed whatever the
@@ -85,7 +83,8 @@ public final class ChestMinecartTextureProvider implements DataProvider {
         // and an item with no definition of its own draws as a missing model on one. Vanilla's cart
         // icon is the right one for it, since every cargo without an icon here is drawn by vanilla.
         json.put(this.items.json(PlankedChests.id("chest_minecart")),
-                CartIcons.itemDefinition(Identifier.withDefaultNamespace("item/chest_minecart")));
+                ElementModels.itemDefinition(
+                        Identifier.withDefaultNamespace("item/chest_minecart")));
 
         json.forEach((path, file) -> writes.add(DataProvider.saveStable(cache, file, path)));
         return CompletableFuture.allOf(writes.toArray(CompletableFuture[]::new));

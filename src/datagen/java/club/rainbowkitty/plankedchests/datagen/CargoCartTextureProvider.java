@@ -11,16 +11,13 @@ import java.util.concurrent.CompletableFuture;
 import com.google.gson.JsonObject;
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.WeatheringCopperCollection;
 
-import club.rainbowkitty.plankedchests.PlankedChests;
 import club.rainbowkitty.plankedchests.display.ChestModels;
 import club.rainbowkitty.rkcore.common.datagen.PngAssets;
 
@@ -89,7 +86,9 @@ public final class CargoCartTextureProvider implements DataProvider {
 
         List<CompletableFuture<?>> writes = new ArrayList<>();
         Map<Path, JsonObject> json = new HashMap<>();
-        icons.forEach(icon -> icon(icon, loader, cache, writes, json));
+        CartIcons.IconSink sink = new CartIcons.IconSink(
+                this.textures, this.models, this.items, cache, writes, json);
+        icons.forEach(icon -> icon(icon, loader, sink));
 
         json.forEach((path, file) -> writes.add(DataProvider.saveStable(cache, file, path)));
         return CompletableFuture.allOf(writes.toArray(CompletableFuture[]::new));
@@ -100,30 +99,20 @@ public final class CargoCartTextureProvider implements DataProvider {
         return "Planked Chests Cargo Cart Icons";
     }
 
-    // Generate texture, model, and item definition files for a cargo cart icon.
-    private void icon(Icon icon, ClassLoader loader, CachedOutput cache,
-            List<CompletableFuture<?>> writes, Map<Path, JsonObject> json) {
+    // Reads one icon's two source textures and hands them to the sink to write.
+    private void icon(Icon icon, ClassLoader loader, CartIcons.IconSink sink) {
         String baseFile = VANILLA_DIR + icon.base();
         String overlayFile = OVERLAY_DIR + icon.overlay();
         BufferedImage base = CartIcons.sized(PngAssets.read(loader, baseFile), baseFile);
         BufferedImage overlay = CartIcons.sized(PngAssets.read(loader, overlayFile), overlayFile);
 
-        Identifier itemDefId = ChestModels.cargoCartModel(path(icon.cargo()));
-        Identifier sprite = PlankedChests.id("item/" + itemDefId.getPath());
-        writes.add(PngAssets.save(cache, this.textures.file(itemDefId, "png"),
-                CartIcons.composite(base, overlay), "plankedChestsCargoCartIcons"));
-        json.put(this.models.json(sprite), CartIcons.generatedModel(sprite));
-        json.put(this.items.json(itemDefId), CartIcons.itemDefinition(sprite));
+        sink.write(ChestModels.cargoCartModel(Ids.blockPath(icon.cargo())), base, overlay,
+                "plankedChestsCargoCartIcons");
     }
 
     // A shulker box, which shows the texture named after the block itself.
     private static Icon shell(Block box) {
-        return new Icon(box, path(box) + ".png", "shulker_minecart_overlay.png");
-    }
-
-    // Get the registry name of the given block.
-    private static String path(Block block) {
-        return BuiltInRegistries.BLOCK.getKey(block).getPath();
+        return new Icon(box, Ids.blockPath(box) + ".png", "shulker_minecart_overlay.png");
     }
 
     // One icon to draw: `cargo` names it through ChestModels#cargoCartModel, while `base` is
