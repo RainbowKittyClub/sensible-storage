@@ -46,6 +46,11 @@ public final class ChestTextureProvider implements DataProvider {
 
     private final PackOutput.PathProvider textures;
 
+    /**
+     * Constructs a texture provider for generated chest textures.
+     *
+     * @param output the Fabric datagen output
+     */
     public ChestTextureProvider(FabricPackOutput output) {
         this.textures = output.createPathProvider(
                 PackOutput.Target.RESOURCE_PACK, "textures/block/chest");

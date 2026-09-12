@@ -133,6 +133,7 @@ public final class ChestBlocks {
         registerSyncedBlockEntity(trappedType);
     }
 
+    // Registers a block entity to sync with Polymer clients that support the handshake.
     private static void registerSyncedBlockEntity(BlockEntityType<?> type) {
         PolymerBlockUtils.registerBlockEntity(type,
                 (t, context) -> PlankedChests.HANDSHAKE.supportsAll(context) ? t : null);
@@ -149,10 +150,12 @@ public final class ChestBlocks {
                 .isRedstoneConductor((state, level, pos) -> false);
     }
 
+    // Registers a block in the game's block registry.
     private static void registerBlock(String path, Block block) {
         Registry.register(BuiltInRegistries.BLOCK, PlankedChests.id(path), block);
     }
 
+    // Creates and registers a block-entity type for the given blocks.
     private static <T extends ChestBlockEntity> BlockEntityType<T> registerBlockEntityType(
             String path, BlockEntityType.BlockEntitySupplier<T> factory, List<Block> blocks) {
         BlockEntityType<T> type = new BlockEntityType<>(factory, Set.copyOf(blocks));

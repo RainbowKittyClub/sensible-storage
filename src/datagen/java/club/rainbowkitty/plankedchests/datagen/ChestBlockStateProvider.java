@@ -27,6 +27,10 @@ public final class ChestBlockStateProvider implements DataProvider {
     private final PackOutput.PathProvider blockStates;
     private final PackOutput.PathProvider models;
 
+    /**
+     * Creates a provider for blockstate and model data generation.
+     * @param output the pack output providing paths for blockstate and model files
+     */
     public ChestBlockStateProvider(FabricPackOutput output) {
         this.blockStates =
                 output.createPathProvider(PackOutput.Target.RESOURCE_PACK, "blockstates");

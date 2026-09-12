@@ -10,7 +10,11 @@ import club.rainbowkitty.plankedchests.PlankedChests;
 
 /** Chest block entity carrying this mod's shared chest type; names its menu after the wood. */
 public class PlankedChestBlockEntity extends ChestBlockEntity {
-    /** @param type this mod's {@code plankedchests:chest} block-entity type */
+    /**
+     * Constructs a chest block entity for this mod.
+     *
+     * @param type this mod's {@code plankedchests:chest} block-entity type
+     */
     public PlankedChestBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }

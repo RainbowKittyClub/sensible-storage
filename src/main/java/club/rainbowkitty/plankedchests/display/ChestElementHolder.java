@@ -37,6 +37,14 @@ public class ChestElementHolder extends ElementHolder {
     private float shownYaw;
     private float shownOpenness;
 
+    /**
+     * Constructs a chest display with rendering elements bound to a block position.
+     *
+     * @param level the server level containing this chest
+     * @param pos the block position of the chest
+     * @param block the chest block definition
+     * @param initialState the initial block state
+     */
     public ChestElementHolder(ServerLevel level, BlockPos pos, PlankedChestBlock block,
             BlockState initialState) {
         this.level = level;
@@ -83,16 +91,19 @@ public class ChestElementHolder extends ElementHolder {
         visual.lid().setOffset(new Vec3(hinge.x, hinge.y, hinge.z));
     }
 
+    // Get the chest type (SINGLE, LEFT, or RIGHT) from a block state.
     private static ChestType typeOf(BlockState state) {
         return state.hasProperty(ChestBlock.TYPE)
                 ? state.getValue(ChestBlock.TYPE)
                 : ChestType.SINGLE;
     }
 
+    // Converts block facing to the Y-axis yaw (degrees) a display transform expects.
     private static float yawFor(BlockState state) {
         return -state.getValue(ChestBlock.FACING).toYRot();
     }
 
+    // Apply rotation and openness to the visual, tracking sent values for change detection.
     private void applyTransforms(float yaw, float easedOpenness) {
         shownYaw = yaw;
         shownOpenness = easedOpenness;

@@ -159,6 +159,7 @@ public class ShulkerCartDisplay extends CargoDisplayHolder {
         return (modelTop - MODEL_CENTRE) / PIXELS_PER_BLOCK * scale;
     }
 
+    // Creates a display element for one of the box's two models, base or lid.
     private static ItemDisplayElement element(Identifier model) {
         ItemDisplayElement element = new ItemDisplayElement();
         // Our models have no display block for any context to read, so HEAD renders identically to

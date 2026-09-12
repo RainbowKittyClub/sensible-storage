@@ -29,6 +29,7 @@ public final class PlankedChestsClient implements ClientModInitializer {
                 ctx -> new PolymerChestRenderer<>(ctx, PlankedChestsClient::sprite));
     }
 
+    // Resolve the sprite identifier for the given chest configuration.
     private static Identifier sprite(ChestBlockEntity blockEntity, ChestType type) {
         PlankedChestBlock chest = (PlankedChestBlock) blockEntity.getBlockState().getBlock();
         return PlankedChests.id("block/chest/" + ChestModels.sprite(chest.spriteBase(), type));

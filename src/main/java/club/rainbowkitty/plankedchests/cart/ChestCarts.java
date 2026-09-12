@@ -80,8 +80,11 @@ public final class ChestCarts {
     public static final TagKey<Block> CARGO_TAG =
             TagKey.create(Registries.BLOCK, PlankedChests.id(CargoMinecarts.CARGO_COMPONENT_PATH));
 
+    // The cart entity type.
     private static EntityType<PlankedChestMinecart> type;
+    // The cart item.
     private static ChestMinecartItem item;
+    // The component a cart stack carries its chest block in.
     private static DataComponentType<Holder<Block>> cargoComponent;
 
     // Chest block back to the wood that made it, for the cart display. Built once from the same map
@@ -103,6 +106,7 @@ public final class ChestCarts {
     // model, which is what a datapack's own addition to the tag gets.
     private static final Set<Block> DRAWN_CARGO = new HashSet<>();
 
+    // Static utility class.
     private ChestCarts() {
     }
 

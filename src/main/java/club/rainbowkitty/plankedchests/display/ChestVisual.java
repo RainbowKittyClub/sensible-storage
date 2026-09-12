@@ -140,6 +140,7 @@ public final class ChestVisual {
         lid.startInterpolationIfDirty();
     }
 
+    // Creates a fresh item-display element for one half of a chest.
     private static ItemDisplayElement newElement() {
         ItemDisplayElement element = new ItemDisplayElement();
         // Our elements' models have no display block for any context to read, so HEAD renders
@@ -149,6 +150,7 @@ public final class ChestVisual {
         return element;
     }
 
+    // Wraps a model identifier in an ItemStack for display on the item-display entity.
     private static ItemStack itemFor(Identifier model) {
         ItemStack stack = new ItemStack(Items.CHEST);
         stack.set(DataComponents.ITEM_MODEL, model);

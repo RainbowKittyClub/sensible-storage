@@ -45,6 +45,13 @@ import club.rainbowkitty.plankedchests.wood.WoodType;
  * </ul>
  */
 public final class ChestCartCargoProvider extends FabricTagsProvider.BlockTagsProvider {
+
+    /**
+     * Initializes the cargo tag provider.
+     *
+     * @param output the datagen output
+     * @param registriesFuture future containing the registry lookups
+     */
     public ChestCartCargoProvider(FabricPackOutput output,
             CompletableFuture<HolderLookup.Provider> registriesFuture) {
         super(output, registriesFuture);

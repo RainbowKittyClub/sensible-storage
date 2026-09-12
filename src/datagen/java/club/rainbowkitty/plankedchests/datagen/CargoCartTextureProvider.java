@@ -100,6 +100,7 @@ public final class CargoCartTextureProvider implements DataProvider {
         return "Planked Chests Cargo Cart Icons";
     }
 
+    // Generate texture, model, and item definition files for a cargo cart icon.
     private void icon(Icon icon, ClassLoader loader, CachedOutput cache,
             List<CompletableFuture<?>> writes, Map<Path, JsonObject> json) {
         String baseFile = VANILLA_DIR + icon.base();
@@ -120,19 +121,14 @@ public final class CargoCartTextureProvider implements DataProvider {
         return new Icon(box, path(box) + ".png", "shulker_minecart_overlay.png");
     }
 
+    // Get the registry name of the given block.
     private static String path(Block block) {
         return BuiltInRegistries.BLOCK.getKey(block).getPath();
     }
 
-    /**
-     * One icon to draw.
-     *
-     * @param cargo the cargo block, which names the icon through {@link ChestModels#cargoCartModel}
-     * @param base its texture's file name under {@code plankedchests_vanilla/}, given rather than
-     *     derived because a barrel shows one particular face rather than a texture named after the
-     *     block
-     * @param overlay the overlay's file name under {@code plankedchests_overlay/}
-     */
+    // One icon to draw: `cargo` names it through ChestModels#cargoCartModel, while `base` is
+    // given rather than derived because a barrel shows one particular face rather than a
+    // texture named after the block.
     private record Icon(Block cargo, String base, String overlay) {
     }
 }

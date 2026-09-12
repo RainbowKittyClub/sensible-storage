@@ -42,6 +42,11 @@ import club.rainbowkitty.plankedchests.display.ShulkerModels;
 public final class ShulkerAtlasProvider implements DataProvider {
     private final PackOutput.PathProvider atlases;
 
+    /**
+     * Creates a provider that generates the shulker atlas sources file.
+     *
+     * @param output the fabric pack output
+     */
     public ShulkerAtlasProvider(FabricPackOutput output) {
         this.atlases = output.createPathProvider(PackOutput.Target.RESOURCE_PACK, "atlases");
     }
@@ -65,6 +70,7 @@ public final class ShulkerAtlasProvider implements DataProvider {
         return "Planked Chests Shulker Atlas";
     }
 
+    // Adds a shulker box atlas source to the JSON array.
     // {"type":"minecraft:single","resource":"minecraft:entity/shulker/shulker_<colour>"}
     private static void source(JsonArray sources, Block box) {
         String boxPath = BuiltInRegistries.BLOCK.getKey(box).getPath();

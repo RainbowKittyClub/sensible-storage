@@ -17,7 +17,11 @@ import net.minecraft.world.level.redstone.Orientation;
  * {@link PlankedChestBlockEntity#getDefaultName()}, which deliberately uses the plain-chest name.
  */
 public class PlankedTrappedChestBlockEntity extends PlankedChestBlockEntity {
-    /** @param type this mod's {@code plankedchests:trapped_chest} block-entity type */
+    /**
+     * Constructs a trapped chest block entity for this mod.
+     *
+     * @param type this mod's {@code plankedchests:trapped_chest} block-entity type
+     */
     public PlankedTrappedChestBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }

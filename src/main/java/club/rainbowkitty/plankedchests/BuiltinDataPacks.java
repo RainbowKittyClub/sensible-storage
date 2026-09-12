@@ -23,6 +23,7 @@ public final class BuiltinDataPacks {
     public static final Identifier DISABLE_VANILLA_RECIPES =
             PlankedChests.id("disable_vanilla_recipes");
 
+    // Static-utility class; prevent instantiation.
     private BuiltinDataPacks() {}
 
     /** Registers every pack in this class. Call once from {@code onInitialize}. */

@@ -50,6 +50,11 @@ public final class ChestMinecartTextureProvider implements DataProvider {
     private final PackOutput.PathProvider models;
     private final PackOutput.PathProvider items;
 
+    /**
+     * Initializes path providers for cart texture, model, and item definition outputs.
+     *
+     * @param output the pack output configuration
+     */
     public ChestMinecartTextureProvider(FabricPackOutput output) {
         this.textures = output.createPathProvider(
                 PackOutput.Target.RESOURCE_PACK, "textures/item");

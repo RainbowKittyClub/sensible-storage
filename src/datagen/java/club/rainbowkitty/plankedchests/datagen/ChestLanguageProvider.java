@@ -22,6 +22,12 @@ import club.rainbowkitty.plankedchests.wood.WoodType;
  * {@code assets/minecraft/lang/en_us.json} rather than here.
  */
 public final class ChestLanguageProvider extends FabricLanguageProvider {
+    /**
+     * Constructs a provider for generating English language translations.
+     *
+     * @param output the output for generated data
+     * @param registriesFuture future providing registry access
+     */
     public ChestLanguageProvider(FabricPackOutput output,
             CompletableFuture<HolderLookup.Provider> registriesFuture) {
         super(output, registriesFuture);

@@ -51,6 +51,11 @@ public final class ShulkerElementModelProvider implements DataProvider {
     private final PackOutput.PathProvider models;
     private final PackOutput.PathProvider items;
 
+    /**
+     * Constructs a provider for shulker element model and item definition data.
+     *
+     * @param output the pack output to write model and item definition files to
+     */
     public ShulkerElementModelProvider(FabricPackOutput output) {
         this.models = output.createPathProvider(PackOutput.Target.RESOURCE_PACK, "models");
         this.items = output.createPathProvider(PackOutput.Target.RESOURCE_PACK, "items");
@@ -102,6 +107,7 @@ public final class ShulkerElementModelProvider implements DataProvider {
         addPart(files, ShulkerModels.lidModel(boxPath), geometryId("lid"), sheet);
     }
 
+    // Emits a model variant and its item definition for one shulker part and colour.
     private void addPart(Map<Path, JsonObject> files, Identifier itemDefId, Identifier geometry,
             Identifier sheet) {
         Identifier modelId = PlankedChests.id("block/" + itemDefId.getPath());

@@ -53,6 +53,12 @@ import club.rainbowkitty.plankedchests.wood.WoodType;
  * {@code mineable/axe} tag, which is in the {@code minecraft} namespace for the same reason.
  */
 public final class ChestRecipeProvider extends FabricRecipeProvider {
+    /**
+     * Creates a new recipe provider for planked chests recipes.
+     *
+     * @param output the fabric pack output
+     * @param registriesFuture a future providing access to registries
+     */
     public ChestRecipeProvider(FabricPackOutput output,
             CompletableFuture<HolderLookup.Provider> registriesFuture) {
         super(output, registriesFuture);

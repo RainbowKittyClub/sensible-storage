@@ -15,15 +15,12 @@ import club.rainbowkitty.plankedchests.PlankedChests;
  * cargo block's own path is the whole of the name.
  */
 public final class ShulkerModels {
-    /**
-     * Vanilla's shulker sheets, {@code minecraft:entity/shulker/shulker[_<colour>]}.
-     *
-     * <p>These are the textures vanilla's own renderer uses, referenced rather than copied. They
-     * live on the {@code shulker_boxes} atlas, which item models cannot read, so
-     * {@code ShulkerAtlasProvider} adds each one to the block atlas as well.
-     */
+    // Vanilla's own shulker sheets, minecraft:entity/shulker/shulker[_<colour>], referenced
+    // rather than copied. They live on the shulker_boxes atlas, which item models can't read,
+    // so ShulkerAtlasProvider adds each one to the block atlas too.
     private static final String SHEET_DIR = "entity/shulker/";
 
+    // Static-utility class; not instantiable.
     private ShulkerModels() {
     }
 

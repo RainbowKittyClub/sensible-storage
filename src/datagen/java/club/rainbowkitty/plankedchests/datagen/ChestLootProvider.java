@@ -18,6 +18,12 @@ import club.rainbowkitty.plankedchests.wood.WoodType;
  * entity. Matches vanilla's {@code createNameableBlockEntityTable}.
  */
 public final class ChestLootProvider extends FabricBlockLootSubProvider {
+    /**
+     * Constructs a loot table provider for plank chests.
+     *
+     * @param output the data pack output
+     * @param registriesFuture the registries lookup
+     */
     public ChestLootProvider(FabricPackOutput output,
             CompletableFuture<HolderLookup.Provider> registriesFuture) {
         super(output, registriesFuture);
