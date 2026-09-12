@@ -66,9 +66,7 @@ public final class ShulkerElementModelProvider implements DataProvider {
         addGeometry(files);
         addVariant(files, Blocks.SHULKER_BOX);
         Blocks.DYED_SHULKER_BOX.forEach(box -> addVariant(files, box));
-        return CompletableFuture.allOf(files.entrySet().stream()
-                .map(e -> DataProvider.saveStable(cache, e.getValue(), e.getKey()))
-                .toArray(CompletableFuture[]::new));
+        return DataProvider.saveAll(cache, json -> json, path -> path, files);
     }
 
     @Override

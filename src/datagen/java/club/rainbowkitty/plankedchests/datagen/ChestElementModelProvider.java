@@ -56,9 +56,7 @@ public final class ChestElementModelProvider implements DataProvider {
         // Four rather than eight: a waxed copper chest draws as its unwaxed twin.
         ChestModels.COPPER.weathering().forEach(
                 variant -> addCargoVariant(files, ChestModels.chestId(variant), variant));
-        return CompletableFuture.allOf(files.entrySet().stream()
-                .map(e -> DataProvider.saveStable(cache, e.getValue(), e.getKey()))
-                .toArray(CompletableFuture[]::new));
+        return DataProvider.saveAll(cache, json -> json, path -> path, files);
     }
 
     @Override

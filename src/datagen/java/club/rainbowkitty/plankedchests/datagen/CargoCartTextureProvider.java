@@ -90,7 +90,7 @@ public final class CargoCartTextureProvider implements DataProvider {
                 this.textures, this.models, this.items, cache, writes, json);
         icons.forEach(icon -> icon(icon, loader, sink));
 
-        json.forEach((path, file) -> writes.add(DataProvider.saveStable(cache, file, path)));
+        writes.add(DataProvider.saveAll(cache, file -> file, path -> path, json));
         return CompletableFuture.allOf(writes.toArray(CompletableFuture[]::new));
     }
 

@@ -86,7 +86,7 @@ public final class ChestMinecartTextureProvider implements DataProvider {
                 ElementModels.itemDefinition(
                         Identifier.withDefaultNamespace("item/chest_minecart")));
 
-        json.forEach((path, file) -> writes.add(DataProvider.saveStable(cache, file, path)));
+        writes.add(DataProvider.saveAll(cache, file -> file, path -> path, json));
         return CompletableFuture.allOf(writes.toArray(CompletableFuture[]::new));
     }
 

@@ -50,9 +50,7 @@ public final class ChestBlockStateProvider implements DataProvider {
                     variants(model));
         }
 
-        return CompletableFuture.allOf(files.entrySet().stream()
-                .map(e -> DataProvider.saveStable(cache, e.getValue(), e.getKey()))
-                .toArray(CompletableFuture[]::new));
+        return DataProvider.saveAll(cache, json -> json, path -> path, files);
     }
 
     // {"variants":{"":{"model":"<model>"}}}
