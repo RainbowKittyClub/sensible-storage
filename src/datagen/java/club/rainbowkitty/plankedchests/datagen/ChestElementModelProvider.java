@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.state.properties.ChestType;
 import club.rainbowkitty.plankedchests.PlankedChests;
 import club.rainbowkitty.plankedchests.display.ChestModels;
 import club.rainbowkitty.plankedchests.wood.WoodType;
+import club.rainbowkitty.rkcore.common.datagen.EntityModelBoxes;
 
 /**
  * Geometry and item-model definitions for the two-part (base + lid) display-entity chest. Base and
@@ -30,7 +31,7 @@ import club.rainbowkitty.plankedchests.wood.WoodType;
  */
 public final class ChestElementModelProvider implements DataProvider {
     // The texture variable every chest model binds its wood's sheet to. The unwrap itself lives in
-    // ElementModels, shared with the shulker boxes, which read the same kind of 64x64 entity sheet.
+    // EntityModelBoxes, shared with the shulker boxes, which read the same kind of entity sheet.
     private static final String TEXTURE_KEY = "chest";
 
     private final PackOutput.PathProvider models;
@@ -157,14 +158,14 @@ public final class ChestElementModelProvider implements DataProvider {
         return ElementModels.variantModel(geometry, TEXTURE_KEY, sprite);
     }
 
-    // Delegates to ElementModels to create a model with the given element boxes.
+    // Delegates to EntityModelBoxes to create a model with the given element boxes.
     private static JsonObject model(JsonObject... elements) {
-        return ElementModels.model(TEXTURE_KEY, elements);
+        return EntityModelBoxes.model(TEXTURE_KEY, elements);
     }
 
-    // Delegates to ElementModels to create a textured box element for a model.
+    // Delegates to EntityModelBoxes to create a textured box element for a model.
     private static JsonObject box(float x, float y, float z, float w, float h, float d,
             float texU, float texV, @Nullable Direction hidden) {
-        return ElementModels.box(TEXTURE_KEY, x, y, z, w, h, d, texU, texV, hidden);
+        return EntityModelBoxes.box(TEXTURE_KEY, x, y, z, w, h, d, texU, texV, hidden);
     }
 }

@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.Blocks;
 
 import club.rainbowkitty.plankedchests.PlankedChests;
 import club.rainbowkitty.plankedchests.display.ShulkerModels;
+import club.rainbowkitty.rkcore.common.datagen.EntityModelBoxes;
 
 /**
  * Geometry and item-model definitions for the two-part (base + lid) display-entity shulker box that
@@ -33,7 +34,7 @@ import club.rainbowkitty.plankedchests.display.ShulkerModels;
  *
  * <p>They overlap through the middle four pixels, which is why a closed box reads as a full cube.
  * Each is emitted twice — once as vanilla authored it and once inverted, for the reason
- * {@link ElementModels#invertedTwin} gives.
+ * {@link EntityModelBoxes#invertedTwin} gives.
  *
  * <p>The lid needs none of the chest's hinge arithmetic. A display entity's transformation always
  * rotates about the model cube's centre, and a shulker lid turns about the box's <em>vertical</em>
@@ -79,7 +80,7 @@ public final class ShulkerElementModelProvider implements DataProvider {
      * nothing about the shape varies with the dye — only the sheet bound to {@code #shulker} does.
      *
      * <p>Each part is vanilla's own cube and nothing else, plus the inward-facing twin that
-     * {@link ElementModels#invertedTwin} explains: the shulker renderer draws without backface
+     * {@link EntityModelBoxes#invertedTwin} explains: the shulker renderer draws without backface
      * culling and a block model cannot, so the twin is what puts the interior back. Between them
      * they reproduce exactly the surfaces vanilla draws, at exactly vanilla's depth, which is why
      * there is no bespoke UV arithmetic left here.
@@ -87,13 +88,13 @@ public final class ShulkerElementModelProvider implements DataProvider {
     private void addGeometry(Map<Path, JsonObject> files) {
         // flippedY: ShulkerModel is authored in the mob convention (PartPose.offset(0,24,0), boxes
         // from -16, Y downward), so these block coordinates are already 24 - y of vanilla's.
-        JsonObject base = ElementModels.box(TEXTURE_KEY, 0, 0, 0, 16, 8, 16, 0, 28, null, true);
-        JsonObject lid = ElementModels.box(TEXTURE_KEY, 0, 4, 0, 16, 12, 16, 0, 0, null, true);
+        JsonObject base = EntityModelBoxes.box(TEXTURE_KEY, 0, 0, 0, 16, 8, 16, 0, 28, null, true);
+        JsonObject lid = EntityModelBoxes.box(TEXTURE_KEY, 0, 4, 0, 16, 12, 16, 0, 0, null, true);
 
         files.put(this.models.json(geometryId("base")),
-                ElementModels.model(TEXTURE_KEY, base, ElementModels.invertedTwin(base)));
+                EntityModelBoxes.model(TEXTURE_KEY, base, EntityModelBoxes.invertedTwin(base)));
         files.put(this.models.json(geometryId("lid")),
-                ElementModels.model(TEXTURE_KEY, lid, ElementModels.invertedTwin(lid)));
+                EntityModelBoxes.model(TEXTURE_KEY, lid, EntityModelBoxes.invertedTwin(lid)));
     }
 
     // One colour's thin base/lid children: parent the shared geometry, bind that colour's sheet.
