@@ -5,13 +5,11 @@ import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import club.rainbowkitty.plankedchests.display.ShulkerModels;
+import club.rainbowkitty.rkcore.common.display.ItemDisplays;
 import club.rainbowkitty.rkcore.common.display.LidTween;
 import club.rainbowkitty.rkcore.common.vehicle.CargoDisplayHolder;
 
@@ -135,14 +133,8 @@ public class ShulkerCartDisplay extends CargoDisplayHolder {
 
     // Creates a display element for one of the box's two models, base or lid.
     private static ItemDisplayElement element(Identifier model) {
-        ItemDisplayElement element = new ItemDisplayElement();
-        // Our models have no display block for any context to read, so HEAD renders identically to
-        // FIXED/NONE here, as it does for the chest.
-        element.setItemDisplayContext(ItemDisplayContext.HEAD);
-        element.setInterpolationDuration(2);
-        ItemStack stack = new ItemStack(Items.SHULKER_BOX);
-        stack.set(DataComponents.ITEM_MODEL, model);
-        element.setItem(stack);
+        ItemDisplayElement element = ItemDisplays.element();
+        element.setItem(ItemDisplays.modelStack(Items.SHULKER_BOX, model));
         return element;
     }
 }

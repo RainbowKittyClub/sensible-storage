@@ -6,13 +6,10 @@ import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.state.properties.ChestType;
 
+import club.rainbowkitty.rkcore.common.display.ItemDisplays;
 import club.rainbowkitty.rkcore.common.display.LidTween;
 
 /**
@@ -47,8 +44,8 @@ public final class ChestVisual {
     private static final Vector3f HINGE = new Vector3f(0.0f, 1.0f / 16.0f, 7.0f / 16.0f);
 
     private final String chestId;
-    private final ItemDisplayElement base = newElement();
-    private final ItemDisplayElement lid = newElement();
+    private final ItemDisplayElement base = ItemDisplays.element();
+    private final ItemDisplayElement lid = ItemDisplays.element();
     private final HingePlacement hingePlacement;
 
     // The lid's own progress, which the server has to run itself; see LidTween. Eased here
@@ -84,8 +81,10 @@ public final class ChestVisual {
             return;
         }
         shownType = type;
-        base.setItem(itemFor(ChestModels.baseModel(chestId, type)));
-        lid.setItem(itemFor(ChestModels.lidModel(chestId, type)));
+        base.setItem(ItemDisplays.modelStack(Items.CHEST,
+                ChestModels.baseModel(chestId, type)));
+        lid.setItem(ItemDisplays.modelStack(Items.CHEST,
+                ChestModels.lidModel(chestId, type)));
     }
 
     /**
@@ -105,8 +104,8 @@ public final class ChestVisual {
      * holder instead. Left and right rotations are split only for readability (facing versus the
      * local open angle) — with a uniform scale, composing them either way is the same rotation.
      *
-     * @param orientation the whole chest's rotation, from {@link #orientation} and whatever tilt
-     *     the holder adds
+     * @param orientation the whole chest's rotation, from ItemDisplayPose.orientation and
+     *     whatever tilt the holder adds
      * @param easedOpenness the value {@link #tweenOpenness} returned this tick
      */
     public void applyTransforms(Quaternionfc orientation, float easedOpenness) {
@@ -119,22 +118,5 @@ public final class ChestVisual {
         // sign from vanilla's own lid.xRot = -(open * pi/2).
         lid.setRightRotation(Axis.XP.rotationDegrees(easedOpenness * 90.0f));
         lid.startInterpolationIfDirty();
-    }
-
-    // Creates a fresh item-display element for one half of a chest.
-    private static ItemDisplayElement newElement() {
-        ItemDisplayElement element = new ItemDisplayElement();
-        // Our elements' models have no display block for any context to read, so HEAD renders
-        // identically to FIXED/NONE here.
-        element.setItemDisplayContext(ItemDisplayContext.HEAD);
-        element.setInterpolationDuration(2);
-        return element;
-    }
-
-    // Wraps a model identifier in an ItemStack for display on the item-display entity.
-    private static ItemStack itemFor(Identifier model) {
-        ItemStack stack = new ItemStack(Items.CHEST);
-        stack.set(DataComponents.ITEM_MODEL, model);
-        return stack;
     }
 }

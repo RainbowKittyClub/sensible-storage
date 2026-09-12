@@ -29,6 +29,7 @@ import club.rainbowkitty.plankedchests.PlankedChests;
 import club.rainbowkitty.plankedchests.cart.ChestCarts;
 import club.rainbowkitty.plankedchests.display.ChestModels;
 import club.rainbowkitty.plankedchests.wood.WoodType;
+import club.rainbowkitty.rkcore.common.datagen.DatagenRun;
 import club.rainbowkitty.rkcore.common.item.ItemRegistration;
 import club.rainbowkitty.rkcore.common.item.PolymerModelBlockItem;
 
@@ -50,13 +51,12 @@ public final class ChestBlocks {
     private static final Map<WoodType, PlankedChestBlock> CHESTS = new LinkedHashMap<>();
     private static final Map<WoodType, PlankedTrappedChestBlock> TRAPPED = new LinkedHashMap<>();
 
-    // Fabric API's own signal that this JVM is a `runDatagen` pass, not a real boot (verified via
-    // FabricDataGenHelper's bytecode - no public constant exposes it). Registration below ignores
-    // the mod-presence gate under datagen, so every WoodType still gets a Block for the lang/
-    // recipe/loot providers to read: the 15 modded woods are never Gradle dependencies of this mod
-    // (only their id strings are needed - see docs/plan/modded-wood-types.md), so isModLoaded is
-    // always false for them here regardless of what a real target server has installed.
-    private static final boolean DATAGEN = System.getProperty("fabric-api.datagen") != null;
+    // Registration below ignores the mod-presence gate under datagen, so every WoodType still gets
+    // a Block for the lang/recipe/loot providers to read: the 15 modded woods are never Gradle
+    // dependencies of this mod (only their id strings are needed - see
+    // docs/plan/modded-wood-types.md), so isModLoaded is always false for them here regardless of
+    // what a real target server has installed.
+    private static final boolean DATAGEN = DatagenRun.ACTIVE;
 
     private ChestBlocks() {}
 
