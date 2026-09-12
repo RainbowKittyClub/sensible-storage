@@ -162,7 +162,7 @@ public final class ChestRecipeProvider extends FabricRecipeProvider {
     // recipes have always been written at. Always in this mod's namespace, even for a vanilla
     // cargo: the recipe is this mod's, and FabricRecipeProvider would rewrite it there regardless.
     private static ResourceKey<Recipe<?>> cartRecipeId(Block cargo) {
-        String path = BuiltInRegistries.BLOCK.getKey(cargo).getPath();
+        String path = Ids.blockPath(cargo);
         return ResourceKey.create(Registries.RECIPE, PlankedChests.id(path + "_minecart"));
     }
 

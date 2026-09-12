@@ -8,7 +8,6 @@ import java.util.concurrent.CompletableFuture;
 import com.google.gson.JsonObject;
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
@@ -101,7 +100,7 @@ public final class ShulkerElementModelProvider implements DataProvider {
 
     // One colour's thin base/lid children: parent the shared geometry, bind that colour's sheet.
     private void addVariant(Map<Path, JsonObject> files, Block box) {
-        String boxPath = BuiltInRegistries.BLOCK.getKey(box).getPath();
+        String boxPath = Ids.blockPath(box);
         Identifier sheet = ShulkerModels.sheet(boxPath);
         addPart(files, ShulkerModels.baseModel(boxPath), geometryId("base"), sheet);
         addPart(files, ShulkerModels.lidModel(boxPath), geometryId("lid"), sheet);

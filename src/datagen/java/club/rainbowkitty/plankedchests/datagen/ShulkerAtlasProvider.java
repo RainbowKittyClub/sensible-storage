@@ -6,7 +6,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
@@ -73,7 +72,7 @@ public final class ShulkerAtlasProvider implements DataProvider {
     // Adds a shulker box atlas source to the JSON array.
     // {"type":"minecraft:single","resource":"minecraft:entity/shulker/shulker_<colour>"}
     private static void source(JsonArray sources, Block box) {
-        String boxPath = BuiltInRegistries.BLOCK.getKey(box).getPath();
+        String boxPath = Ids.blockPath(box);
         JsonObject single = new JsonObject();
         single.addProperty("type", "minecraft:single");
         single.addProperty("resource", ShulkerModels.sheet(boxPath).toString());
