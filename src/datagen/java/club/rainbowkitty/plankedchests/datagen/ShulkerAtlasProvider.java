@@ -1,9 +1,9 @@
 package club.rainbowkitty.plankedchests.datagen;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 
 import net.minecraft.data.CachedOutput;
@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 import club.rainbowkitty.plankedchests.display.ShulkerModels;
+import club.rainbowkitty.rkcore.common.datagen.AtlasSources;
 
 /**
  * Adds vanilla's seventeen shulker sheets to the <em>block</em> atlas, so that the item models a
@@ -22,21 +23,11 @@ import club.rainbowkitty.plankedchests.display.ShulkerModels;
  * <p>The sheets live at {@code minecraft:entity/shulker/shulker[_<colour>]} and vanilla stitches
  * them onto its own {@code shulker_boxes} atlas, which only the special renderers read. An item
  * model can only name a sprite on the block atlas, so without this every part would draw as missing
- * texture. Copying the seventeen PNGs into this mod's pack would also work and is worse: it
- * redistributes vanilla art and freezes it, where a reference follows whatever resource pack the
- * player has on top.
+ * texture.
  *
- * <p>Two things make this safe, and both are vanilla's own precedent rather than a trick.
- * {@code SpriteSourceList.load} walks {@code ResourceManager#getResourceStack} and appends every
- * pack's sources, so writing {@code assets/minecraft/atlases/blocks.json} <em>adds</em> to the
- * block atlas rather than replacing vanilla's. And vanilla already pulls entity textures onto
- * that atlas exactly this way — {@code entity/bell/bell_body} and
- * {@code entity/enchantment/enchanting_table_book} are both {@code minecraft:single} sources in its
- * own {@code blocks.json}.
- *
- * <p>A {@code minecraft:single} source with no {@code sprite} names the sprite after its
- * {@code resource} verbatim ({@code SingleFile#run}), so the models bind to the same identifier
- * {@link ShulkerModels#sheet} hands out and there is no second naming rule to keep in step.
+ * <p>Why adding to a vanilla atlas is safe, and why the sprite ends up named after the texture it
+ * came from, is on {@code AtlasSources} — including that the sprite names match what
+ * {@link ShulkerModels#sheet} hands out, so there is no second naming rule to keep in step.
  */
 public final class ShulkerAtlasProvider implements DataProvider {
     private final PackOutput.PathProvider atlases;
@@ -52,16 +43,12 @@ public final class ShulkerAtlasProvider implements DataProvider {
 
     @Override
     public CompletableFuture<?> run(CachedOutput cache) {
-        JsonArray sources = new JsonArray();
-        source(sources, Blocks.SHULKER_BOX);
-        Blocks.DYED_SHULKER_BOX.forEach(box -> source(sources, box));
+        List<Identifier> sheets = new ArrayList<>();
+        sheets.add(sheet(Blocks.SHULKER_BOX));
+        Blocks.DYED_SHULKER_BOX.forEach(box -> sheets.add(sheet(box)));
 
-        JsonObject root = new JsonObject();
-        root.add("sources", sources);
-        // The vanilla atlas id, deliberately: this file is merged into minecraft:blocks, not a new
-        // atlas of our own, because that is the one an item model's sprites are looked up on.
-        return DataProvider.saveStable(cache, root,
-                this.atlases.json(Identifier.withDefaultNamespace("blocks")));
+        return DataProvider.saveStable(cache, AtlasSources.singleFiles(sheets),
+                this.atlases.json(AtlasSources.BLOCK_ATLAS));
     }
 
     @Override
@@ -69,13 +56,8 @@ public final class ShulkerAtlasProvider implements DataProvider {
         return "Planked Chests Shulker Atlas";
     }
 
-    // Adds a shulker box atlas source to the JSON array.
-    // {"type":"minecraft:single","resource":"minecraft:entity/shulker/shulker_<colour>"}
-    private static void source(JsonArray sources, Block box) {
-        String boxPath = Ids.blockPath(box);
-        JsonObject single = new JsonObject();
-        single.addProperty("type", "minecraft:single");
-        single.addProperty("resource", ShulkerModels.sheet(boxPath).toString());
-        sources.add(single);
+    // Vanilla's sheet for one shulker box, e.g. minecraft:entity/shulker/shulker_red.
+    private static Identifier sheet(Block box) {
+        return ShulkerModels.sheet(Ids.blockPath(box));
     }
 }
