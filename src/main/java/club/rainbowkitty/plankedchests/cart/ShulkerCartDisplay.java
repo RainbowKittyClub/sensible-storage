@@ -27,10 +27,6 @@ import club.rainbowkitty.rkcore.common.vehicle.CargoDisplayHolder;
  * transform, and each is derived from the chest cart it has to sit level with.
  */
 public class ShulkerCartDisplay extends CargoDisplayHolder {
-    // The extra turn AbstractMinecartRenderer#submit gives the cargo inside the cart's own rotated
-    // frame, which is what leaves the box facing along the cart's body rather than across it.
-    private static final float CARGO_TURN = 90.0f;
-
     // Block-model geometry the placement below is worked out in: the centre a display entity scales
     // and turns about, which is the middle of the block, and the top of a shulker box, which unlike
     // a chest is the top of the block.
@@ -54,9 +50,6 @@ public class ShulkerCartDisplay extends CargoDisplayHolder {
             + topAboveCentre(ChestCartDisplay.CARGO_MODEL_TOP, ChestCartDisplay.CARGO_SCALE)
             - topAboveCentre(CARGO_MODEL_TOP, CARGO_SCALE);
 
-    // Ticks the lid eases over on a tick where the cart itself has not moved, as the chest's does.
-    private static final int LID_INTERPOLATION = 2;
-
     // Vanilla's own lid motion, from ShulkerBoxRenderer$ShulkerBoxModel#setupAnim:
     // lid.setPos(0, 24 - progress * 0.5 * 16, 0) and lid.yRot = 270° * progress.
     private static final float LID_RISE = 0.5f;
@@ -66,14 +59,7 @@ public class ShulkerCartDisplay extends CargoDisplayHolder {
     private final ItemDisplayElement base;
     private final ItemDisplayElement lid;
 
-    // The rotation the last pose was built from, so applyPose can tell a tick where the cart turned
-    // from one where only the lid moved. NaN so the first pose counts as a turn and snaps.
-    private float posedYaw = Float.NaN;
-    private float posedPitch = Float.NaN;
 
-    // Where the cargo's centre sits relative to the passenger point, recomputed each pose because
-    // it swings with the cart on a slope. Reused rather than reallocated; setTranslation copies.
-    private final Vector3f origin = new Vector3f();
 
     // ShulkerBoxBlockEntity#updateAnimation applies no easing curve over the ramp, unlike a
     // chest, so this progress is drawn raw.
@@ -114,19 +100,11 @@ public class ShulkerCartDisplay extends CargoDisplayHolder {
     }
 
     @Override
-    protected void applyPose(float yaw, float pitch) {
-        boolean turned = yaw != posedYaw || pitch != posedPitch;
-        posedYaw = yaw;
-        posedPitch = pitch;
-        lid.setInterpolationDuration(turned ? 0 : LID_INTERPOLATION);
+    protected void applyPose(float yaw, float pitch, boolean turned) {
+        lid.setInterpolationDuration(turned ? 0 : PART_INTERPOLATION);
 
-        // The cart's own frame, as AbstractMinecartRenderer#submit builds it: turn by the yaw, then
-        // roll by -xRot for the slope, with the cargo's own turn composed inside it.
-        Quaternionf cartFrame = Axis.YP.rotationDegrees(yaw);
-        cartFrame.mul(Axis.ZP.rotationDegrees(-pitch));
-
-        cartFrame.transform(origin.set(0.0f, CARGO_CENTRE_Y, 0.0f))
-                .sub(0.0f, PASSENGER_ATTACHMENT_Y, 0.0f);
+        Quaternionf cartFrame = cartFrame(yaw, pitch);
+        Vector3f origin = cargoOrigin(cartFrame, CARGO_CENTRE_Y);
         base.setTranslation(origin);
 
         Quaternionf orientation =
