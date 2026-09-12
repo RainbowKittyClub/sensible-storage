@@ -120,7 +120,8 @@ public final class ChestTextureProvider implements DataProvider {
         return out;
     }
 
-    // Draws the overlay over the tiled planks with normal alpha compositing.
+    // Draws the overlay over the tiled planks with normal alpha compositing. Not
+    // PngAssets.composite: its double-precision rounding lands 131 pixels off by one from AWT's.
     private static BufferedImage composite(BufferedImage planks, BufferedImage overlay) {
         BufferedImage out = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = out.createGraphics();
