@@ -1,12 +1,1 @@
-pluginManagement {
-    repositories {
-        maven {
-            name = 'Fabric'
-            url = 'https://maven.fabricmc.net/'
-        }
-        gradlePluginPortal()
-        mavenCentral()
-    }
-}
-
-rootProject.name = 'sensiblestorage'
+gradle/settings.gradle

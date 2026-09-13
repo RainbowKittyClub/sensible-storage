@@ -1,0 +1,26 @@
+// sensible-storage-specific build logic. Applied last by the shared gradle/build.gradle, so it can
+// reconfigure anything that file set up.
+
+// The per-wood textures, item models, recipes and loot tables are datagen-only and gitignored, so a
+// fresh clone that skipped `generateAssets` would ship a jar with no chest art and no crafting. This
+// can't live in processResources: runDatagen depends on :classes -> :processResources, so that
+// check would always fire on a truly fresh clone before runDatagen has produced anything.
+// shadowJar — the jar actually shipped — has no such cycle.
+tasks.named('shadowJar') {
+	doFirst {
+		def generated = file('src/main/generated')
+		def missing = [
+				'assets/sensiblestorage/textures/block/chest/oak.png',
+				'assets/sensiblestorage/blockstates/oak_chest.json',
+				'assets/sensiblestorage/items/oak_chest_base.json',
+				'assets/sensiblestorage/items/oak_chest_lid.json',
+				'data/sensiblestorage/recipe/oak_chest.json',
+				'data/sensiblestorage/loot_table/blocks/oak_chest.json',
+		].collect { new File(generated, it) }.findAll { !it.exists() }
+		if (!missing.isEmpty()) {
+			throw new GradleException(
+					"Generated datagen output is missing: ${missing*.name.join(', ')}. " +
+							'Run: ./gradlew generateAssets')
+		}
+	}
+}
