@@ -23,8 +23,8 @@ import club.rainbowkitty.plankedchests.wood.WoodType;
  * <p>A chest minecart is a chest's inventory however it is drawn, so the list is the blocks for
  * which that is not a lie — the containers that are a chest in all but name. Vanilla's chest and
  * trapped chest, the barrel, the eight copper chests, the seventeen shulker boxes, and this mod's
- * own per-wood chests. The two vanilla groups go in as tag references rather than as twenty-five
- * ids, so a future weathering state or dye colour arrives on its own.
+ * own per-wood chests and trapped chests. The two vanilla groups go in as tag references rather
+ * than as twenty-five ids, so a future weathering state or dye colour arrives on its own.
  *
  * <p>Generated rather than hand-written because the per-wood half of it follows {@link WoodType},
  * which the hand-written {@code minecraft:mineable/axe} does not and has drifted from.
@@ -32,11 +32,6 @@ import club.rainbowkitty.plankedchests.wood.WoodType;
  * <p>Not in the list, and each for its own reason:
  *
  * <ul>
- *   <li><b>This mod's trapped chests.</b> Nothing draws them in a cart: they are Polymer blocks, so
- *       vanilla's own cargo slot renders nothing for them, and {@code PlankedChestMinecart} maps
- *       only plain chests to a stand-in. Whether they get carts at all is still open, and admitting
- *       an invisible cargo is not the way to open it. Vanilla's trapped chest has no such problem
- *       and is in.
  *   <li><b>Ender chests.</b> A shared inventory that is not this cart's 27 slots; a cart carrying
  *       one would draw an ender chest and open a perfectly ordinary chest instead.
  *   <li><b>Hoppers, droppers, dispensers, furnaces.</b> Containers, but not of this shape and not
@@ -76,6 +71,8 @@ public final class ChestCartCargoProvider extends FabricTagsProvider.BlockTagsPr
         for (WoodType wood : WoodType.values()) {
             cargo.addOptional(ResourceKey.create(
                     Registries.BLOCK, PlankedChests.id(wood.chestId())));
+            cargo.addOptional(ResourceKey.create(
+                    Registries.BLOCK, PlankedChests.id(wood.trappedChestId())));
         }
     }
 

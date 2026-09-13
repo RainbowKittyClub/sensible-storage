@@ -42,9 +42,10 @@ import club.rainbowkitty.plankedchests.wood.WoodType;
  * reference, since this mod is never a build dependency of the wood's source mod - see
  * {@code ChestBlocks#DATAGEN}.
  *
- * <p>Also one cart recipe per cargo — each of the 27 woods' chests, plus the barrel, the eight
- * copper chests and the seventeen shulker boxes, all of which vanilla already draws in a cart and
- * so need nothing but the recipe. Vanilla's own {@code chest + minecart} is redirected to this
+ * <p>Also one cart recipe per cargo — each of the 27 woods' chests and trapped chests, plus
+ * vanilla's trapped chest, the barrel, the eight copper chests and the seventeen shulker boxes. Of
+ * those, every cargo but this mod's own is one vanilla already draws in a cart, and so needs
+ * nothing but the recipe. Vanilla's own {@code chest + minecart} is redirected to this
  * mod's cart too, but not from here: that one has to be written at vanilla's recipe id to replace
  * it rather than collide with it, and {@code FabricRecipeProvider#getRecipeIdentifier} rebuilds
  * every id it is given as {@code <modId>:<path>}. Overriding that would also move the generated
@@ -112,9 +113,11 @@ public final class ChestRecipeProvider extends FabricRecipeProvider {
                     // instead of in 27 registry entries. The vanilla chest_minecart recipe names
                     // minecraft:chest exactly rather than a tag, so none of these collide with it.
                     cartRecipe(chest, output);
+                    cartRecipe(trapped, output);
                 }
 
                 // The vanilla cargoes, which need no gate: every one of them is in every build.
+                cartRecipe(Blocks.TRAPPED_CHEST, this.output);
                 cartRecipe(Blocks.BARREL, this.output);
                 Blocks.COPPER_CHEST.forEach(chest -> cartRecipe(chest, this.output));
                 keepingContents(Blocks.SHULKER_BOX, this.output);

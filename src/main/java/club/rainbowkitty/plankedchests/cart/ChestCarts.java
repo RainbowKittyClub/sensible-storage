@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.WeatheringCopperCollection;
 import club.rainbowkitty.plankedchests.PlankedChests;
 import club.rainbowkitty.plankedchests.block.ChestBlocks;
 import club.rainbowkitty.plankedchests.block.PlankedChestBlock;
+import club.rainbowkitty.plankedchests.block.PlankedTrappedChestBlock;
 import club.rainbowkitty.plankedchests.display.ChestModels;
 import club.rainbowkitty.plankedchests.wood.WoodType;
 import club.rainbowkitty.rkcore.common.item.ItemRegistration;
@@ -176,6 +177,14 @@ public final class ChestCarts {
     }
 
     /**
+     * The trapped chest block a wood's cart carries, or null when this server did not register one.
+     */
+    public static @Nullable Holder<Block> trappedCargoFor(WoodType wood) {
+        PlankedTrappedChestBlock trapped = ChestBlocks.trappedChests().get(wood);
+        return trapped == null ? null : trapped.builtInRegistryHolder();
+    }
+
+    /**
      * The chest id a cargo's cart draws its base and lid models from — {@code wood.chestId()} or
      * {@code wood.trappedChestId()} — or null for any block this mod did not register.
      */
@@ -240,8 +249,13 @@ public final class ChestCarts {
 
     /**
      * Every cart this server can hand out, for the creative tab: the plain chest first, then one
-     * per wood in {@link WoodType} order, then the vanilla cargoes — the barrel, the eight copper
-     * chests and the seventeen shulker boxes.
+     * per wood in {@link WoodType} order, then the same pair again for the trapped chests, then the
+     * vanilla cargoes — the barrel, the eight copper chests and the seventeen shulker boxes.
+     *
+     * <p>The trapped half mirrors the plain half rather than interleaving with it, which is the
+     * order {@code ChestBlocks#registerCreativeTab} already lists the blocks in: every chest, then
+     * every trapped chest. A player looking for the trapped carts finds them where the trapped
+     * chests were.
      *
      * <p>Only woods this build registered a chest for, so a server without a wood's mod offers no
      * cart for it — the same gate {@code ChestBlocks#init} applies to the chests themselves. The
@@ -267,6 +281,14 @@ public final class ChestCarts {
         stacks.add(presented(null));
         for (WoodType wood : WoodType.values()) {
             Holder<Block> cargo = cargoFor(wood);
+            if (cargo != null) {
+                stacks.add(presented(cargo));
+            }
+        }
+
+        stacks.add(presented(Blocks.TRAPPED_CHEST.builtInRegistryHolder()));
+        for (WoodType wood : WoodType.values()) {
+            Holder<Block> cargo = trappedCargoFor(wood);
             if (cargo != null) {
                 stacks.add(presented(cargo));
             }

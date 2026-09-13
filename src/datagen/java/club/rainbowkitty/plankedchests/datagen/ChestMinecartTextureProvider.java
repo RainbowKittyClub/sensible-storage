@@ -24,14 +24,15 @@ import club.rainbowkitty.rkcore.common.datagen.PngAssets;
 
 /**
  * The per-wood cart icons: a 16×16 sprite, a {@code minecraft:item/generated} model and an item
- * definition per wood, plus one item definition for the cart item itself.
+ * definition for each of a wood's two chests, plus one item definition for the cart item itself.
  *
  * <p>Nothing here is the model of a registered item — there is only one cart item, and
  * {@code ChestMinecartItem#cargoModel} picks one of these per stack from the cargo it carries.
  *
  * <p>The art is a hand-authored overlay over each wood's planks, the same pipeline
  * {@link CargoCartTextureProvider} uses and with the same conventions — see
- * {@link CartIcons#composite}.
+ * {@link CartIcons#composite}. The two overlays differ in four pixels of latch colour and share a
+ * silhouette, so a wood's pair of carts reads as one cart carrying either of its two chests.
  *
  * <p>This overlay was previously derived rather than drawn, by diffing vanilla's
  * {@code item/chest_minecart.png} against {@code item/minecart.png}: vanilla ships the same cart
@@ -46,6 +47,8 @@ public final class ChestMinecartTextureProvider implements DataProvider {
     // the planks and the overlay alike are client assets, not on the mod classpath.
     private static final String PLANK_DIR = "plankedchests_planks/";
     private static final String OVERLAY = "plankedchests_overlay/chest_minecart.png";
+    private static final String TRAPPED_OVERLAY =
+            "plankedchests_overlay/trapped_chest_minecart.png";
 
     private final PackOutput.PathProvider textures;
     private final PackOutput.PathProvider models;
@@ -67,6 +70,8 @@ public final class ChestMinecartTextureProvider implements DataProvider {
     public CompletableFuture<?> run(CachedOutput cache) {
         ClassLoader loader = ChestMinecartTextureProvider.class.getClassLoader();
         BufferedImage overlay = CartIcons.sized(PngAssets.read(loader, OVERLAY), OVERLAY);
+        BufferedImage trappedOverlay =
+                CartIcons.sized(PngAssets.read(loader, TRAPPED_OVERLAY), TRAPPED_OVERLAY);
 
         List<CompletableFuture<?>> writes = new ArrayList<>();
         Map<Path, JsonObject> json = new HashMap<>();
@@ -75,7 +80,9 @@ public final class ChestMinecartTextureProvider implements DataProvider {
         for (WoodType wood : WoodType.values()) {
             String planksFile = PLANK_DIR + wood.id() + "_planks.png";
             BufferedImage planks = CartIcons.sized(PngAssets.read(loader, planksFile), planksFile);
-            sink.write(ChestModels.cartModel(wood.id()), planks, overlay,
+            sink.write(ChestModels.cargoCartModel(wood.chestId()), planks, overlay,
+                    "plankedChestsCartIcons");
+            sink.write(ChestModels.cargoCartModel(wood.trappedChestId()), planks, trappedOverlay,
                     "plankedChestsCartIcons");
         }
 
