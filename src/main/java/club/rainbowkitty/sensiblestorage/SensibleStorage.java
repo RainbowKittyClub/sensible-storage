@@ -7,9 +7,14 @@ import org.slf4j.LoggerFactory;
 
 import net.minecraft.resources.Identifier;
 
+import club.rainbowkitty.kalic0re.common.label.HoverScanner;
 import club.rainbowkitty.kalic0re.common.net.PolymerClientHandshake;
+import club.rainbowkitty.sensiblestorage.armorstands.ArmorStandLabels;
 import club.rainbowkitty.sensiblestorage.block.ChestBlocks;
+import club.rainbowkitty.sensiblestorage.books.BookText;
+import club.rainbowkitty.sensiblestorage.books.ShelfLabels;
 import club.rainbowkitty.sensiblestorage.cart.ChestCarts;
+import club.rainbowkitty.sensiblestorage.frame.FrameLabels;
 
 /** Mod entrypoint. */
 public class SensibleStorage implements ModInitializer {
@@ -36,6 +41,14 @@ public class SensibleStorage implements ModInitializer {
         // different set — a different mix of the wood mods — is sent the fallback for the woods it
         // is missing, which it could otherwise not decode at all.
         ChestBlocks.chests().keySet().forEach(wood -> HANDSHAKE.register(wood.id()));
+
+        // Hover labels: one per-player raycast feeds every provider, so the scanner starts first
+        // and each provider registers itself into it.
+        HoverScanner.init();
+        BookText.register();
+        ShelfLabels.register();
+        FrameLabels.register();
+        ArmorStandLabels.register();
 
         PolymerResourcePackUtils.addModAssets(MOD_ID);
         LOGGER.info("Sensible Storage loaded");

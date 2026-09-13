@@ -42,9 +42,9 @@ configurations {
 }
 
 // shadowJar's own include/exclude patterns match the pre-relocation path, so they cannot express
-// "keep only these helpers". Filtering kalic0re down to the two shareable packages up front is also
-// stricter: kalic0re's own feature/machinery packages can never leak in, and importing one of them
-// fails to compile rather than silently bundling it.
+// "keep only these helpers". Filtering kalic0re up front is also stricter: this jar carries only
+// the packages named here, and importing any other one fails to compile rather than silently
+// bundling it.
 tasks.register('kalic0reSharedJar', Jar) {
 	archiveBaseName = 'kalic0re-shared'
 	destinationDirectory = layout.buildDirectory.dir('shade')
@@ -55,6 +55,7 @@ tasks.register('kalic0reSharedJar', Jar) {
 		include 'club/rainbowkitty/kalic0re/common/client/**'
 		include 'club/rainbowkitty/kalic0re/common/vehicle/**'
 		include 'club/rainbowkitty/kalic0re/common/display/**'
+		include 'club/rainbowkitty/kalic0re/common/label/**'
 	}
 }
 
@@ -65,8 +66,8 @@ dependencies {
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	implementation "eu.pb4:polymer-bundled:${project.polymer_version}"
 	// Non-transitive: kalic0re's POM lists all of fabric-api and Polymer, which this mod declares
-	// itself. Its common/item + common/datagen helpers are shaded in (relocated) rather than
-	// depended on, so the mod still installs standalone. See companions/build.gradle.
+	// itself. Its shared helpers are shaded in (relocated) rather than depended on, so the mod
+	// still installs standalone. See companions/build.gradle.
 	kalic0re("club.rainbowkitty.kalic0re:kalic0re:${project.kalic0re_version}") { transitive = false }
 	shade files(tasks.named('kalic0reSharedJar'))
 }
