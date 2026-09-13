@@ -16,10 +16,10 @@ the live server (the running jar predates it).
 Neither consumer takes a Fabric mod dependency on `kalic0re` — both must install standalone. Each
 shades the two packages into its own jar with the Shadow plugin and relocates them under
 `club.rainbowkitty.<mod>.shaded.kalic0re`, so two consumer jars never define the same class name
-side by side. Only those two packages are shareable; `kalic0re`'s own feature and machinery
-packages (`common/label`, `common/mixin`, `common/rule`, `books`, `frame`, `armorstands`) must
-never leak, so each `kalic0reSharedJar` filter lists `common/item/**` and `common/datagen/**`
-explicitly rather than `common/**`.
+side by side. Each `kalic0reSharedJar` filter names the `common/<pkg>/**` it wants rather than
+taking `common/**`, so a jar carries only what that mod actually uses and importing anything else
+fails to compile. `kalic0re` is now library-only, so every `common/` package is shareable on that
+basis; mixins remain the exception, and stay in the consumer (see `common/death`).
 
 ### Build wiring (identical in both consumers)
 
