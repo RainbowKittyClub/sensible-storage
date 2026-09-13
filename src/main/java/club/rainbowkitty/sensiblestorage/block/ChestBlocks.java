@@ -25,13 +25,13 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
+import club.rainbowkitty.kalic0re.common.datagen.DatagenRun;
+import club.rainbowkitty.kalic0re.common.item.ItemRegistration;
+import club.rainbowkitty.kalic0re.common.item.PolymerModelBlockItem;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.cart.ChestCarts;
 import club.rainbowkitty.sensiblestorage.display.ChestModels;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
-import club.rainbowkitty.kalic0re.common.datagen.DatagenRun;
-import club.rainbowkitty.kalic0re.common.item.ItemRegistration;
-import club.rainbowkitty.kalic0re.common.item.PolymerModelBlockItem;
 
 /** Registers a chest and a trapped chest per {@link WoodType}, plus the two block-entity types. */
 public final class ChestBlocks {

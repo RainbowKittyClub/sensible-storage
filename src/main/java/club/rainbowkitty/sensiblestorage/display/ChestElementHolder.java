@@ -14,9 +14,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.phys.Vec3;
 
+import club.rainbowkitty.kalic0re.common.display.ItemDisplayPose;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.block.PlankedChestBlock;
-import club.rainbowkitty.kalic0re.common.display.ItemDisplayPose;
 
 /**
  * The visible chest for a placed block: a {@link ChestVisual} bound to the (client-invisible) chest

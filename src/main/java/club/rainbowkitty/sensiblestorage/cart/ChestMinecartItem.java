@@ -13,9 +13,9 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
+import club.rainbowkitty.kalic0re.common.vehicle.CargoCartItem;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.display.ChestModels;
-import club.rainbowkitty.kalic0re.common.vehicle.CargoCartItem;
 
 /**
  * The one chest minecart item, for all woods. Everything per-wood is derived from the cargo block

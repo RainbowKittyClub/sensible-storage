@@ -12,9 +12,9 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.Identifier;
 
-import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.kalic0re.common.datagen.PackJson;
 import club.rainbowkitty.kalic0re.common.datagen.PngAssets;
+import club.rainbowkitty.sensiblestorage.SensibleStorage;
 
 /**
  * What the cart-icon providers share: the icon's size, and the two tiny resource files every icon

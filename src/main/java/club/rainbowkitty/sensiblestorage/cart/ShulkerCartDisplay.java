@@ -8,10 +8,10 @@ import org.joml.Vector3f;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Items;
 
-import club.rainbowkitty.sensiblestorage.display.ShulkerModels;
 import club.rainbowkitty.kalic0re.common.display.ItemDisplays;
 import club.rainbowkitty.kalic0re.common.display.LidTween;
 import club.rainbowkitty.kalic0re.common.vehicle.CargoDisplayHolder;
+import club.rainbowkitty.sensiblestorage.display.ShulkerModels;
 
 /**
  * The visible shulker box riding a {@link PlankedChestMinecart} — a static base and a lid that

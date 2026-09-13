@@ -16,11 +16,11 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.properties.ChestType;
 
+import club.rainbowkitty.kalic0re.common.datagen.EntityModelBoxes;
+import club.rainbowkitty.kalic0re.common.datagen.PackJson;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.display.ChestModels;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
-import club.rainbowkitty.kalic0re.common.datagen.EntityModelBoxes;
-import club.rainbowkitty.kalic0re.common.datagen.PackJson;
 
 /**
  * Geometry and item-model definitions for the two-part (base + lid) display-entity chest. Base and

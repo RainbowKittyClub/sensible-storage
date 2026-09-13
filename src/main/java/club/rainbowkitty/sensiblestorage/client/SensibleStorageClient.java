@@ -9,11 +9,11 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.properties.ChestType;
 
+import club.rainbowkitty.kalic0re.common.client.PolymerChestRenderer;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.block.ChestBlocks;
 import club.rainbowkitty.sensiblestorage.block.PlankedChestBlock;
 import club.rainbowkitty.sensiblestorage.display.ChestModels;
-import club.rainbowkitty.kalic0re.common.client.PolymerChestRenderer;
 
 /**
  * Client entrypoint. Registers {@code BlockEntityRenderer} for both chest types

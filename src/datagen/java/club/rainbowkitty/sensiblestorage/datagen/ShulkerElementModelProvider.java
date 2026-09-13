@@ -15,10 +15,10 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
-import club.rainbowkitty.sensiblestorage.SensibleStorage;
-import club.rainbowkitty.sensiblestorage.display.ShulkerModels;
 import club.rainbowkitty.kalic0re.common.datagen.EntityModelBoxes;
 import club.rainbowkitty.kalic0re.common.datagen.PackJson;
+import club.rainbowkitty.sensiblestorage.SensibleStorage;
+import club.rainbowkitty.sensiblestorage.display.ShulkerModels;
 
 /**
  * Geometry and item-model definitions for the two-part (base + lid) display-entity shulker box that

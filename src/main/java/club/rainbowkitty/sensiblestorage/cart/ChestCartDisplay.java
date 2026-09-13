@@ -6,8 +6,8 @@ import org.joml.Vector3f;
 
 import net.minecraft.world.level.block.state.properties.ChestType;
 
-import club.rainbowkitty.sensiblestorage.display.ChestVisual;
 import club.rainbowkitty.kalic0re.common.vehicle.CargoDisplayHolder;
+import club.rainbowkitty.sensiblestorage.display.ChestVisual;
 
 /**
  * The visible chest riding a {@link PlankedChestMinecart} — the same two elements a placed chest

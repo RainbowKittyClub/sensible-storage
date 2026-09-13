@@ -28,9 +28,9 @@ import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-import club.rainbowkitty.sensiblestorage.display.ChestModels;
 import club.rainbowkitty.kalic0re.common.vehicle.CargoDisplayHolder;
 import club.rainbowkitty.kalic0re.common.vehicle.CargoMinecartChest;
+import club.rainbowkitty.sensiblestorage.display.ChestModels;
 
 /**
  * A chest minecart whose chest is made of one of this mod's woods.

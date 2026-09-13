@@ -13,8 +13,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
-import club.rainbowkitty.sensiblestorage.display.ShulkerModels;
 import club.rainbowkitty.kalic0re.common.datagen.AtlasSources;
+import club.rainbowkitty.sensiblestorage.display.ShulkerModels;
 
 /**
  * Adds vanilla's seventeen shulker sheets to the <em>block</em> atlas, so that the item models a

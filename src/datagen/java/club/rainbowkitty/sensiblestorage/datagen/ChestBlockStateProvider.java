@@ -13,9 +13,9 @@ import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.Identifier;
 
+import club.rainbowkitty.kalic0re.common.datagen.PackJson;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
-import club.rainbowkitty.kalic0re.common.datagen.PackJson;
 
 /**
  * Blockstate + particle-only block model for every chest block, both shapes from

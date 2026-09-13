@@ -7,9 +7,9 @@ import org.slf4j.LoggerFactory;
 
 import net.minecraft.resources.Identifier;
 
+import club.rainbowkitty.kalic0re.common.net.PolymerClientHandshake;
 import club.rainbowkitty.sensiblestorage.block.ChestBlocks;
 import club.rainbowkitty.sensiblestorage.cart.ChestCarts;
-import club.rainbowkitty.kalic0re.common.net.PolymerClientHandshake;
 
 /** Mod entrypoint. */
 public class SensibleStorage implements ModInitializer {

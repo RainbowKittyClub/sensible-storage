@@ -14,10 +14,10 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.properties.ChestType;
 
+import club.rainbowkitty.kalic0re.common.datagen.PngAssets;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.display.ChestModels;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
-import club.rainbowkitty.kalic0re.common.datagen.PngAssets;
 
 /**
  * The per-wood chest textures: the wood's 16×16 plank texture tiled 4×4 to fill the 64×64 chest

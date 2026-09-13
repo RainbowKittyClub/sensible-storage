@@ -16,11 +16,11 @@ import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.Identifier;
 
+import club.rainbowkitty.kalic0re.common.datagen.PackJson;
+import club.rainbowkitty.kalic0re.common.datagen.PngAssets;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.display.ChestModels;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
-import club.rainbowkitty.kalic0re.common.datagen.PackJson;
-import club.rainbowkitty.kalic0re.common.datagen.PngAssets;
 
 /**
  * The per-wood cart icons: a 16×16 sprite, a {@code minecraft:item/generated} model and an item

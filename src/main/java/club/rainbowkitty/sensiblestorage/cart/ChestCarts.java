@@ -26,14 +26,14 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.TrappedChestBlock;
 import net.minecraft.world.level.block.WeatheringCopperCollection;
 
+import club.rainbowkitty.kalic0re.common.item.ItemRegistration;
+import club.rainbowkitty.kalic0re.common.vehicle.CargoMinecarts;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.block.ChestBlocks;
 import club.rainbowkitty.sensiblestorage.block.PlankedChestBlock;
 import club.rainbowkitty.sensiblestorage.block.PlankedTrappedChestBlock;
 import club.rainbowkitty.sensiblestorage.display.ChestModels;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
-import club.rainbowkitty.kalic0re.common.item.ItemRegistration;
-import club.rainbowkitty.kalic0re.common.vehicle.CargoMinecarts;
 
 /**
  * Registers the chest minecart — one entity type and one item, whatever the wood — and bridges

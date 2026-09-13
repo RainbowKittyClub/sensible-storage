@@ -18,8 +18,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.WeatheringCopperCollection;
 
-import club.rainbowkitty.sensiblestorage.display.ChestModels;
 import club.rainbowkitty.kalic0re.common.datagen.PngAssets;
+import club.rainbowkitty.sensiblestorage.display.ChestModels;
 
 /**
  * Cart icons for the cargoes drawn over a vanilla block's own texture: the seventeen shulker boxes,
