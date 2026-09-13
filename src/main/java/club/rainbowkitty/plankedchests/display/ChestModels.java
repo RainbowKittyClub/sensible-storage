@@ -87,20 +87,6 @@ public final class ChestModels {
     }
 
     /**
-     * Item-model definition id for the icon of a cart carrying a wood's chest — a flat sprite, not
-     * one of the chest models above, matching vanilla's own choice for {@code chest_minecart}.
-     *
-     * <p>Named from the wood rather than from a chest id because there is no trapped variant to
-     * tell apart: a cart carries only the plain chest. No registered item has this as its model —
-     * there is one cart item for every wood and {@code ChestMinecartItem} picks per stack.
-     *
-     * @param woodId {@code wood.id()}
-     */
-    public static Identifier cartModel(String woodId) {
-        return cargoCartModel(woodId + "_chest");
-    }
-
-    /**
      * Item-model definition id for the icon of a cart carrying any cargo, named from that cargo
      * block's own path — {@code shulker_box} gives {@code plankedchests:shulker_box_minecart}.
      *

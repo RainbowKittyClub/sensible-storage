@@ -15,7 +15,6 @@ import net.minecraft.world.level.block.Blocks;
 
 import club.rainbowkitty.plankedchests.PlankedChests;
 import club.rainbowkitty.plankedchests.display.ChestModels;
-import club.rainbowkitty.plankedchests.wood.WoodType;
 import club.rainbowkitty.rkcore.common.vehicle.CargoCartItem;
 
 /**
@@ -90,7 +89,7 @@ public class ChestMinecartItem extends CargoCartItem {
     }
 
     /**
-     * A wood's own cart icon, a drawn cargo's, or null for anything else.
+     * One of this mod's chests' own cart icons, a drawn cargo's, or null for anything else.
      *
      * <p>Public rather than protected, because the creative tab has to bake this onto the stacks it
      * offers — see {@link ChestCarts#carts()}.
@@ -102,7 +101,9 @@ public class ChestMinecartItem extends CargoCartItem {
      */
     @Override
     public @Nullable Identifier cargoModel(Holder<Block> cargo) {
-        WoodType wood = ChestCarts.woodOf(cargo);
-        return wood != null ? ChestModels.cartModel(wood.id()) : ChestCarts.cartIcon(cargo);
+        String chestId = ChestCarts.plankedChestId(cargo);
+        return chestId != null
+                ? ChestModels.cargoCartModel(chestId)
+                : ChestCarts.cartIcon(cargo);
     }
 }

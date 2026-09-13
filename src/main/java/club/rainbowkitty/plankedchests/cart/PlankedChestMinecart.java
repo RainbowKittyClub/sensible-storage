@@ -26,7 +26,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 import club.rainbowkitty.plankedchests.display.ChestModels;
-import club.rainbowkitty.plankedchests.wood.WoodType;
 import club.rainbowkitty.rkcore.common.vehicle.CargoDisplayHolder;
 import club.rainbowkitty.rkcore.common.vehicle.CargoMinecartChest;
 
@@ -111,9 +110,9 @@ public class PlankedChestMinecart extends CargoMinecartChest {
     @Override
     public @Nullable CargoDisplayHolder createCargoDisplay() {
         Holder<Block> cargo = cargoOrDefault();
-        WoodType wood = ChestCarts.woodOf(cargo);
-        if (wood != null) {
-            return new ChestCartDisplay(this, wood.chestId());
+        String chestId = ChestCarts.plankedChestId(cargo);
+        if (chestId != null) {
+            return new ChestCartDisplay(this, chestId);
         }
         // Same bargain as the chest, for the same reason: vanilla's cargo renderer resolves a block
         // state and has nowhere to put an openness, so a box it drew would never open.

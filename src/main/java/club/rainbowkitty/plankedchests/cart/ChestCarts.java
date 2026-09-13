@@ -87,9 +87,10 @@ public final class ChestCarts {
     // The component a cart stack carries its chest block in.
     private static DataComponentType<Holder<Block>> cargoComponent;
 
-    // Chest block back to the wood that made it, for the cart display. Built once from the same map
-    // ChestBlocks registered, so a wood whose mod is absent is simply not in either.
-    private static final Map<Block, WoodType> WOODS_BY_CHEST = new HashMap<>();
+    // Chest block back to the chest id whose models its cart draws. Built once from the same two
+    // maps ChestBlocks registered, so a wood whose mod is absent is simply not in it. The id rather
+    // than the wood, because a wood has two chests and they draw different models.
+    private static final Map<Block, String> CHEST_IDS = new HashMap<>();
 
     // Copper chest block to the variant its cart draws, all eight onto ChestModels.COPPER's four.
     private static final Map<Block, String> COPPER_CHEST_VARIANTS = new HashMap<>();
@@ -128,7 +129,9 @@ public final class ChestCarts {
     /** Registers the component, the entity type and the item. */
     public static void init() {
         cargoComponent = CargoMinecarts.registerCargoComponent(PlankedChests.MOD_ID);
-        ChestBlocks.chests().forEach((wood, block) -> WOODS_BY_CHEST.put(block, wood));
+        ChestBlocks.chests().forEach((wood, block) -> CHEST_IDS.put(block, wood.chestId()));
+        ChestBlocks.trappedChests().forEach(
+                (wood, block) -> CHEST_IDS.put(block, wood.trappedChestId()));
         DRAWN_SHULKER_BOXES.add(Blocks.SHULKER_BOX);
         Blocks.DYED_SHULKER_BOX.forEach(DRAWN_SHULKER_BOXES::add);
         DRAWN_CARGO.addAll(DRAWN_SHULKER_BOXES);
@@ -172,9 +175,12 @@ public final class ChestCarts {
         return chest == null ? null : chest.builtInRegistryHolder();
     }
 
-    /** The wood a cargo's chest is made of, or null for any block this mod did not register. */
-    public static @Nullable WoodType woodOf(Holder<Block> cargo) {
-        return WOODS_BY_CHEST.get(cargo.value());
+    /**
+     * The chest id a cargo's cart draws its base and lid models from — {@code wood.chestId()} or
+     * {@code wood.trappedChestId()} — or null for any block this mod did not register.
+     */
+    public static @Nullable String plankedChestId(Holder<Block> cargo) {
+        return CHEST_IDS.get(cargo.value());
     }
 
     /**
