@@ -87,6 +87,12 @@ them `CustomImportOrder` from files written with `club.rainbowkitty` first and `
 two new files here are written in house order and add zero violations; the total held at exactly
 208. Fixing the rest would mean reformatting nine files that the in-flight work is actively editing.
 
+Verified headlessly on a dev server seeded at port 25605 (rk-tweaks ships no dev-server config, and
+the live container holds 25565–25567). `ArmorStandMixin` mixed into `ArmorStand` at boot with both
+injections resolved and zero errors. `/summon armor_stand` then `data get … ShowArms` gives `1b`
+with the rule on and `0b` with it off, and `{ShowArms:1b}` in the summon still wins with the rule
+off — the "a tag that already has the key wins" semantics the `@ModifyArg` is there to preserve.
+
 ## S2 — kalic0re sheds the features and publishes 0.13.0 — **done**
 
 **Build.** Delete `books/`, `frame/`, `armorstands/`, `common/mixin/`, `Main.java` and
@@ -149,7 +155,7 @@ shaded packages.
 artifacts: 36 shaded classes across `death`/`effect`/`enchant`/`item`. companions: 30 across
 `armor`/`datagen`/`item`.
 
-## S5 — Documentation — **in progress**
+## S5 — Documentation — **done**
 
 **Build.** `CLAUDE.md`'s kalic0re row, sensible-storage row, rk-tweaks section and the never-move
 list under "Sharing code between mods" — that last sentence is the one this change invalidates.
@@ -175,6 +181,30 @@ a double chest and a chest cart still work since the shared jar changed under th
 `ArmorStand` is now targeted by two mods at once — rk-tweaks on `<init>`/`readAdditionalSaveData`,
 this mod on `getClickedSlot`. Disjoint methods, so they should coexist; that is a claim to confirm
 in a log rather than assume, and it is the first thing to check if either behaviour goes missing.
+
+### As built
+
+Everything but the in-world round is observed. Lint: `kalic0re`, `sensible-storage`, `artifacts`
+and `minecart-tweaks` clean; `critters-mod` (2) and `rk-tweaks` (208) carry pre-existing violations
+in files this work never touched. All five mods build. Relocation confirmed in
+`sensiblestorage-0.4.0.jar`: ten `shaded/kalic0re/label/*.class`, no un-relocated
+`club/rainbowkitty/kalic0re` path, and `javap` on `ArmorStandLabels` and `ShelfLabels` shows the
+call sites bound to the relocated names. Datagen reproduced identically across 1669 files.
+
+Both dev servers boot with zero `Mixin apply failed` / `InvalidInjectionException`.
+`ArmorStandMixin` and `ComparatorBlockMixin` are confirmed applied on this mod's server, and
+`ArmorStandMixin` on rk-tweaks'. The two mods' `ArmorStand` mixins were never loaded into the same
+JVM, so their coexistence is still only inferred from the target methods being disjoint.
+
+**`ServerEntityMixin` is unverified.** `ServerEntity` is instantiated only by
+`ChunkMap.TrackedEntity`, which needs a player tracking an entity, so no headless session loads the
+class and no mixin ever applies to it. Its `@ModifyArg` carries `require = 2` and will throw the
+moment a player first joins if either target moved. That check is the in-world round's, not the
+build's.
+
+`mod_version` went to **0.4.0**, not 0.3.0 as planned: `sensiblestorage-0.3.0.jar` is already
+deployed live (the rename build, confirmed to carry no label classes), so reusing it would put two
+different jars behind one filename.
 
 ## Open decisions
 
