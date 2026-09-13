@@ -1,9 +1,11 @@
 package club.rainbowkitty.plankedchests.cart;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import org.jspecify.annotations.Nullable;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
@@ -11,6 +13,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.ContainerUser;
@@ -41,6 +44,13 @@ public class PlankedChestMinecart extends CargoMinecartChest {
     // Menus open on this cart, since MinecartChest keeps no such count of its own and the lid has
     // to know. Deliberately not saved: a cart loads with nothing open, which is true.
     private int openCount;
+
+    // The rail this cart last told the comparators around, and what it told them. Both, because a
+    // second player opening the cart changes the reading without moving it, and rolling away
+    // changes where the reading is without changing it. Null when the cart is saying nothing.
+    private @Nullable BlockPos signalledRail;
+
+    private int signalledValue;
 
     /**
      * @param type this mod's cart type, which every client is told is a plain vanilla minecart
@@ -82,6 +92,22 @@ public class PlankedChestMinecart extends CargoMinecartChest {
         super.tick();
         if (level() instanceof ServerLevel level) {
             CargoWeathering.age(this, level);
+            refreshSignal(level);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>After {@code super}, so that the comparators woken here re-read a level this cart has
+     * already left and find nothing — the reading has to fall to zero on its own, since a removed
+     * entity cannot be asked for one.
+     */
+    @Override
+    public void remove(RemovalReason reason) {
+        super.remove(reason);
+        if (level() instanceof ServerLevel level) {
+            refreshSignal(level);
         }
     }
 
@@ -155,6 +181,21 @@ public class PlankedChestMinecart extends CargoMinecartChest {
         return openCount > 0;
     }
 
+    /** How many players have this cart open — the reading a comparator takes off its rail. */
+    public int openCount() {
+        return openCount;
+    }
+
+    /**
+     * Whether this cart is a trapped one somebody has open, and so has a reading to give.
+     *
+     * <p>Asked of the cargo rather than of the entity type: there is one cart type here and the
+     * chest it carries is what decides this, exactly as a placed chest's own block does.
+     */
+    public boolean isTrapSignalling() {
+        return openCount > 0 && isAlive() && ChestCarts.isTrapped(cargoOrDefault());
+    }
+
     @Override
     public void startOpen(ContainerUser user) {
         super.startOpen(user);
@@ -171,6 +212,44 @@ public class PlankedChestMinecart extends CargoMinecartChest {
             playLidSound(false);
             refreshCargoState();
         }
+    }
+
+    /**
+     * Wakes the comparators around this cart's rail when what they would read has changed.
+     *
+     * <p>Every tick rather than from {@link #startOpen} and {@link #stopOpen}, because those two
+     * are only half of what moves the reading: a cart rolling along an open menu carries it from
+     * rail to rail, and nothing tells a comparator that the cart it was reading has left. One
+     * comparison a tick covers opening, closing, a second player, movement and removal alike, and
+     * costs a field read on every cart that is doing none of them.
+     *
+     * <p>The old rail is woken before the new one is recorded, so a cart that rolls off a rail
+     * while open clears the reading it left behind there.
+     */
+    private void refreshSignal(ServerLevel level) {
+        int value = isTrapSignalling() ? Mth.clamp(openCount, 0, 15) : 0;
+        BlockPos rail = value > 0 ? getCurrentBlockPosOrRailBelow() : null;
+        if (value == signalledValue && Objects.equals(rail, signalledRail)) {
+            return;
+        }
+
+        BlockPos previous = signalledRail;
+        signalledRail = rail;
+        signalledValue = value;
+
+        if (previous != null && !previous.equals(rail)) {
+            wakeComparators(level, previous);
+        }
+        if (rail != null) {
+            wakeComparators(level, rail);
+        }
+    }
+
+    // Vanilla's own "a container's contents changed" notification, which is what a comparator
+    // beside that block listens for; the rail is the block here because the rail is what a
+    // comparator can be put against.
+    private static void wakeComparators(ServerLevel level, BlockPos pos) {
+        level.updateNeighbourForOutputSignal(pos, level.getBlockState(pos).getBlock());
     }
 
     /**

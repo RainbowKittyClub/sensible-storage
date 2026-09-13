@@ -23,6 +23,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.TrappedChestBlock;
 import net.minecraft.world.level.block.WeatheringCopperCollection;
 
 import club.rainbowkitty.plankedchests.PlankedChests;
@@ -190,6 +191,19 @@ public final class ChestCarts {
      */
     public static @Nullable String plankedChestId(Holder<Block> cargo) {
         return CHEST_IDS.get(cargo.value());
+    }
+
+    /**
+     * Whether a cargo is a trapped chest, and so whether the cart carrying it answers a comparator.
+     *
+     * <p>Asked of the block class rather than of a list, so vanilla's trapped chest, this mod's 27
+     * and any other mod's {@link TrappedChestBlock} are all in without being enumerated. A datapack
+     * that puts a fourth kind in {@link #CARGO_TAG} gets the same answer the block itself would
+     * give when placed.
+     */
+    public static boolean isTrapped(Holder<Block> cargo) {
+        Block block = cargo.value();
+        return block instanceof TrappedChestBlock || block instanceof PlankedTrappedChestBlock;
     }
 
     /**

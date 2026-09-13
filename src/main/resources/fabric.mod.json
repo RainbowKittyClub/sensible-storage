@@ -27,6 +27,10 @@
     ]
   },
 
+  "mixins": [
+    "plankedchests.mixins.json"
+  ],
+
   "depends": {
     "fabricloader": ">=${project.fabric_loader_version}",
     "fabric-api": "*",
