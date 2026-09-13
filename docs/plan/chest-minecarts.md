@@ -29,9 +29,10 @@ barrel / shulker box / copper chest carts) came out of S4 and was wanted rather 
 went last. S9–S13 each take one cargo further than S8 left it and run in that order: S9 (shulker
 boxes draw their own box) and S10 (one rule for every cart icon) are independent of each other, S11
 (barrel carts open) needs S10 for its icon, S12 (copper chest carts draw their own chest) needs
-nothing but S8, and S13 (copper cargo weathers) needs S12. **Every stage is done.** Ship order is
-`rkcore` first (`publishToMavenLocal`), then this mod, for S1, S3, S4, S6 and S8 alike; S9–S13 are
-this mod alone.
+nothing but S8, and S13 (copper cargo weathers) needs S12. S14 (trapped chest carts, and a
+comparator that reads them) needs S10 for its icon rule and nothing else, and reverses S2's decision
+not to build them at all. **Every stage is done.** Ship order is `rkcore` first
+(`publishToMavenLocal`), then this mod, for S1, S3, S4, S6 and S8 alike; S9–S14 are this mod alone.
 
 S9–S12 were written up after the work rather than before it, from the code and from the session that
 built them — so their **Build** text is what was decided at the time and not a plan that preceded
@@ -246,7 +247,8 @@ with our own type costs one registry entry and keeps every line of vanilla's pla
 
 Trapped chests get no cart — vanilla has no trapped chest minecart and a trapped chest has no
 redstone meaning inside one. With the wood on the stack that is now a question of 27 recipes versus
-54, not of item count.
+54, not of item count. **S14 reverses this**: the first half is still true and the second half was a
+decision rather than a fact, so S14 gives a trapped cart the redstone meaning it was said to lack.
 
 **Done when.** In world: `/give plankedchests:chest_minecart` with a birch component produces one
 item named **Birch Chest Minecart**; placing it on rails gives a rolling cart that looks like a
@@ -1421,6 +1423,94 @@ weather ages — which today is the eight copper chests and tomorrow is whatever
 an inventory, and a cargo that aged in a chest would be the one place this stopped mirroring the
 block it is named after.
 
+## S14 — Trapped chest carts, and a comparator that reads them — **done**
+
+Reverses S2's "trapped chests get no cart". S2 gave two reasons and only one of them was a fact:
+vanilla has no trapped chest minecart, true then and now — but "a trapped chest has no redstone
+meaning inside one" was a decision, and this stage makes a different one. Twenty-seven trapped chest
+carts, one per wood, a twenty-eighth carrying vanilla's trapped chest, and a comparator beside the
+rail that reads how many players have the cart open. That is the number the placed block gives out,
+so the cart keeps the block's meaning rather than inventing one for it.
+
+**Build.** Four pieces, and only the last is new ground.
+
+- **The carts are a re-keying, not new code.** S8's guard already accepts any cargo in
+  `plankedchests:cart_cargo`, and vanilla's trapped chest was already in it and already worked. What
+  had to go is `ChestCarts`' assumption that a cargo maps to a *wood*: `WOODS_BY_CHEST` becomes
+  `CHEST_IDS`, a `Block` → chest-id map filled from `ChestBlocks.chests()` and
+  `ChestBlocks.trappedChests()` alike, because one wood now owns two chests. Everything downstream
+  carries a chest id instead of deriving one from a wood, which is what
+  `ChestModels.cargoCartModel(chestId)` already took — so `cartModel(woodId)` goes, and with it a
+  javadoc explaining that there was no trapped variant to tell apart.
+- **The 3D cargo and most of the datagen needed nothing.** `ChestElementModelProvider:55` has always
+  called `addVariant(files, wood.trappedChestId(), ...)` and `ChestTextureProvider` has always
+  composited the trapped sheets, because the *placed* trapped chests need both. Adding the carts is
+  one more `sink.write` per wood for the icon, one `addOptional` per wood for the cargo tag, and a
+  `cartRecipe` per wood plus one for vanilla's trapped chest.
+- **The icon is hand-authored, and had to be.** The trapped-versus-plain difference in the
+  placed-chest art is a 32-pixel latch recolour, not a hue shift over the sheet, so no filter turns
+  the plain cart sprite into a trapped one — it is drawn, not derived.
+  `plankedchests_overlay/trapped_chest_minecart.png` is the plain cart overlay with four latch
+  pixels taken from grey to red, carrying the same 97-pixel `PngAssets.CUTOUT` silhouette so it
+  drops into `CartIcons.composite` unchanged.
+- **The signal, which is this mod's first mixin.** A rail cannot be the signal source. Redstone
+  power is answered from a block state alone — `isSignalSource(BlockState)` and
+  `hasAnalogOutputSignal(BlockState)` are handed no level and no position — so "is there an open
+  trapped cart here" is not a question a rail can be asked at all.
+  `ComparatorBlock#getInputSignal(Level, BlockPos, BlockState)` gets both, which makes it the only
+  hook, and `ComparatorBlockMixin` injects at its `RETURN`. `TrappedCartSignal` holds the logic so
+  the mixin stays a thin inject point, and reuses `DetectorRailBlock#getSearchBB`'s 0.2 inset
+  verbatim so that "which rail is this cart on" has one answer on this server — the one players
+  already know from detector rails, including a cart wide enough to read on two of them.
+  `PlankedChestMinecart#refreshSignal` wakes comparators through
+  `Level#updateNeighbourForOutputSignal`, per tick rather than from `startOpen`/`stopOpen`, because
+  a cart rolling with its menu open changes which rail carries the reading without either firing.
+
+**Done when.** A birch trapped chest cargo gives **Minecart with Birch Trapped Chest**, craftable
+from `<birch trapped chest> + <minecart>`, drawing the trapped chest on the cart and a red-latched
+icon in the inventory. A comparator facing the rail a trapped cart stands on reads the number of
+players who have it open, and falls back to 0 when the last one closes it or the cart rolls off. A
+comparator facing a *detector* rail still reads container fullness exactly as it does today,
+whatever cart is parked there.
+
+### As built
+
+Built as described. 27 icons, 27 item definitions and 27 models generated, 28 recipes — the woods
+plus vanilla's trapped chest — with their advancements, and 28 trapped entries in
+`plankedchests:cart_cargo`. `./gradlew build` clean, Checkstyle clean over both source sets, and the
+dev server boots with zero mixin failures, which is load-bearing rather than decorative here:
+`plankedchests.mixins.json` is `required` with `defaultRequire: 1`, so a descriptor that failed to
+bind would have thrown at `ComparatorBlock` load instead of passing quietly.
+
+**The non-destructive injection is the design, and it is what was tested.** Injecting at `RETURN`
+and writing a value only when `signal > 0` means the mixin can raise a reading vanilla left at zero
+and can never lower one. Without that guard a closed trapped cart would overwrite a detector rail's
+container fullness with a 0 — silently breaking every rail-and-comparator contraption on the server
+the moment somebody parked one. Measured over rcon against the dev server, reading the comparator's
+own `OutputSignal` off its block entity:
+
+| On the rail | `OutputSignal` |
+| --- | --- |
+| nothing | 0 |
+| **vanilla** chest cart, 3 stacks | **2** |
+| trapped cart, 3 stacks, closed | **2** |
+| trapped cart, empty, closed | 0 |
+
+The vanilla row is the point of the table: it is the control that says 2 is what this rig reads when
+the mixin is not involved, so row three matching it is the regression result rather than a number
+that merely looks plausible.
+
+**The half that needs a player.** `openCount` only rises when someone opens the menu and rcon cannot
+send a right-click — the same limit S13 hit with waxing and scraping. So the positive leg is a
+watched in-world check, not a scripted one.
+
+**Two rig mistakes worth not repeating**, both of which produced a clean, believable set of zeroes
+rather than an error: a comparator placed with no support beneath it is removed by its own
+`updateShape` immediately after `setblock` reports success, and a diode's `FACING` points at its
+*input*, so a comparator built facing the way its arrow appears to point reads the lamp and drives
+the rail. Generalised into `docs/TESTING.md` under "In-world checks", along with the probe habits
+that let both hide.
+
 ## Open decisions
 
 - **Client-mod parity — moved out, and no longer an unknown.** A client running this jar renders
@@ -1435,13 +1525,14 @@ block it is named after.
   such a client would gain besides fidelity: a cargo it renders itself is part of the cart being
   drawn, so it sheds the half-tick of rotation residue that no value of `DEFAULT_RENDER_LAG` can
   close — the barrel already demonstrates what that looks like, by riding vanilla's cargo slot.
-- **Trapped chest minecarts.** Not built, per S2. After S4 this is 27 more recipe files and no code
-  at all — a trapped chest is just another `Holder<Block>` — but vanilla has no trapped chest
-  minecart and a trapped chest has no redstone meaning inside one. Revisit only if a use appears.
-  S8 raised the price slightly and made it concrete: this mod's trapped chests are kept out of
-  `plankedchests:cart_cargo` because nothing would draw them, so building this now also means a
-  `createCargoDisplay` branch mapping them to their own model, not only recipes. Vanilla's trapped
-  chest already works as a cargo and always did.
+- **Trapped chest minecarts — built, in S14.** The estimate recorded here was wrong in both
+  directions and worth keeping for that. It was too low on art: "27 more recipe files and no code at
+  all" missed that a trapped cart needs an *icon* of its own, and the trapped-versus-plain
+  difference is a localised latch recolour rather than a tint, so nothing could be derived. It was
+  too high on the display: the `createCargoDisplay` branch S8 predicted never had to be written,
+  because keying cargo by chest id instead of by wood made the trapped chests resolve through the
+  same path as every other cargo. The redstone meaning they were said to lack is the one thing here
+  that was genuinely a new decision, and S14 makes it.
 - **The cart item sends its real registry id on `HANDSHAKE.supportsAll`** (`ChestMinecartItem:39`),
   which is one of three sites now known to be gated on the wrong thing — key parity rather than
   numeric-id parity. It kicks a matching mod client on the launches where Fabric happens to order
@@ -1609,6 +1700,24 @@ drop per-combination items needs that supplier to read a field that does not exi
   `getPrevious(BlockState)` overloads), and `HoneycombItem.WAXABLES` / `WAX_OFF_BY_BLOCK`. Waxed
   blocks appear in neither weathering map, which is what makes `AxeItem#evaluateNewBlockState`'s
   order — scrape, then unwax — take one step per click rather than two.
+- **A redstone diode's `FACING` points at its input, not its output.** `ComparatorBlock#
+  getInputSignal` reads the block at `pos.relative(state.getValue(FACING))` (`:99-100`), and
+  `DiodeBlock` does the same, so the output is at `FACING.getOpposite()`. Placement is what makes
+  this read the other way round in game: a diode is placed with `getHorizontalDirection()
+  .getOpposite()`, so the arrow a player sees points *away* along the output while the property
+  points back at the source.
+- Redstone power is answered from a block state and nothing else: `isSignalSource(BlockState)` and
+  `hasAnalogOutputSignal(BlockState)` take no level and no position, so a block cannot be a
+  *conditional* signal source based on what is standing on it. `getAnalogOutputSignal(BlockState,
+  Level, BlockPos, Direction)` does get both, but it is only consulted once `hasAnalogOutputSignal`
+  has already said yes. `DetectorRailBlock` is vanilla's own worked example of the shape: it answers
+  `true` unconditionally (`:136`) and does the entity lookup in `getAnalogOutputSignal`
+  (`:140-155`), gated on `POWERED` — which its `checkPressed` maintains on a 20-tick reschedule
+  while a cart sits on it, calling `level.updateNeighbourForOutputSignal(pos, this)` on the way
+  past.
+- `EntitySelector.CONTAINER_ENTITY_SELECTOR` is `entity instanceof Container && entity.isAlive()`
+  (`EntitySelector.java:13`) — the filter a detector rail uses to find a cart whose fullness it
+  should report, which any `AbstractMinecartContainer` subclass passes for free.
 - Level events 3003/3004/3005 are `LevelEvent.PARTICLES_AND_SOUND_WAX_ON`, `PARTICLES_WAX_OFF`,
   `PARTICLES_SCRAPE`. Only the first plays a sound of its own client-side
   (`LevelEventHandler.java:426-434`); the other two are particles, which is why vanilla's axe path
