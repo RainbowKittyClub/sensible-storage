@@ -6,7 +6,7 @@ jar adapts to whatever a given server has installed. Wood-id lists, texture path
 Modrinth maven coordinates and the Fabric resource-conditions API surface were verified this
 session directly against the four target jars, `fabric-api-0.159.0+26.2`'s nested jars, and
 Modrinth's maven — see Reference. `ChestBlocks.java`, `WoodType.java` and the datagen
-provider line numbers are as of the current `planked-chests` tree; recheck before editing if
+provider line numbers are as of the current `sensible-storage` tree; recheck before editing if
 this doc is stale.
 
 S1 is foundational (no other stage compiles meaningfully without it) and independent of S2.
@@ -22,7 +22,7 @@ two-pass dev-server check confirms per-server adaptation.
 side of every stage from S2 onward — it must complete without exceptions before any stage
 touching `ChestRecipeProvider`/`ChestLootProvider`/`ChestBlockStateProvider` can be called
 done. In-world behavior (per-server gating, craftability, rendering) is checked via
-`scripts/devserver.sh rkc/mods/planked-chests <cmd>` against two `run/mods` configurations —
+`scripts/devserver.sh rkc/mods/sensible-storage <cmd>` against two `run/mods` configurations —
 see S6. A stage is not finished until its "Done when" is observed; a failure at
 `generateAssets` time implicates whichever stage last touched the datagen providers, not the
 ones before it.
@@ -97,14 +97,14 @@ divergence Polymer hides from Fabric's registry sync, so it surfaced as
 `DecoderException: Failed to decode packet` during Polymer's item sync rather than as a readable
 error. The guard is still here and still correct; what was missing is that its answer is now
 advertised over the Polymer handshake, and real content is only sent to a connection whose client
-registered every wood this side did. See `rkcore/docs/plan/handshake-capability-keys.md`, whose S4
+registered every wood this side did. See `kalic0re/docs/plan/handshake-capability-keys.md`, whose S4
 also records why per-wood granularity does not work and connection-wide does.
 
 ## S2 — Datagen dependency wiring — **done, differently than planned**
 
 **Build.** Uncomment the `mavenLocal()` line in `rkc/forks/WoodsAndMires/build.gradle`'s
 `publishing.repositories` block and run `./gradlew publishToMavenLocal` there. In
-`planked-chests/build.gradle`, add Modrinth's maven repo
+`sensible-storage/build.gradle`, add Modrinth's maven repo
 (`https://api.modrinth.com/maven`) alongside the existing `mavenLocal()`/Nucleoid entries,
 and add dependencies on WoodsAndMires' local coordinate plus
 `maven.modrinth:terrestria:8.1.0-alpha.1`, `maven.modrinth:enderscape:3.0.2`,
@@ -115,7 +115,7 @@ not appear in `fabric.mod.json`'s `depends`, must not be Loom-`include()`d, and 
 land in `shadowJar`'s output — keep them out of the `shade` configuration.
 
 **Done when.** `./gradlew dependencies` resolves all four without error and none appear
-under the `shade`/`rkcore` configurations.
+under the `shade`/`kalic0re` configurations.
 
 Flagged unknown: whether Loom 1.17.19's dev-run mod discovery for the already-existing
 `datagen` source set (`fabricApi.configureDataGeneration { createSourceSet = true }`)
@@ -150,7 +150,7 @@ mods — S1's `DATAGEN` override (above) is what makes `generateAssets` still pr
 **Build.** `ChestRecipeProvider.java:42-44` — replace
 `Identifier.withDefaultNamespace(wood.id() + "_planks")` with
 `Identifier.fromNamespaceAndPath(wood.planksNamespace(), wood.id() + "_planks")` (the same
-factory already used at `PlankedChests.java:23`, no new API surface). `ChestBlockStateProvider.java:41`
+factory already used at `SensibleStorage.java:23`, no new API surface). `ChestBlockStateProvider.java:41`
 (via `particleModel`, lines 64-66) — drop the hardcoded `"minecraft:block/"` prefix and
 build `wood.planksNamespace() + ":block/" + wood.id() + "_planks"` at the call site instead;
 this one needs no registry lookup, it's a plain string. In both `ChestRecipeProvider` and
@@ -161,7 +161,7 @@ Findings); vanilla woods keep using the plain output.
 **Done when.** `./gradlew generateAssets` completes with all four S2 dependencies present
 and produces recipe/loot JSON for all 27 woods, each modded entry's JSON carrying a
 `fabric:load_conditions` block naming its mod id (inspect a generated
-`data/plankedchests/recipe/pine_chest.json` directly to confirm).
+`data/sensiblestorage/recipe/pine_chest.json` directly to confirm).
 
 Flagged unknown: confirm `FabricBlockLootSubProvider.withConditions` (the interface default
 method mixed onto vanilla `BlockLootSubProvider`) compiles cleanly as an inherited call on
@@ -178,7 +178,7 @@ and `RecipeProvider.has` both have a `TagKey<Item>` overload in 26.2 — verifie
 than resolving an `Item` from the registry, backed by 15 hand-written, static (not datagen'd —
 `fabric-data-generation-api-v1` 25.5.1 has no plain `FabricTagProvider`, only the differently-named
 `FabricTagsProvider`, and 15 one-entry tags don't earn a whole provider) resource files at
-`data/plankedchests/tags/item/<wood>_planks.json`, each a single `{"id": "<mod>:<wood>_planks",
+`data/sensiblestorage/tags/item/<wood>_planks.json`, each a single `{"id": "<mod>:<wood>_planks",
 "required": false}` entry — the same pattern `minecart-tweaks` already uses for its item tags. The
 recipe's *output* (the chest/trapped block itself) still needs `withConditions` exactly as planned;
 only the ingredient side changed.
@@ -186,12 +186,12 @@ only the ingredient side changed.
 ## S4 — Texture vendoring — **done**
 
 **Build.** Extract the 15 already-confirmed-16×16 plank PNGs (paths in Reference) from the
-four jars into `src/datagen/resources/plankedchests_planks/<wood.id()>_planks.png`,
+four jars into `src/datagen/resources/sensiblestorage_planks/<wood.id()>_planks.png`,
 mirroring the 12 vanilla files already there — `ChestTextureProvider.java:36,68` reads
 `PLANK_DIR + wood.id() + "_planks.png"` off the classpath by filename only, no namespace
 involved.
 
-**Done when.** `ls src/datagen/resources/plankedchests_planks/` lists 27 files.
+**Done when.** `ls src/datagen/resources/sensiblestorage_planks/` lists 27 files.
 
 ### As built
 
@@ -228,9 +228,9 @@ file.
 ### As built
 
 Both passes confirmed clean (0 mixin errors, 0 recipe/loot parse errors) via
-`scripts/devserver.sh rkc/mods/planked-chests mixins` and a log grep. Pass A verified via
+`scripts/devserver.sh rkc/mods/sensible-storage mixins` and a log grep. Pass A verified via
 `/setblock` (no player connected to the dev server): the 12 vanilla chest/trapped-chest blocks
-place normally; every modded one (`plankedchests:pine_chest`, `celestial_trapped_chest`, etc.)
+place normally; every modded one (`sensiblestorage:pine_chest`, `celestial_trapped_chest`, etc.)
 correctly comes back `Unknown block type`. Pass B (all four target mods plus Enderscape's own
 hard dependencies — `lithostitched`, `trimpatcher`, `yet_another_config_lib_v3` — copied from the
 live server into `run/mods`, gitignored/throwaway) confirmed all 27 + 27 place, and that a vanilla

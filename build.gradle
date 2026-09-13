@@ -36,25 +36,25 @@ repositories {
 }
 
 configurations {
-	rkcore
+	kalic0re
 	shade
 	implementation.extendsFrom shade
 }
 
 // shadowJar's own include/exclude patterns match the pre-relocation path, so they cannot express
-// "keep only these helpers". Filtering rkcore down to the two shareable packages up front is also
-// stricter: rkcore's own feature/machinery packages can never leak in, and importing one of them
+// "keep only these helpers". Filtering kalic0re down to the two shareable packages up front is also
+// stricter: kalic0re's own feature/machinery packages can never leak in, and importing one of them
 // fails to compile rather than silently bundling it.
-tasks.register('rkcoreSharedJar', Jar) {
-	archiveBaseName = 'rkcore-shared'
+tasks.register('kalic0reSharedJar', Jar) {
+	archiveBaseName = 'kalic0re-shared'
 	destinationDirectory = layout.buildDirectory.dir('shade')
-	from({ configurations.rkcore.collect { zipTree(it) } }) {
-		include 'club/rainbowkitty/rkcore/common/item/**'
-		include 'club/rainbowkitty/rkcore/common/datagen/**'
-		include 'club/rainbowkitty/rkcore/common/net/**'
-		include 'club/rainbowkitty/rkcore/common/client/**'
-		include 'club/rainbowkitty/rkcore/common/vehicle/**'
-		include 'club/rainbowkitty/rkcore/common/display/**'
+	from({ configurations.kalic0re.collect { zipTree(it) } }) {
+		include 'club/rainbowkitty/kalic0re/common/item/**'
+		include 'club/rainbowkitty/kalic0re/common/datagen/**'
+		include 'club/rainbowkitty/kalic0re/common/net/**'
+		include 'club/rainbowkitty/kalic0re/common/client/**'
+		include 'club/rainbowkitty/kalic0re/common/vehicle/**'
+		include 'club/rainbowkitty/kalic0re/common/display/**'
 	}
 }
 
@@ -64,11 +64,11 @@ dependencies {
 	implementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	implementation "eu.pb4:polymer-bundled:${project.polymer_version}"
-	// Non-transitive: rkcore's POM lists all of fabric-api and Polymer, which this mod declares
+	// Non-transitive: kalic0re's POM lists all of fabric-api and Polymer, which this mod declares
 	// itself. Its common/item + common/datagen helpers are shaded in (relocated) rather than
 	// depended on, so the mod still installs standalone. See companions/build.gradle.
-	rkcore("club.rainbowkitty.rkcore:rkcore:${project.rkcore_version}") { transitive = false }
-	shade files(tasks.named('rkcoreSharedJar'))
+	kalic0re("club.rainbowkitty.kalic0re:kalic0re:${project.kalic0re_version}") { transitive = false }
+	shade files(tasks.named('kalic0reSharedJar'))
 }
 
 // runServer/stopServer lifecycle, sane-defaults seeding of run/, and the optional Quilt run — all
@@ -85,7 +85,7 @@ jar {
 shadowJar {
 	archiveClassifier.set('')
 	configurations = [project.configurations.shade]
-	relocate 'club.rainbowkitty.rkcore.common', 'club.rainbowkitty.plankedchests.shaded.rkcore'
+	relocate 'club.rainbowkitty.kalic0re.common', 'club.rainbowkitty.sensiblestorage.shaded.kalic0re'
 }
 
 tasks.named('assemble') {
@@ -162,12 +162,12 @@ tasks.named('shadowJar') {
 	doFirst {
 		def generated = file('src/main/generated')
 		def missing = [
-				'assets/plankedchests/textures/block/chest/oak.png',
-				'assets/plankedchests/blockstates/oak_chest.json',
-				'assets/plankedchests/items/oak_chest_base.json',
-				'assets/plankedchests/items/oak_chest_lid.json',
-				'data/plankedchests/recipe/oak_chest.json',
-				'data/plankedchests/loot_table/blocks/oak_chest.json',
+				'assets/sensiblestorage/textures/block/chest/oak.png',
+				'assets/sensiblestorage/blockstates/oak_chest.json',
+				'assets/sensiblestorage/items/oak_chest_base.json',
+				'assets/sensiblestorage/items/oak_chest_lid.json',
+				'data/sensiblestorage/recipe/oak_chest.json',
+				'data/sensiblestorage/loot_table/blocks/oak_chest.json',
 		].collect { new File(generated, it) }.findAll { !it.exists() }
 		if (!missing.isEmpty()) {
 			throw new GradleException(

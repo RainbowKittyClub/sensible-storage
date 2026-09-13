@@ -20,15 +20,15 @@
       "${project.entrypoint}"
     ],
     "client": [
-      "club.rainbowkitty.plankedchests.client.PlankedChestsClient"
+      "club.rainbowkitty.sensiblestorage.client.SensibleStorageClient"
     ],
     "fabric-datagen": [
-      "club.rainbowkitty.plankedchests.datagen.PlankedChestsDataGenerator"
+      "club.rainbowkitty.sensiblestorage.datagen.SensibleStorageDataGenerator"
     ]
   },
 
   "mixins": [
-    "plankedchests.mixins.json"
+    "sensiblestorage.mixins.json"
   ],
 
   "depends": {

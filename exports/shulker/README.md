@@ -9,7 +9,7 @@ nothing in the mod, and the next `./gradlew generateAssets` overwrites the
 generated originals regardless. See "Getting changes back in" at the bottom.
 
 Nothing here is tracked by git, for the same reason
-`src/datagen/resources/plankedchests_vanilla/` is not: the sheets are vanilla's
+`src/datagen/resources/sensiblestorage_vanilla/` is not: the sheets are vanilla's
 client art, and the mod references them at runtime rather than redistributing
 them.
 
@@ -17,7 +17,7 @@ them.
 
 ```
 assets/minecraft/textures/entity/shulker/*.png   vanilla's 17 sheets, 64x64
-assets/plankedchests/models/block/
+assets/sensiblestorage/models/block/
     shulker_box.json     base + lid together, closed - start here
     shulker_base.json    just the base, as the mod ships it
     shulker_lid.json     just the lid, as the mod ships it
@@ -29,7 +29,7 @@ preview.py               re-renders the previews with Blender
 
 ## Blockbench
 
-Open `assets/plankedchests/models/block/shulker_box.json`. Two things are set
+Open `assets/sensiblestorage/models/block/shulker_box.json`. Two things are set
 up so it loads clean rather than as an untextured grey box:
 
 - **The texture is bound to a real path.** The generated models bind only
@@ -148,8 +148,8 @@ After datagen changes the models:
 python3 export_model.py --out . --name shulker_box \
     --texture assets/minecraft/textures/entity/shulker/shulker.png \
     --texture-ref minecraft:entity/shulker/shulker --texture-key shulker \
-    --part ../../src/main/generated/assets/plankedchests/models/block/shulker_base.json \
-    --part ../../src/main/generated/assets/plankedchests/models/block/shulker_lid.json \
+    --part ../../src/main/generated/assets/sensiblestorage/models/block/shulker_base.json \
+    --part ../../src/main/generated/assets/sensiblestorage/models/block/shulker_lid.json \
     --cube-names base,base_inside,lid,lid_inside
 ```
 

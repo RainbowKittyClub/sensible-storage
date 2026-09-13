@@ -1,7 +1,7 @@
 # Chest minecarts
 
 A chest minecart per `WoodType`, carrying that wood's chest instead of the vanilla oak one, built on
-a general "a minecart carrying an arbitrary block" mechanism that lives in `rkcore` and is relocated
+a general "a minecart carrying an arbitrary block" mechanism that lives in `kalic0re` and is relocated
 into this mod like the other shared packages. The 27 are craftable, give-able, pick-block-able and
 browsable in this mod's own creative tab, alongside a 28th carrying vanilla's chest. Vanilla's own
 chest minecart is no longer what `chest + minecart` crafts, and is renamed "Minecart with Chest
@@ -16,9 +16,9 @@ passenger, and how much the cargo's yaw lags the cart through a curve. Both were
 **both are now settled in world** — see S3's as-built, which also records why neither could have been
 read off correctly beforehand.
 
-Stage order: S1 (rkcore machinery) → S2 (entity, item, recipe — full server-side gameplay, the cart
+Stage order: S1 (kalic0re machinery) → S2 (entity, item, recipe — full server-side gameplay, the cart
 shows a plain vanilla chest) → S3 (the cargo display element; **S3 is what makes the feature
-complete**) → S4 (hoist the generic half of S2 into `rkcore`) → S5 (item icons) → S6 (lang, tags,
+complete**) → S4 (hoist the generic half of S2 into `kalic0re`) → S5 (item icons) → S6 (lang, tags,
 lint, creative tab). S4 sits after S3 deliberately: S3 is the first thing that exercises the shared
 display machinery for real, and a shared interface published before its first consumer has run is how
 S1 already got one member wrong. S5 depends on S4 for the per-stack model hook it overrides; it was
@@ -31,7 +31,7 @@ boxes draw their own box) and S10 (one rule for every cart icon) are independent
 (barrel carts open) needs S10 for its icon, S12 (copper chest carts draw their own chest) needs
 nothing but S8, and S13 (copper cargo weathers) needs S12. S14 (trapped chest carts, and a
 comparator that reads them) needs S10 for its icon rule and nothing else, and reverses S2's decision
-not to build them at all. **Every stage is done.** Ship order is `rkcore` first
+not to build them at all. **Every stage is done.** Ship order is `kalic0re` first
 (`publishToMavenLocal`), then this mod, for S1, S3, S4, S6 and S8 alike; S9–S14 are this mod alone.
 
 S9–S12 were written up after the work rather than before it, from the code and from the session that
@@ -52,7 +52,7 @@ synched `Optional<BlockState>` (`AbstractMinecart.java:52`, `DATA_ID_CUSTOM_DISP
 `AbstractMinecartRenderer.java:119` resolves whatever `getDisplayBlockState()` returns and skips it
 when the resolved model is empty (line 60). So the server can blank the cargo to air and draw its
 own — and, for a client that *can* render the real block state, send that instead. That per-connection
-choice is the whole of what `rkcore` owns here, and it is why the interface is "a block in a cart"
+choice is the whole of what `kalic0re` owns here, and it is why the interface is "a block in a cart"
 rather than "a chest in a cart".
 
 **Polymer already mounts holder elements as passengers, per connection.**
@@ -100,7 +100,7 @@ ItemStack(dropItem)`, so the entity has to override `destroy` and rebuild the st
 lid item models this mod already generates (`ChestModels.baseModel` / `lidModel`). What has no
 existing source is the *item icon*: vanilla's `textures/item/chest_minecart.png` has the chest baked
 into the sprite, so per-wood icons need a hand-authored 16×16 overlay in the same style as the
-`plankedchests_overlay/` art already in the datagen source set. That is the one external dependency
+`sensiblestorage_overlay/` art already in the datagen source set. That is the one external dependency
 in this plan.
 
 **That last sentence was wrong, and S5 shows why.** No art was authored. Vanilla ships the same cart
@@ -110,26 +110,26 @@ external dependency.
 
 ## How these stages get tested
 
-Dev server via `scripts/devserver.sh rkc/mods/planked-chests <cmd>` (start / restart / rcon / logs),
+Dev server via `scripts/devserver.sh rkc/mods/sensible-storage <cmd>` (start / restart / rcon / logs),
 watched in world by the user on their client — brief them per leg before each test round. No test
 suite. A stage is done only when its "Done when" is observed in world or in a file listing; a
 compile is not an exit criterion, so a failure at stage N implicates stage N, not S1–S(N-1).
 
 `minecarttweaks-0.1.0.jar` was copied from that mod's `build/libs/` into
-`rkc/mods/planked-chests/run/mods/` so linking and trains can be observed here rather than waiting
+`rkc/mods/sensible-storage/run/mods/` so linking and trains can be observed here rather than waiting
 for the live server. It is a *copy*, so it goes stale: rebuild it there and copy it again after any
 change to that mod. Its game rules answer over rcon (`gamerule minecarttweaks:trains_enabled` →
 `true`, `max_train_length` → 128) and the world already has the `minecart_improvements` feature pack
 on, which is what its mechanics assume.
 
 `./gradlew build` needs the sandbox bypassed (`~/.gradle` writes). S1 and S4 both change shared
-`rkcore` code, so `cd rkc/mods/rkcore && ./gradlew publishToMavenLocal` has to run before this mod
+`kalic0re` code, so `cd rkc/mods/kalic0re && ./gradlew publishToMavenLocal` has to run before this mod
 sees any edit to it — and dev mode runs against the un-relocated classes off the compile classpath,
 so the relocation itself is only exercised by installing a real `shadowJar` jar.
 
-## S1 — rkcore cargo-minecart machinery — **done**
+## S1 — kalic0re cargo-minecart machinery — **done**
 
-**Build.** A new shared package `club.rainbowkitty.rkcore.common.vehicle`, alongside the existing
+**Build.** A new shared package `club.rainbowkitty.kalic0re.common.vehicle`, alongside the existing
 `common/item`, `common/datagen`, `common/net` and `common/client`. It must register nothing on its
 own — every registration takes the consumer's namespace as a parameter, the way `ItemRegistration`
 does, because consumers shade and relocate it rather than depending on the mod.
@@ -143,7 +143,7 @@ does, because consumers shade and relocate it rather than depending on the mod.
   can render the real state. The consumer subclasses it and supplies the elements and their models;
   the base knows nothing about chests.
 - `CartCargoSupport` — the glue a consumer's entity holds, since `MinecartChest` is already the
-  superclass and a `rkcore` base class cannot be. It blanks `setCustomDisplayBlockState` to air,
+  superclass and a `kalic0re` base class cannot be. It blanks `setCustomDisplayBlockState` to air,
   creates and destroys the holder with the entity, answers `getPolymerEntityType`, and swaps the
   real block state back into the tracked data for capable clients via
   `PolymerEntity.modifyRawTrackedData`.
@@ -157,17 +157,17 @@ The exact split between `CartCargo` and `CartCargoSupport` is the part most like
 paper; settle it by building S2 against it and moving the seam if the consumer ends up passing the
 same three things twice.
 
-**Done when.** `cd rkc/mods/rkcore && ./gradlew build publishToMavenLocal` succeeds and
-`~/.m2/repository/club/rainbowkitty/rkcore/rkcore/0.1.0/rkcore-0.1.0.jar` contains
-`club/rainbowkitty/rkcore/common/vehicle/`. `rkcore`'s own dev server still boots — nothing in the
+**Done when.** `cd rkc/mods/kalic0re && ./gradlew build publishToMavenLocal` succeeds and
+`~/.m2/repository/club/rainbowkitty/kalic0re/kalic0re/0.1.0/kalic0re-0.1.0.jar` contains
+`club/rainbowkitty/kalic0re/common/vehicle/`. `kalic0re`'s own dev server still boots — nothing in the
 new package runs unless a consumer calls it.
 
 ### As built
 
 Five classes in `common/vehicle`: `CartCargo`, `CargoDisplayHolder`, `CartCargoSupport`,
 `CargoMinecarts`, `PolymerMinecartItem`. Build green, `checkstyleTarget` clean after one 101-column
-Javadoc line, `rkcore-0.2.0.jar` (not the `0.1.0` the exit criterion names — `rkcore`'s own version
-had already moved on, and `planked-chests` pins `rkcore_version=0.2.0` so it picks this up) carries
+Javadoc line, `kalic0re-0.2.0.jar` (not the `0.1.0` the exit criterion names — `kalic0re`'s own version
+had already moved on, and `sensible-storage` pins `kalic0re_version=0.2.0` so it picks this up) carries
 all five, and the dev server boots to `Done (0.330s)! For help, type "help"` with zero mixin or
 error lines and an answering rcon.
 
@@ -175,12 +175,12 @@ Four departures from the Build text:
 
 - **`CartCargo` has two members, not three.** The planned per-connection "can this client render it"
   predicate is gone: the gate belongs on the stand-in, where a subclass overrides `startWatching`,
-  which is exactly where `planked-chests`' existing `ChestElementHolder` already puts its handshake
+  which is exactly where `sensible-storage`' existing `ChestElementHolder` already puts its handshake
   check. A predicate on the interface as well would have been a second way to say the same thing.
 - **The per-connection *real block state* route was dropped, and the two routes are now chosen per
   cart instead.** It is not buildable in shared code: swapping that one entry in the tracked data
   needs the numeric id of `AbstractMinecart.DATA_ID_CUSTOM_DISPLAY_BLOCK`, which is
-  `private static final` and reachable only through an accessor mixin — and `rkcore`'s mixins are
+  `private static final` and reachable only through an accessor mixin — and `kalic0re`'s mixins are
   never shaded into consumers, nor could a relocated mixin be registered by one. So
   `CartCargoSupport` reads `cargoState()` into vanilla's cargo slot when there is no stand-in, and
   blanks the slot to air when there is. This costs nothing yet: a capable client could not render a
@@ -207,8 +207,8 @@ every tick of movement. `addCargoElement` now calls `ignorePositionUpdates()` on
 
 ## S2 — Entity, item and recipe — **done**
 
-**Build.** Consume S1 from this mod: add `include 'club/rainbowkitty/rkcore/common/vehicle/**'` to
-the `rkcoreSharedJar` filter in `build.gradle` (line 48), next to the four already listed.
+**Build.** Consume S1 from this mod: add `include 'club/rainbowkitty/kalic0re/common/vehicle/**'` to
+the `kalic0reSharedJar` filter in `build.gradle` (line 48), next to the four already listed.
 
 The wood rides on the item stack as a component, not in the item id — **one** registered item for
 all 27 woods.
@@ -219,18 +219,18 @@ all 27 woods.
   plain field written to and read from NBT (never synched — see the findings), and overrides
   `applyImplicitComponents` to take the wood off the placing stack. Holds a `CartCargoSupport`,
   driven from `tick`, `remove` and whenever the wood changes. Its stand-in holder is where the
-  `PlankedChests.HANDSHAKE` gate goes, via `startWatching`. Overrides `destroy(ServerLevel,
+  `SensibleStorage.HANDSHAKE` gate goes, via `startWatching`. Overrides `destroy(ServerLevel,
   DamageSource)` to
   drop a stack carrying the component, since `VehicleEntity`'s drop would not. Overrides `getName()`
   so the container menu reads "Birch Chest Minecart" (`Entity.getDisplayName():3285` reads
   `getName()`; the vanilla default is the entity type's description id, shared by all 27 woods).
-- One entity type `plankedchests:chest_minecart`, registered through `CargoMinecarts.register` and
+- One entity type `sensiblestorage:chest_minecart`, registered through `CargoMinecarts.register` and
   mapped to `EntityType.CHEST_MINECART` for clients that do not run this mod.
-- One item `plankedchests:chest_minecart` — a `PolymerMinecartItem` built with our entity type,
+- One item `sensiblestorage:chest_minecart` — a `PolymerMinecartItem` built with our entity type,
   fallback `Items.CHEST_MINECART`. It derives the per-wood presentation from the component per
   packet rather than storing it: `getPolymerItemModel(stack, …)` returns
-  `plankedchests:<wood>_chest_minecart`, and `getPolymerItemStack` adds an `item_name` holding a
-  translatable `item.plankedchests.<wood>_chest_minecart` with an English `fallback` string
+  `sensiblestorage:<wood>_chest_minecart`, and `getPolymerItemStack` adds an `item_name` holding a
+  translatable `item.sensiblestorage.<wood>_chest_minecart` with an English `fallback` string
   (`TranslatableContents.java:41`), so a client that declined the server resource pack still reads a
   real name instead of a raw key. Deriving beats baking the presentation into the recipe results:
   one source of truth, and a wording change does not mean regenerating 27 recipes.
@@ -250,7 +250,7 @@ redstone meaning inside one. With the wood on the stack that is now a question o
 54, not of item count. **S14 reverses this**: the first half is still true and the second half was a
 decision rather than a fact, so S14 gives a trapped cart the redstone meaning it was said to lack.
 
-**Done when.** In world: `/give plankedchests:chest_minecart` with a birch component produces one
+**Done when.** In world: `/give sensiblestorage:chest_minecart` with a birch component produces one
 item named **Birch Chest Minecart**; placing it on rails gives a rolling cart that looks like a
 *plain empty minecart* (the cargo is blanked here and only drawn in S3). Right-click opens a 27-slot
 menu titled Birch Chest Minecart; a hopper under the rail pulls items out; breaking it drops an item
@@ -272,8 +272,8 @@ as the findings predicted, with no change to either mod.
 
 Verified over rcon before that round: the cart summons named per wood, `Wood` round-trips through
 saved data, `CartCargoSupport` applies the cargo (`DisplayState` reads `minecraft:chest`), the
-component parses from a command string, destroying one drops `plankedchests:chest_minecart` carrying
-`{"plankedchests:wood": "birch"}`, `generateAssets` writes 27 recipes with the wood in the result
+component parses from a command string, destroying one drops `sensiblestorage:chest_minecart` carrying
+`{"sensiblestorage:wood": "birch"}`, `generateAssets` writes 27 recipes with the wood in the result
 and mod-loaded conditions on the modded woods, and the dev server boots with no recipe or load
 errors.
 
@@ -438,7 +438,7 @@ Third round, all three of them refinements of the second.
   `ChestCartDisplay` overrides `renderLag()` to read `cargolag` for the fake player `lag`, in
   hundredths of a tick, falling back to the default when the objective is absent.
   **That override is temporary and has to come out before this stage is done** — only the
-  `renderLag()` seam in `rkcore` stays, and it earns its place as the hook a cart with different
+  `renderLag()` seam in `kalic0re` stays, and it earns its place as the hook a cart with different
   sync behaviour would need anyway. The objective itself lives only in the dev world.
 - **The cargo still rose into place on spawn, because it was spawning at the cart's feet.** Posing
   in the constructor fixed the rotation but not the position: an element is spawned at the holder's
@@ -469,7 +469,7 @@ Fourth round, and the last. **The render lag settled at 2.8**, found by moving `
 until the chest stopped visibly leading or trailing on a curve at speed; 2.8 was as close as the eye
 could get. `DEFAULT_RENDER_LAG` now reads 2.8, the scoreboard override and its two constants are
 gone from `ChestCartDisplay`, the objective is dropped from the dev world, and only the `renderLag()`
-seam in `rkcore` remains. The knob was worth building: it turned a rebuild-and-reconnect per
+seam in `kalic0re` remains. The knob was worth building: it turned a rebuild-and-reconnect per
 candidate into a chat command, and the last three rounds of this stage would otherwise have been ten.
 
 Asked at that point whether the figure could ever be exactly right, and whether a player's ping
@@ -555,16 +555,16 @@ cargo block's own `ChestBlock.getOpenChestSound()` / `getCloseChestSound()` rath
 or trapped chest cargo correct for free in S8; volume and pitch jitter are taken from
 `ChestBlockEntity.java:121`. All three confirmed in world along with the interaction fix.
 
-## S4 — Hoist the generic cargo cart into `rkcore` — **done**
+## S4 — Hoist the generic cargo cart into `kalic0re` — **done**
 
 **Build.** Everything in `cart/` that is not about wood moves into
-`club.rainbowkitty.rkcore.common.vehicle`, leaving this mod with the chest-and-wood half. What makes
+`club.rainbowkitty.kalic0re.common.vehicle`, leaving this mod with the chest-and-wood half. What makes
 that possible is changing the cargo's type: it stops being a `WoodType` and becomes a
-`Holder<Block>`. `rkcore` has no way to know what a wood is, but it can carry any block and read a
+`Holder<Block>`. `kalic0re` has no way to know what a wood is, but it can carry any block and read a
 default state, a name and a registry path off one — which is the whole of what the generic half
 needs.
 
-`rkcore` gains, alongside the five S1 classes:
+`kalic0re` gains, alongside the five S1 classes:
 
 - A cargo component factory on `CargoMinecarts` — a `DataComponentType<Holder<Block>>` over
   `BuiltInRegistries.BLOCK.holderByNameCodec()`, registered at `<namespace>:cart_cargo` and passed
@@ -582,13 +582,13 @@ needs.
   where S5's per-wood icons attach.
 - Name composition, as two statics: "Minecart with %s" from a consumer-supplied pattern key, and a
   cargo name of `translatableWithFallback(block.getDescriptionId(), <title-cased registry path>)`.
-  A block named `plankedchests:birch_chest` therefore falls back to "Birch Chest" with no per-wood
+  A block named `sensiblestorage:birch_chest` therefore falls back to "Birch Chest" with no per-wood
   table anywhere, and the composed string is byte-for-byte what S2 already produces.
 
 This mod keeps `ChestCarts` (registration, and the wood ↔ chest-block bridge in both directions),
 a `PlankedChestMinecart` cut down to its constructor plus S3's `createCargoDisplay`, and
 `ChestMinecartItem` only if S5 wants somewhere to put the model override. `CartComponents` goes;
-`ChestCarts` registers the component through `rkcore` instead.
+`ChestCarts` registers the component through `kalic0re` instead.
 
 Constructor ordering is the one trap. The entity factory is handed to `CargoMinecarts.register`
 before the item and the component exist, so the base class cannot take them as plain values — but
@@ -597,48 +597,48 @@ does reading them off the consumer's own class the way `PlankedChestMinecart` re
 today.
 
 Two formats change on disk: the entity's saved cargo becomes a block id
-(`plankedchests:birch_chest`) rather than `"birch"`, and the item component becomes
-`plankedchests:cart_cargo` rather than `plankedchests:wood`. Both exist only in the dev world, so no
+(`sensiblestorage:birch_chest`) rather than `"birch"`, and the item component becomes
+`sensiblestorage:cart_cargo` rather than `sensiblestorage:wood`. Both exist only in the dev world, so no
 migration is written — but say so out loud before the first restart after this stage, because every
 cart already placed there reverts to the default cargo.
 
-**Done when.** `cd rkc/mods/rkcore && ./gradlew build publishToMavenLocal` is green, then this mod's
-`./gradlew build`. Then, from the `rkcore` checkout:
+**Done when.** `cd rkc/mods/kalic0re && ./gradlew build publishToMavenLocal` is green, then this mod's
+`./gradlew build`. Then, from the `kalic0re` checkout:
 
 ```
-grep -rniE 'plankedchests|woodtype' src/main/java/club/rainbowkitty/rkcore/common/vehicle/
+grep -rniE 'sensiblestorage|woodtype' src/main/java/club/rainbowkitty/kalic0re/common/vehicle/
 ```
 
 returns nothing, which is the actual test of whether the seam landed in the right place — a shared
 package that names its first consumer has not been hoisted, only moved. In world, every S2 and S3
 criterion again and unchanged from the outside: a `/give`n birch cart places, rolls, opens a menu
 titled "Minecart with Birch Chest", shows a birch chest, and drops itself still birch — with
-`/data get entity` now reporting the cargo as `plankedchests:birch_chest`.
+`/data get entity` now reporting the cargo as `sensiblestorage:birch_chest`.
 
 ### As built
 
-Built as described. The exit grep is the headline: `grep -rniE 'plankedchests|woodtype'` over
+Built as described. The exit grep is the headline: `grep -rniE 'sensiblestorage|woodtype'` over
 `common/vehicle/` returns nothing, so the shared package names no consumer. Both builds green, lint
-clean, `rkcore-0.2.0.jar` carries the two new classes, and the dev server boots to `Done (0.299s)!`
+clean, `kalic0re-0.2.0.jar` carries the two new classes, and the dev server boots to `Done (0.299s)!`
 with no recipe load errors.
 
-`rkcore` gained `CargoMinecartChest` and `CargoCartItem` beside the S1 five, and `CargoMinecarts`
+`kalic0re` gained `CargoMinecartChest` and `CargoCartItem` beside the S1 five, and `CargoMinecarts`
 gained `registerCargoComponent`, `cargoName` and `cartName`. This mod kept `ChestCarts` — now also
 the wood ↔ chest-block bridge in both directions — a `PlankedChestMinecart` of about fifty lines,
 and `ChestMinecartItem`; `CartComponents` is gone.
 
 Verified over rcon rather than by reading the code back:
 
-- `summon` with `{Cargo:"plankedchests:birch_chest"}` answers **"Summoned new Minecart with Birch
+- `summon` with `{Cargo:"sensiblestorage:birch_chest"}` answers **"Summoned new Minecart with Birch
   Chest"** and reads the id back. So the composition really is byte-for-byte what S2 produced — the
   Build text's claim, and the one most likely to have been wrong, since it now runs through a lang
   key that does not exist yet and lands on the English fallback.
-- A stack carrying `plankedchests:cart_cargo` survives a container round trip with the component
+- A stack carrying `sensiblestorage:cart_cargo` survives a container round trip with the component
   intact and names itself "Minecart with Spruce Chest".
 - Damaging an acacia cart to death drops
-  `{components: {"plankedchests:cart_cargo": "plankedchests:acacia_chest"}, id:
-  "plankedchests:chest_minecart"}`, so the `destroy` override still rebuilds the stack from the
-  cargo now that it lives in `rkcore` and no longer knows what a wood is.
+  `{components: {"sensiblestorage:cart_cargo": "sensiblestorage:acacia_chest"}, id:
+  "sensiblestorage:chest_minecart"}`, so the `destroy` override still rebuilds the stack from the
+  cargo now that it lives in `kalic0re` and no longer knows what a wood is.
 - 27 recipes regenerate with the cargo in the result and their mod-loaded conditions unchanged.
 
 Four departures from the Build text.
@@ -673,7 +673,7 @@ Four departures from the Build text.
 out loud because every cart already placed reverts to the default cargo. Sweeping the world for
 *entities* before restarting found two carts, both wood-less, so nothing to lose — and the restart
 then logged a `BlockEntity` serialization error for a cart **item** sitting in a hopper: `Failed to
-decode … {"plankedchests:wood":"acacia"} … No component with type 'plankedchests:wood'`, and the
+decode … {"sensiblestorage:wood":"acacia"} … No component with type 'sensiblestorage:wood'`, and the
 stack was dropped. Stored stacks carry the component too, so a sweep has to look in containers as
 well as on rails. Dev world only, as predicted, and writing no migration is still right — but the
 next stage that retires a component should check both.
@@ -681,10 +681,10 @@ next stage that retires a component should check both.
 ## S5 — Item icons — **done**
 
 **Build.** Blocked on one piece of art: a 16×16 `chest_minecart_overlay.png` in the style of the
-existing `plankedchests_overlay/` files — vanilla's `textures/item/chest_minecart.png` traced, with
+existing `sensiblestorage_overlay/` files — vanilla's `textures/item/chest_minecart.png` traced, with
 the chest body knocked out to transparency so a wood can show through. Given that, a
 `ChestMinecartTextureProvider` mirrors `ChestTextureProvider`: composite the wood's 16×16 plank PNG
-(already vendored in `src/datagen/resources/plankedchests_planks/`) under the overlay and write
+(already vendored in `src/datagen/resources/sensiblestorage_planks/`) under the overlay and write
 `textures/item/<wood>_chest_minecart.png`, plus a `minecraft:generated` item definition per wood.
 The 27 definitions are not the models of 27 registered items — nothing points at them but the model
 S4's `cargoModel` hook returns per stack, which is why they can exist without the items existing.
@@ -710,7 +710,7 @@ after two violations.
 named it the only thing here that could not be produced from the repository. It can: vanilla ships
 the same cart twice, and `item/minecart.png` is `item/chest_minecart.png` without the chest, so the
 chest's pixels are exactly the ones the two differ in. Both are vendored into
-`plankedchests_vanilla/` beside S7's `chest.png`, for the reason that directory already exists —
+`sensiblestorage_vanilla/` beside S7's `chest.png`, for the reason that directory already exists —
 they are client assets and not on the mod classpath — and `ChestMinecartTextureProvider` derives the
 overlay at datagen time rather than reading a vendored one.
 
@@ -742,17 +742,17 @@ vanilla's icon for any cargo without one of its own.
 
 Two things verified rather than assumed, both load-bearing and both cheap to get wrong: `atlases/
 items.json` stitches `textures/item/` through a `DirectoryLister`, whose `listMatchingResources`
-scans every namespace, so `plankedchests:item/*` needs no atlas file of its own; and
+scans every namespace, so `sensiblestorage:item/*` needs no atlas file of its own; and
 `cargoModel` returning null for a non-wood cargo is what keeps S7's variant drawing as the vanilla
 cart it presents as, rather than needing a case of its own.
 
 ## S6 — Lang, tags, lint — **done**
 
 **Build.** `ChestLanguageProvider` gains three keys: the composition key S4 introduced,
-`item.plankedchests.minecart_with` = "Minecart with %s"; the cart entity type's own description id;
-and `item.plankedchests.chest_minecart` = "Minecart with Chest" for the plain variant, which used to
+`item.sensiblestorage.minecart_with` = "Minecart with %s"; the cart entity type's own description id;
+and `item.sensiblestorage.chest_minecart` = "Minecart with Chest" for the plain variant, which used to
 borrow vanilla's key and cannot any more (below). It gains no per-wood cart keys: the cargo's
-`block.plankedchests.<wood>_chest` keys already exist and the name is composed from them, so 27 keys
+`block.sensiblestorage.<wood>_chest` keys already exist and the name is composed from them, so 27 keys
 became one.
 
 **The carts go in the tab, and vanilla's is renamed out of the way.** This reverses an earlier
@@ -803,7 +803,7 @@ with `translations::put`, so one key is overridden and the rest of vanilla's fil
 
 That rename forced a key split, which unwinds a piece of S4's reasoning. The plain variant borrowed
 `item.minecraft.chest_minecart` so it would stay translated for a client that declined the resource
-pack; a shared key would now rename both halves of the pair. It gets `item.plankedchests
+pack; a shared key would now rename both halves of the pair. It gets `item.sensiblestorage
 .chest_minecart` instead, with `translatableWithFallback` keeping the English. A client that
 declines the pack sees neither the rename nor our key, so for it the pair reads exactly as it did
 before; what is genuinely lost is a non-English decliner, which now reads one of the two in English
@@ -813,7 +813,7 @@ Any vanilla entity type tag the cart should join would go in a merging
 `data/minecraft/tags/entity_type/` file under the `minecraft` namespace — the same rule the
 `mineable/axe` tag had to learn in `planked-chests.md`'s own S6. **There are none**: no vanilla
 entity-type tag covers minecarts and `minecart-tweaks` defines none either, so this item is answered
-rather than built. See the reference section. `checkstyleTarget` on both `rkcore` and this mod.
+rather than built. See the reference section. `checkstyleTarget` on both `kalic0re` and this mod.
 
 **Naming is a component in 26.2, and this mod's cart had been throwing it away.** Found while
 building the tab, because it is what made every entry there read "Minecart with Chest". `Item#getName`
@@ -849,15 +849,15 @@ so there is no connection to key on when they are built.
 grid of group icons; its search button opens an unfiltered paginated dump of every group's contents
 with vanilla groups first and Polymer-registered ones last. A mod whose items sit in vanilla tabs
 therefore appears on the early pages and this one does not appear for many. `/polymer creative
-plankedchests:chests` goes straight to the tab, and is the form worth telling anyone to use.
+sensiblestorage:chests` goes straight to the tab, and is the form worth telling anyone to use.
 
 **Done when.** `cd scripts/lint && ./gradlew checkstyleTarget` is clean for both checkouts and
 `./gradlew build` is green for both. In world:
-`/give @s plankedchests:chest_minecart[plankedchests:cart_cargo="plankedchests:dark_oak_chest"]`
+`/give @s sensiblestorage:chest_minecart[sensiblestorage:cart_cargo="sensiblestorage:dark_oak_chest"]`
 yields an item reading "Minecart with Dark Oak Chest"; the same string appears on a client that
 *declines* the server resource pack, which is what proves both fallbacks are wired.
 
-Then the tab and the recipe. `/polymer creative` shows the `plankedchests:chests` tab holding the
+Then the tab and the recipe. `/polymer creative` shows the `sensiblestorage:chests` tab holding the
 chests, the trapped chests and then 13 carts on this dev server (the plain one plus the 12 vanilla
 woods — the other 15 have no chest block here), each drawing its own S5 icon. Crafting
 `minecraft:chest + minecraft:minecart` yields **"Minecart with Chest"**, not the Legacy one, and
@@ -932,12 +932,12 @@ vanilla's chest art — differing from `minecraft:chest_minecart` only in that i
 stops being the default and becomes an ordinary wood like the other 26, which it should have been.
 
 `WoodType` is left alone; the wood field and component are simply nullable. The alternatives were a
-28th enum entry, which would register a `plankedchests:vanilla_chest` block nobody wants, and a
+28th enum entry, which would register a `sensiblestorage:vanilla_chest` block nobody wants, and a
 sentinel, which is a null in a hat. Nullable also lines up exactly with S4, where the cargo becomes
 a `Holder<Block>` and this variant is just `minecraft:chest`.
 
 The art is vanilla's `assets/minecraft/textures/entity/chest/normal.png`, vendored into
-`src/datagen/resources/plankedchests_vanilla/` for the reason the plank textures already are — it is
+`src/datagen/resources/sensiblestorage_vanilla/` for the reason the plank textures already are — it is
 a client asset, not on the mod classpath — and copied through by `ChestTextureProvider` rather than
 composited, since it is already a 64×64 sheet in the same layout. `ChestElementModelProvider` gains
 `addCargoVariant`, a SINGLE-only sibling of `addVariant`: this chest is never placed, so it is never
@@ -947,7 +947,7 @@ Deliberately not built: a vanilla-looking chest *block*. That is a much larger c
 recipe, tab entry — and it collides with `disable_vanilla_recipes`, which stubs `minecraft:chest`.
 
 **Done when.** In world, three carts side by side: a vanilla `minecraft:chest_minecart`, a
-`/give`n `plankedchests:chest_minecart` with no component, and an oak one. The middle is
+`/give`n `sensiblestorage:chest_minecart` with no component, and an oak one. The middle is
 indistinguishable from the first until it is opened, and then its lid rises; the oak one is visibly
 oak-planked beside both. All three read "Minecart with Chest", "Minecart with Chest" and "Minecart
 with Oak Chest". `./gradlew generateAssets` writes `textures/block/chest/vanilla.png` plus exactly
@@ -986,9 +986,9 @@ this mod's woods" instead of having to grow that case later. And `cargoState` fa
 
 ## S8 — Guard the cargo, and open it up to barrels, shulker boxes and copper chests — **done**
 
-Raised after S4, from watching `/summon plankedchests:chest_minecart {Cargo:"minecraft:furnace"}`
+Raised after S4, from watching `/summon sensiblestorage:chest_minecart {Cargo:"minecraft:furnace"}`
 work: it produced a cart that looks like a furnace cart and holds 27 slots, which is nonsense.
-`CargoMinecartChest` will carry any block it is handed, and that generality is right for `rkcore` —
+`CargoMinecartChest` will carry any block it is handed, and that generality is right for `kalic0re` —
 what is missing is the consumer saying which blocks it means.
 
 **Build.** Two halves, and the first is the one that matters.
@@ -997,9 +997,9 @@ what is missing is the consumer saying which blocks it means.
   with a chest's inventory, so its cargo should be a chest-like block: chest, trapped chest, the
   eight copper chests, barrel, the seventeen shulker boxes, and this mod's own per-wood chests.
   Anything else falls back to the default cargo rather than being drawn. A block tag is the obvious
-  shape for the list, since it is then a datapack's to extend and `planked-chests` does not have to
+  shape for the list, since it is then a datapack's to extend and `sensible-storage` does not have to
   know about a future consumer's blocks either. The seam belongs on `CargoCartItem` or beside it,
-  as a predicate the consumer supplies once — `rkcore` cannot know which blocks are chest-like any
+  as a predicate the consumer supplies once — `kalic0re` cannot know which blocks are chest-like any
   more than it knows
   what a wood is, and hardcoding a list there would be the same mistake S4 was built to avoid. Guard
   on the way in (`setCargo`, `setCargoId`, `applyImplicitComponents`) rather than at the draw, so
@@ -1034,7 +1034,7 @@ Open questions, none of them blocking:
 Wanted but not urgent, and deliberately after S5 and S6: nothing in the shipped feature is wrong
 without it, and the guard is easier to write once S5 has settled how a cargo maps to an icon.
 
-**Done when.** `/summon plankedchests:chest_minecart {Cargo:"minecraft:furnace"}` produces a cart
+**Done when.** `/summon sensiblestorage:chest_minecart {Cargo:"minecraft:furnace"}` produces a cart
 drawing no cargo and reading "Minecart with Chest". The same with `minecraft:barrel`,
 `minecraft:shulker_box` and `minecraft:weathered_copper_chest` each produces a cart drawing that
 block, named after it, opening a 27-slot inventory, and dropping itself with its cargo intact; each
@@ -1232,7 +1232,7 @@ the two vanilla icons vendored to feed it.
 
 **Done when.** `generateAssets` writes a sprite, a `minecraft:item/generated` model and an item
 definition for every wood and for every vanilla cargo; each reads as a cart carrying that cargo
-rather than as a plain cart; and nothing under `plankedchests_vanilla/` is a vanilla item icon any
+rather than as a plain cart; and nothing under `sensiblestorage_vanilla/` is a vanilla item icon any
 more.
 
 ### As built
@@ -1324,11 +1324,11 @@ with a lid that opens and closes like a wooden one and the hinge sound to match.
 
 Twenty generated files: four 64×64 sheets copied through from vanilla, eight models, eight item
 definitions. Checked that `copper_exposed_chest_lid.json` binds
-`"chest": "plankedchests:block/chest/copper_exposed"`, and that the display-part ids
+`"chest": "sensiblestorage:block/chest/copper_exposed"`, and that the display-part ids
 (`copper_chest_base`, `copper_chest_lid`) do not collide with the flat icon id that S10 writes for
 the same block (`copper_chest_minecart`).
 
-**A naming hazard left in place on purpose.** `plankedchests_vanilla/` now holds `copper.png` — the
+**A naming hazard left in place on purpose.** `sensiblestorage_vanilla/` now holds `copper.png` — the
 chest *sheet* — beside `copper_block.png`, the block texture S10's icon is composited over; and
 `copper_exposed.png` beside `exposed_copper.png`. Both halves of each pair are vanilla's own name
 for the file, so renaming either would trade a confusing pair for a name that matches nothing
@@ -1413,13 +1413,13 @@ eight copper chests out on the grounds that neither had an icon, "and give them 
 belong here" — which S10 had quietly satisfied. They are in now, after the 27
 woods and before the shulker boxes, in the order `ChestRecipeProvider` writes the vanilla cargoes'
 recipes in, so the mod has one order for them rather than one per place they are listed. All nine
-icon definitions exist under `src/main/generated/assets/plankedchests/items/`, so no entry resolves
+icon definitions exist under `src/main/generated/assets/sensiblestorage/items/`, so no entry resolves
 to a missing model. A tab stack is baked once for every player and never ticks, so a copper entry
 does not age in the menu.
 
 **Left for a later hand.** Nothing here names copper chests, so any cargo vanilla knows how to
 weather ages — which today is the eight copper chests and tomorrow is whatever a datapack adds to
-`plankedchests:cart_cargo`. And the cart *item* does not age, deliberately: no copper item ages in
+`sensiblestorage:cart_cargo`. And the cart *item* does not age, deliberately: no copper item ages in
 an inventory, and a cargo that aged in a chest would be the one place this stopped mirroring the
 block it is named after.
 
@@ -1435,7 +1435,7 @@ so the cart keeps the block's meaning rather than inventing one for it.
 **Build.** Four pieces, and only the last is new ground.
 
 - **The carts are a re-keying, not new code.** S8's guard already accepts any cargo in
-  `plankedchests:cart_cargo`, and vanilla's trapped chest was already in it and already worked. What
+  `sensiblestorage:cart_cargo`, and vanilla's trapped chest was already in it and already worked. What
   had to go is `ChestCarts`' assumption that a cargo maps to a *wood*: `WOODS_BY_CHEST` becomes
   `CHEST_IDS`, a `Block` → chest-id map filled from `ChestBlocks.chests()` and
   `ChestBlocks.trappedChests()` alike, because one wood now owns two chests. Everything downstream
@@ -1450,7 +1450,7 @@ so the cart keeps the block's meaning rather than inventing one for it.
 - **The icon is hand-authored, and had to be.** The trapped-versus-plain difference in the
   placed-chest art is a 32-pixel latch recolour, not a hue shift over the sheet, so no filter turns
   the plain cart sprite into a trapped one — it is drawn, not derived.
-  `plankedchests_overlay/trapped_chest_minecart.png` is the plain cart overlay with four latch
+  `sensiblestorage_overlay/trapped_chest_minecart.png` is the plain cart overlay with four latch
   pixels taken from grey to red, carrying the same 97-pixel `PngAssets.CUTOUT` silhouette so it
   drops into `CartIcons.composite` unchanged.
 - **The signal, which is this mod's first mixin.** A rail cannot be the signal source. Redstone
@@ -1477,9 +1477,9 @@ whatever cart is parked there.
 
 Built as described. 27 icons, 27 item definitions and 27 models generated, 28 recipes — the woods
 plus vanilla's trapped chest — with their advancements, and 28 trapped entries in
-`plankedchests:cart_cargo`. `./gradlew build` clean, Checkstyle clean over both source sets, and the
+`sensiblestorage:cart_cargo`. `./gradlew build` clean, Checkstyle clean over both source sets, and the
 dev server boots with zero mixin failures, which is load-bearing rather than decorative here:
-`plankedchests.mixins.json` is `required` with `defaultRequire: 1`, so a descriptor that failed to
+`sensiblestorage.mixins.json` is `required` with `defaultRequire: 1`, so a descriptor that failed to
 bind would have thrown at `ComparatorBlock` load instead of passing quietly.
 
 **The non-destructive injection is the design, and it is what was tested.** Injecting at `RETURN`

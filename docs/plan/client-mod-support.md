@@ -1,6 +1,6 @@
 # Client-optional real rendering
 
-`planked-chests` is server-side. To a vanilla client a chest is an invisible `Blocks.BARRIER` with a
+`sensible-storage` is server-side. To a vanilla client a chest is an invisible `Blocks.BARRIER` with a
 Polymer `ItemDisplayElement` drawn over it — which means a full-cube selection/collision outline and
 a 20-step item-swap "lid animation" instead of real interpolation. Neither is fixable server-side.
 
@@ -33,7 +33,7 @@ message; client users install Polymer (one Modrinth file) alongside the jar. Not
   keeps the real synced state instead of dropping it — the gate is in
   `PolymerClientProtocolHandler` (`libs/polymer`, `section.setBlockState` only when
   `checkDecode(block)`).
-- `getPolymerBlockState(state, ctx)` returns `state` when `PlankedChests.HANDSHAKE.has(ctx)` says the
+- `getPolymerBlockState(state, ctx)` returns `state` when `SensibleStorage.HANDSHAKE.has(ctx)` says the
   client runs this mod, else the barrier — the `fabric_mod_skeleton` `PolymerExampleBlock` pattern.
 - `ChestElementHolder.startWatching(ServerGamePacketListenerImpl)` returns `false` for
   handshake-positive connections, so those clients never receive the display entity.
@@ -53,19 +53,19 @@ first; a handful of those chests would then show the display-entity fallback (as
 client) until touched. That degradation is accepted rather than carrying a per-tick sweep or a
 whole-world `reloadLevel` for it.
 
-## rkcore pieces (shaded into consumers, relocated)
+## kalic0re pieces (shaded into consumers, relocated)
 
 | Class | Role |
 | --- | --- |
 | `common/net/PolymerClientHandshake` | `create(modId)` / `register()` / `has(...)` — the per-connection "client runs my mod" flag (generalises the skeleton's `PolymerAware`). |
 | `common/client/PolymerChestRenderer<T>` | `extends ChestRenderer<T>`; reuses vanilla's whole state extraction and only overrides `submit` to swap in a `ChestSpriteSelector` sprite through `Sheets.CHEST_MAPPER` (cached), instead of the fixed `ChestMaterialType` enum. |
 | `common/client/PolymerChestRenderState` | `ChestRenderState` + a resolved `Identifier sprite`. |
-| `common/client/ChestSpriteSelector<T>` | `Identifier sprite(T be, ChestType type)` — a mod resolves its own per-variant sprite (including the `_left`/`_right` half); the renderer only consumes it. `planked-chests` routes this through its existing `ChestModels.sprite(...)` so the naming lives in one place. |
+| `common/client/ChestSpriteSelector<T>` | `Identifier sprite(T be, ChestType type)` — a mod resolves its own per-variant sprite (including the `_left`/`_right` half); the renderer only consumes it. `sensible-storage` routes this through its existing `ChestModels.sprite(...)` so the naming lives in one place. |
 | `common/item/PolymerModel[Block]Item` | + a `Predicate<PacketContext> useRealItem` ctor. |
 
-`rkcore` is `environment: "*"`; Loom puts `net.minecraft.client.*` + the Fabric client rendering API
+`kalic0re` is `environment: "*"`; Loom puts `net.minecraft.client.*` + the Fabric client rendering API
 on its classpath, so `common/client` compiles. It ships in the runtime jar unused, loaded only by a
-consumer's `client` entrypoint. `planked-chests`' `rkcoreSharedJar` filter now also lists
+consumer's `client` entrypoint. `sensible-storage`' `kalic0reSharedJar` filter now also lists
 `common/client/**` and `common/net/**`.
 
 ## Server resource pack
@@ -116,15 +116,15 @@ comes along for free because it is applied before the cargo.
   render path as written, and cost a wasted round trip. It does not block anything here, since a
   mod client would get the real type and the real renderer, but the vanilla path is not negotiable.
 - *"S1 dropped the per-connection real-block-state route because `DATA_ID_CUSTOM_DISPLAY_BLOCK`'s
-  numeric id needs an accessor mixin, and `rkcore`'s mixins are never shaded into consumers."*
+  numeric id needs an accessor mixin, and `kalic0re`'s mixins are never shaded into consumers."*
   Correct, and also avoidable. That route was needed only to smuggle the cargo identity through
   *vanilla's* tracked-data slot. With the real entity type on the client, the cargo can ride a
   `SynchedEntityData` accessor this mod defines on its own entity class — no vanilla private field,
-  no accessor mixin, nothing for `rkcore` to shade.
+  no accessor mixin, nothing for `kalic0re` to shade.
 
 **The seam already exists.** `PolymerSyncedObject.getPolymerReplacement(object, PacketContext)` is
 per-connection, so `CargoMinecarts.register`'s substitution lambda can hand a handshake-positive
-client the real `plankedchests:chest_minecart` and everyone else `minecraft:minecart`. Then
+client the real `sensiblestorage:chest_minecart` and everyone else `minecraft:minecart`. Then
 `ChestCartDisplay.startWatching` returns false for those connections, exactly as `ChestElementHolder`
 already does for placed chests. Same `HANDSHAKE.has(ctx)` gate as the other four.
 
@@ -150,7 +150,7 @@ jar asks for it.
 ## Deferred: `supportsAll` gates key parity, not numeric-id parity
 
 Found 2026-09-11, diagnosing a dev client being kicked on join with
-`(Polymer) Failed to parse 'plankedchests:warped_chest' item! Invalid stack data!` and then
+`(Polymer) Failed to parse 'sensiblestorage:warped_chest' item! Invalid stack data!` and then
 `DecoderException: Failed to decode packet 'clientbound/minecraft:custom_payload'`. Deferred
 deliberately: nothing in the current cart run depends on it, and the fix is a handshake change that
 wants its own pass. Recorded here rather than in `chest-minecarts.md` because the gate is this
@@ -173,10 +173,10 @@ and two launches of the same build disagree about it. Verified across four dev-s
 
 | run | entrypoint order | joins |
 | --- | --- | --- |
-| 22:02, 22:52 | `plankedchests` before `minecarttweaks` | fine |
-| 22:48, 23:27 | `minecarttweaks` before `plankedchests` | kicked |
+| 22:02, 22:52 | `sensiblestorage` before `minecarttweaks` | fine |
+| 22:48, 23:27 | `minecarttweaks` before `sensiblestorage` | kicked |
 
-`minecarttweaks` contributes three Polymer items, so on the second ordering every planked-chests item
+`minecarttweaks` contributes three Polymer items, so on the second ordering every sensible-storage item
 sits three higher on the server than on the client, and the last three — `warped_chest`,
 `warped_trapped_chest`, `chest_minecart` — fall off the end of the client's registry.
 `warped_chest` is simply the first, and the twenty-two entries before it decode *silently to the
@@ -187,7 +187,7 @@ with `ItemStack.OPTIONAL_STREAM_CODEC`, which Polymer's own `ItemStackPacketCode
 through `PolymerModelBlockItem.getPolymerItem`. That returns `this` — the server-side item, encoded
 by raw id — precisely when `supportsAll` is true. A client that *fails* the gate gets the vanilla
 fallback, whose id is below the divergence, and is unaffected: minecart-tweaks' own dev client, which
-has no planked-chests, joined the same failing server run and played for eighteen minutes. The gate
+has no sensible-storage, joined the same failing server run and played for eighteen minutes. The gate
 is what selects for the crash.
 
 **This is not only a dev-rig problem.** The rig makes it reproducible, but the premise — same mod

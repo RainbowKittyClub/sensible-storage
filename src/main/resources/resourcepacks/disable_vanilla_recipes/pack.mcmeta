@@ -1,6 +1,6 @@
 {
   "pack": {
     "pack_format": ${datapack_pack_format},
-    "description": "Planked Chests: disable vanilla chest/trapped chest recipes"
+    "description": "Sensible Storage: disable vanilla chest/trapped chest recipes"
   }
 }

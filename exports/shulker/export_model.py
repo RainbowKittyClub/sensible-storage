@@ -2,7 +2,7 @@
 """Turn this mod's datagen-produced block models into files a human can open.
 
 Reads one or more generated geometry models (the ones with `elements`, under
-`src/main/generated/assets/plankedchests/models/block/`) and writes:
+`src/main/generated/assets/sensiblestorage/models/block/`) and writes:
 
   * a Blockbench-loadable Java Block/Item Model, with the cubes named and the
     texture bound to a real path instead of the `#key` the generated file leaves
@@ -82,12 +82,12 @@ def write_blockbench(out_dir, name, elements, texture_key, texture_ref):
     per-colour child to fill in, which Blockbench cannot resolve on its own.
     """
     model = {
-        "credit": "planked-chests: exported from datagen, not a source of truth",
+        "credit": "sensible-storage: exported from datagen, not a source of truth",
         "texture_size": [64, 64],
         "textures": {texture_key: texture_ref, "particle": f"#{texture_key}"},
         "elements": elements,
     }
-    path = os.path.join(out_dir, "assets", "plankedchests", "models", "block", f"{name}.json")
+    path = os.path.join(out_dir, "assets", "sensiblestorage", "models", "block", f"{name}.json")
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as handle:
         json.dump(model, handle, indent=2)
@@ -101,7 +101,7 @@ def write_obj(out_dir, name, elements, texture_png):
     os.makedirs(obj_dir, exist_ok=True)
     shutil.copy(texture_png, os.path.join(obj_dir, os.path.basename(texture_png)))
 
-    lines = [f"# planked-chests {name}, exported from datagen",
+    lines = [f"# sensible-storage {name}, exported from datagen",
              "# 1 unit = 1 block; Minecraft axes (Y up, north -Z)",
              f"mtllib {name}.mtl", ""]
     # OBJ indices are 1-based and run across the whole file, so they are counted

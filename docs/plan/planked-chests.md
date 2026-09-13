@@ -1,4 +1,4 @@
-# Planked Chests
+# Sensible Storage
 
 A chest and a trapped chest for every wood type, crafted from that wood and textured to match,
 built server-side with the visible chest rendered as a Polymer display entity.
@@ -29,12 +29,12 @@ a Polymer virtual display entity carries the look, bound to the block via `Block
 tiled 4×4 to 64×64 with the overlay composited on top, no resize.
 
 **Two block-entity types, not 24.** `BlockEntityType` carries a `Set<Block>` of valid blocks, so one
-`plankedchests:chest` type serves all 12 chest blocks and one `plankedchests:trapped_chest` type all
+`sensiblestorage:chest` type serves all 12 chest blocks and one `sensiblestorage:trapped_chest` type all
 12 trapped blocks.
 
 ## How these stages get tested
 
-Dev server via `scripts/devserver.sh rkc/mods/planked-chests <cmd>` (start / restart / rcon / logs),
+Dev server via `scripts/devserver.sh rkc/mods/sensible-storage <cmd>` (start / restart / rcon / logs),
 watched in world by the user on their client — brief them per leg before each test round. No test
 suite. A stage is done only when its "Done when" is observed in world or in a file listing; a
 compile is not an exit criterion, so a failure at stage N implicates stage N, not S1–S(N-1).
@@ -49,7 +49,7 @@ regenerates it, and from S4 on a `jar` guard fails with a pointed message when i
 
 **Build.** Copy `fabric_mod_skeleton/` into this directory, keeping the two overlay PNGs. Rename
 every `CHANGEME`/`changeme` per the skeleton README: `gradle.properties`, `settings.gradle`, the
-entrypoint class to `PlankedChests`, the datagen entrypoint to `PlankedChestsDataGenerator`, the
+entrypoint class to `SensibleStorage`, the datagen entrypoint to `SensibleStorageDataGenerator`, the
 mixins json filename and package. Own dev-server ports in `gradle.properties`. Strip the Polymer
 client-optional example (`content/`, `polymer/`, `example_block` assets). Drop bil: remove the
 `bil_*`/`fabric_permissions_api` properties and dependencies, the Modrinth/Sponge repos and
@@ -58,22 +58,22 @@ client-optional example (`content/`, `polymer/`, `example_block` assets). Drop b
 `configureDataGeneration { client = true }` block. Write this doc and the mod README.
 
 **Done when.** `./gradlew build` succeeds on the empty mod, jar at
-`build/libs/plankedchests-0.1.0.jar`; `./gradlew runServer` boots to `For help, type`.
+`build/libs/sensiblestorage-0.1.0.jar`; `./gradlew runServer` boots to `For help, type`.
 
 ### As built
 
 Went as planned. Quilt wiring (`quilt_*` properties, `runQuiltServer`) was left in place rather than
 stripped — it is generic in `gradle/devserver.gradle` and carries no build cost. The placeholder
-`assets/plankedchests/lang/en_us.json` was deleted, not kept empty, so the S6 datagen lang provider
-owns that path without a jar-internal collision. The empty `plankedchests.mixins.json` and its
+`assets/sensiblestorage/lang/en_us.json` was deleted, not kept empty, so the S6 datagen lang provider
+owns that path without a jar-internal collision. The empty `sensiblestorage.mixins.json` and its
 `fabric.mod.json` entry were removed — the mod has no mixins. Datagen runs `client = false`: no
 provider touches a client-only registry. Dev-server ports: game `25604`, rcon `25581`.
-`./gradlew build` green; server boots, logs `(plankedchests) Planked Chests loaded` and
+`./gradlew build` green; server boots, logs `(sensiblestorage) Sensible Storage loaded` and
 `For help, type`.
 
 ## S2 — Real blocks, block entities, items, recipes — **done**
 
-**Build.** Feature-first packages under `club.rainbowkitty.plankedchests`.
+**Build.** Feature-first packages under `club.rainbowkitty.sensiblestorage`.
 
 - `wood/WoodType` — the 12 woods (`oak … warped`), each with its plank item id
   (`minecraft:<wood>_planks`) and display name (`dark_oak` → "Dark Oak"). One source of truth.
@@ -85,19 +85,19 @@ provider touches a client-only registry. Dev-server ports: game `25604`, rcon `2
   protected overrides (`isSignalSource`, `getSignal`, `getDirectSignal`, `getOpenChestStat`); it
   cannot be subclassed because its `(Properties)` ctor fixes the BE type.
 - `block/PlankedChestBlockEntity` / `PlankedTrappedChestBlockEntity` — pass the mod's BE type,
-  override `getDefaultName()` to `block.plankedchests.<wood>_chest` (wood from the block state) so
+  override `getDefaultName()` to `block.sensiblestorage.<wood>_chest` (wood from the block state) so
   the menu title reads "Birch Chest". Confirm `TrappedChestBlockEntity`'s ctor visibility during
   build; if unusable, subclass `ChestBlockEntity` and copy its `signalOpenCount` override.
 - Entrypoint loop over `WoodType`: 24 blocks (`Properties.ofFullCopy(Blocks.CHEST/TRAPPED_CHEST)`);
   2 `BlockEntityType`s each with its 12 blocks, each passed to
   `PolymerBlockUtils.registerBlockEntity`; 24 `BlockItem`s via a local
-  `PolymerModelBlockItem extends BlockItem implements PolymerItem` (mirror `rkcore`'s
+  `PolymerModelBlockItem extends BlockItem implements PolymerItem` (mirror `kalic0re`'s
   `common/item/PolymerModelItem`; fallback `minecraft:chest` / `minecraft:trapped_chest`, model id
-  `plankedchests:<wood>_chest`); one `PolymerBlockUtils.SERVER_SIDE_MINING_CHECK` listener returning
+  `sensiblestorage:<wood>_chest`); one `PolymerBlockUtils.SERVER_SIDE_MINING_CHECK` listener returning
   true for our states so a barrier (hardness −1) is still mineable.
-- Recipes: hand-written datapack JSON in `src/main/resources/data/plankedchests/recipe/` — per wood
+- Recipes: hand-written datapack JSON in `src/main/resources/data/sensiblestorage/recipe/` — per wood
   a shaped ring of 8 `<wood>_planks` and a shapeless `<wood>_chest` + `minecraft:tripwire_hook`.
-- Loot tables in `src/main/resources/data/plankedchests/loot_table/blocks/` — drop-self.
+- Loot tables in `src/main/resources/data/sensiblestorage/loot_table/blocks/` — drop-self.
 
 **Done when.** On the dev server: `/give` a birch chest, place it — invisible but solid; right-click
 opens a 27-slot menu titled **Birch Chest**; two adjacent give a 54-slot menu; a hopper beneath
@@ -116,14 +116,14 @@ trapped redstone and crafting all confirmed by the user; survival drop confirmed
 world's `block_drops` rule was turned back on.
 
 Recipes and loot were later moved from hand-written `src/main/resources` files to datagen, and
-item registration switched to `rkcore`'s shaded `ItemRegistration` + `PolymerModelBlockItem` (the
+item registration switched to `kalic0re`'s shaded `ItemRegistration` + `PolymerModelBlockItem` (the
 local `PolymerModelBlockItem` was deleted) — see `docs/plan/shared-datagen-helpers.md`.
 
 Menu titles (2026-09-08, not yet deployed): `getDefaultName()` now always uses the plain
-`block.plankedchests.<wood>_chest` key, so an open **trapped** chest reads "Birch Chest" like the
+`block.sensiblestorage.<wood>_chest` key, so an open **trapped** chest reads "Birch Chest" like the
 plain one rather than announcing itself. `PlankedChestBlock.getMenuProvider` wraps vanilla's result
 to swap the double-chest fallback `container.chestDouble` ("Large Chest") for
-`container.plankedchests.large_chest` = "Large %s Chest" → "Large Birch Chest" (a player-renamed
+`container.sensiblestorage.large_chest` = "Large %s Chest" → "Large Birch Chest" (a player-renamed
 half still wins; single chests and the locked-chest notification are untouched).
 
 ## S3 — Texture datagen — **done**
@@ -132,8 +132,8 @@ half still wins; single chests and the locked-chest notification are untouched).
 `companions`' `SweaterTextureProvider` (same `CachedOutput` + `HashingOutputStream` PNG write,
 `output.createPathProvider(RESOURCE_PACK, "textures/block")`). Per wood × {chest, trapped}: tile the
 16×16 plank PNG 4×4 into a 64×64 `TYPE_INT_ARGB` image, alpha-composite the matching overlay from
-`assets/plankedchests/textures/overlay/`, write to
-`src/main/generated/assets/plankedchests/textures/block/<wood>_chest.png` /
+`assets/sensiblestorage/textures/overlay/`, write to
+`src/main/generated/assets/sensiblestorage/textures/block/<wood>_chest.png` /
 `<wood>_trapped_chest.png` (the `block/` folder auto-joins the vanilla blocks atlas — its directory
 source scans every namespace).
 
@@ -144,12 +144,12 @@ the resource manager is not populated at provider-run time, fall back to vendori
 `src/datagen/resources/plank_source/` and reading them off the classpath.
 
 **Done when.** `./gradlew generateAssets` writes 24 PNGs under
-`src/main/generated/assets/plankedchests/textures/block/`; `birch_chest.png` shows birch grain tiled
+`src/main/generated/assets/sensiblestorage/textures/block/`; `birch_chest.png` shows birch grain tiled
 with the chest overlay, 64×64, transparency preserved.
 
 ### As built
 
-Plank sources are vendored into `src/datagen/resources/plankedchests_planks/` (the resource-manager
+Plank sources are vendored into `src/datagen/resources/sensiblestorage_planks/` (the resource-manager
 route was not attempted — vendoring is what `companions` does and it is reliable). Provider
 `ChestTextureProvider`, one `Graphics2D` tile-then-`drawImage` composite, 24 files written and
 verified 64×64 RGBA with plank grain showing through the overlay's transparent regions. The overlay
@@ -162,14 +162,14 @@ model, which resolves its texture through the `minecraft:chests` atlas (`entity/
 source, all namespaces) — so no hand UV work, and the block-atlas placement the plan assumed is
 moot.
 
-The classpath-read and hash-then-write PNG plumbing was later extracted to `rkcore`'s
+The classpath-read and hash-then-write PNG plumbing was later extracted to `kalic0re`'s
 `common/datagen/PngAssets` (see `docs/plan/shared-datagen-helpers.md`); `ChestTextureProvider`
 keeps only the tile/composite step.
 
 ## S4 — Model and item-definition datagen — **done**
 
 **Build.** `src/datagen/java/.../datagen/ChestModelProvider`. Generate into
-`src/main/generated/assets/plankedchests/`:
+`src/main/generated/assets/sensiblestorage/`:
 
 - `models/block/<wood>_chest_base.json`, `_lid.json`, `_whole.json` and the four trapped
   equivalents — hand-built `elements` models. Vanilla item/block models ignore `texture_size`, so
@@ -183,9 +183,9 @@ keeps only the tile/composite step.
   EAST `(u2,v1,u3,v2)`, SOUTH `(u3,v1,u4,v2)`. Trap: entity models are +Y-down, block models
   +Y-up — flip Y on `from`/`to` and the lid rotation `origin`. Verify in S5.
 - `items/<wood>_chest.json` / `<wood>_trapped_chest.json` — item definitions pointing at
-  `plankedchests:block/<wood>_chest_whole`.
+  `sensiblestorage:block/<wood>_chest_whole`.
 
-Entrypoint: `PolymerResourcePackUtils.addModAssets("plankedchests")` and `markAsRequired()` (like
+Entrypoint: `PolymerResourcePackUtils.addModAssets("sensiblestorage")` and `markAsRequired()` (like
 `critters-mod`). Add the `jar` datagen-output guard to `build.gradle`.
 
 **Done when.** `generateAssets` produces the model + item JSONs; a `json.tool` sweep over
@@ -251,7 +251,7 @@ decisions for the reasoning left standing):
 - The item-model component had to be forwarded by a local `PolymerModelBlockItem` that overrides
   `getPolymerItemModel` directly — Polymer's built-in `PolymerBlockItem` model path did not carry
   it through for the GUI item.
-- Every chest item model uses a mod-owned base model `plankedchests:item/chest_display` (parent
+- Every chest item model uses a mod-owned base model `sensiblestorage:item/chest_display` (parent
   `minecraft:item/template_chest`). With `minecraft:item/chest` as the shared base, the client
   leaked this mod's last-loaded chest texture onto the vanilla chest item.
 - Held-item render and an intermittent "single chest doesn't animate" both turned out to be
@@ -274,7 +274,7 @@ decisions for the reasoning left standing):
 
 ## S6 — Lang, creative tab, tags, lint — **done**
 
-**Build.** Datagen `en_us.json` (`block.plankedchests.<wood>_chest` = "{Wood} Chest",
+**Build.** Datagen `en_us.json` (`block.sensiblestorage.<wood>_chest` = "{Wood} Chest",
 `…_trapped_chest` = "{Wood} Trapped Chest"). Append the 24 items to the vanilla functional/redstone
 creative tabs via `ItemGroupEvents`, next to the vanilla chests. `mineable/axe` block tag for all
 24. Wire `src/main/java` into `rkc/lint/build.gradle`'s `mods` map.
@@ -287,9 +287,9 @@ shows 24 chests named "Dark Oak Chest" / "Warped Trapped Chest" etc.; `./gradlew
 Lang via `ChestLanguageProvider` (datagen `FabricLanguageProvider`). `mineable/axe` tag is a
 hand-written datapack file — and it must live at **`data/minecraft/tags/block/mineable/axe.json`**
 (the `minecraft` namespace, `replace:false`) to merge into the vanilla tag; a first try under
-`data/plankedchests/tags/` created a dead tag and axe mining was no faster than by hand.
+`data/sensiblestorage/tags/` created a dead tag and axe mining was no faster than by hand.
 
-Creative entries: a **dedicated `plankedchests:chests` Polymer tab** via
+Creative entries: a **dedicated `sensiblestorage:chests` Polymer tab** via
 `PolymerCreativeModeTabUtils.builder()` / `registerPolymerCreativeModeTab`. Adding entries to the
 vanilla `functional_blocks` / `redstone_blocks` tabs (`CreativeModeTabEvents.modifyOutputEvent`, the
 `minecart-tweaks` approach) did not sync to a Polymer client at all — Polymer reliably syncs only
@@ -297,7 +297,7 @@ tabs it owns. The dedicated tab shows in the creative menu for `polymer-core` cl
 `/polymer creative`; a plain client still sees nothing there and crafts the chests.
 
 **Recipe conflict.** The vanilla `minecraft:chest` recipe (`#minecraft:planks` ring) matches "8
-matching planks" and, sorting before `plankedchests:...`, wins — so every wood's craft produced a
+matching planks" and, sorting before `sensiblestorage:...`, wins — so every wood's craft produced a
 vanilla chest. Fixed by overriding `data/minecraft/recipe/chest.json` and `trapped_chest.json` with
 an unsatisfiable `minecraft:barrier` shapeless recipe (user approved removing the vanilla recipes).
 Per-wood recipes are now the only match for a uniform plank ring. Those two overrides stay
@@ -305,12 +305,12 @@ hand-written under `src/main/resources/data/minecraft/` — the per-wood recipes
 datagen (see `docs/plan/shared-datagen-helpers.md`), but there is no clean builder for an
 intentionally unsatisfiable recipe.
 
-`planked-chests` added to `rkc/lint/build.gradle`; `checkstyleTarget` on it is clean. `lintAll`
+`sensible-storage` added to `rkc/lint/build.gradle`; `checkstyleTarget` on it is clean. `lintAll`
 still fails on pre-existing import-order debt in `rk-tweaks` and `critters-mod` — untouched here.
 
 ## Deployed
 
-`plankedchests-0.1.0.jar` deployed to the live server on 2026-09-08. Built against the live
+`sensiblestorage-0.1.0.jar` deployed to the live server on 2026-09-08. Built against the live
 server's versions (fabric-api `0.159.0+26.2`, polymer `0.17.5+26.2` — bumped from the `0.17.3`
 originally pinned). Boot verified: mod + datapack loaded, 0 mixin errors, block entity works,
 Polymer pack regenerated with all 1514 chest assets. The `Pack declares support for version newer
@@ -323,7 +323,7 @@ loaded, 0 mixin errors).
 
 ## Shared datagen helpers
 
-The `rkcore`-shared PNG/item helpers and the recipe/loot datagen move (2026-09-08, not deployed)
+The `kalic0re`-shared PNG/item helpers and the recipe/loot datagen move (2026-09-08, not deployed)
 are recorded in `docs/plan/shared-datagen-helpers.md` — it spans three checkouts, so it lives on
 its own.
 
@@ -331,15 +331,15 @@ its own.
 
 `docs/plan/client-mod-support.md` — a client that installs the same jar (plus Polymer client-side)
 now renders the real chest: exact hitbox, real `ChestBlockEntity`, vanilla-smooth lid, via a Fabric
-`BlockEntityRenderer` (`rkcore` `common/client/PolymerChestRenderer`). Decided per connection from a
-Polymer handshake (`rkcore` `common/net/PolymerClientHandshake`); `PlankedChestBlock` implements
+`BlockEntityRenderer` (`kalic0re` `common/client/PolymerChestRenderer`). Decided per connection from a
+Polymer handshake (`kalic0re` `common/net/PolymerClientHandshake`); `PlankedChestBlock` implements
 `PolymerClientDecoded` and `getPolymerBlockState` returns the real state for such clients, which also
 skip the display entity. Vanilla clients are unchanged. `markAsRequired()` was dropped.
 
 ## Chest minecarts
 
 `docs/plan/chest-minecarts.md` — a chest minecart per wood, on a general "minecart carrying an
-arbitrary block" mechanism added to `rkcore` as `common/vehicle` and relocated in like the other
+arbitrary block" mechanism added to `kalic0re` as `common/vehicle` and relocated in like the other
 shared packages. Server-side gameplay is built; the per-wood appearance is not. All 27 ride on one
 item id with the cargo in a data component, and none of them goes in a creative tab — vanilla's
 "Minecart with Chest" stays the only chest cart anyone can browse for, and the planked ones are
@@ -356,7 +356,7 @@ entity are not used for it.
 - **Held-item render.** The custom chest model renders correctly in the GUI and on a vanilla
   client, but a client render mod (not Fresh Animations / EMF — still unidentified) draws the
   vanilla chest for the *held* item. Not this mod's bug; left for the client-side mod to fix.
-- **Creative menu.** The chests are in a dedicated `plankedchests:chests` Polymer tab — visible to
+- **Creative menu.** The chests are in a dedicated `sensiblestorage:chests` Polymer tab — visible to
   `polymer-core` clients and in `/polymer creative`, but a plain client never sees server-only
   creative items regardless. Players craft the chests.
 - **Dev-world `block_drops` default.** The skeleton's `zz_dev_defaults` datapack turns `block_drops`
