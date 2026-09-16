@@ -98,8 +98,10 @@ public enum WoodType implements StringRepresentable {
         return requiredModId;
     }
 
-    /** Namespace the {@code <id>_planks} block/item lives under: {@code requiredModId()}, or
-     * {@code minecraft} for a vanilla wood. */
+    /**
+     * Namespace the {@code <id>_planks} block/item lives under: {@code requiredModId()}, or
+     * {@code minecraft} for a vanilla wood.
+     */
     public String planksNamespace() {
         return requiredModId == null ? "minecraft" : requiredModId;
     }
