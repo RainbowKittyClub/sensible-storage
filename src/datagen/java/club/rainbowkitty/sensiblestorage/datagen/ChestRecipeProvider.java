@@ -33,14 +33,18 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
 /**
  * Per-wood crafting recipes: a plank ring → chest (the vanilla chest recipe shape) and a chest +
- * tripwire hook → trapped chest. The vanilla {@code minecraft:chest} / {@code trapped_chest}
- * recipes, which also match a uniform plank ring, are suppressed by hand-written overrides in the
- * {@code disable_vanilla_recipes} built-in data pack ({@code resourcepacks/disable_vanilla_recipes/
- * data/minecraft/recipe/}, registered by {@code BuiltinDataPacks}, on by default and disableable to
- * restore the vanilla recipes). A modded wood's ring uses its {@code data/sensiblestorage/tags/
- * item/<wood>_planks.json} tag (a single, {@code required: false} entry) instead of a direct item
- * reference, since this mod is never a build dependency of the wood's source mod - see
- * {@code ChestBlocks#DATAGEN}.
+ * tripwire hook → trapped chest. Vanilla's own {@code minecraft:chest} recipe also matches a
+ * uniform plank ring - {@code #minecraft:planks} takes any wood, not just this one's - so
+ * {@code data/minecraft/recipe/chest.json} is a hand-written override naming a custom serializer,
+ * {@link club.rainbowkitty.sensiblestorage.recipe.MixedPlankChestRecipe}, that only matches a
+ * genuinely mixed-wood ring; see that class for why a wood's own recipe cannot simply be trusted
+ * to win a tie against vanilla's. {@code trapped_chest} gets a plain, opt-in-only override instead
+ * ({@code disable_vanilla_recipes} built-in data pack, {@code BuiltinDataPacks}, off by default) -
+ * it never collides with a wood's own trapped-chest recipe (different items
+ * entirely), so disabling it is a look-and-feel choice, not a correctness one. A modded wood's ring
+ * uses its {@code data/sensiblestorage/tags/item/<wood>_planks.json} tag (a single,
+ * {@code required: false} entry) instead of a direct item reference, since this mod is never a
+ * build dependency of the wood's source mod - see {@code ChestBlocks#DATAGEN}.
  *
  * <p>Also one cart recipe per cargo — each of the 27 woods' chests and trapped chests, plus
  * vanilla's trapped chest, the barrel, the eight copper chests and the seventeen shulker boxes. Of
@@ -51,7 +55,20 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
  * every id it is given as {@code <modId>:<path>}. Overriding that would also move the generated
  * advancement onto vanilla's, so it is a hand-written
  * {@code src/main/resources/data/minecraft/recipe/chest_minecart.json} instead — beside the
- * {@code mineable/axe} tag, which is in the {@code minecraft} namespace for the same reason.
+ * {@code mineable/axe} tag, which is in the {@code minecraft} namespace for the same reason. It
+ * still names {@code minecraft:chest} exactly rather than {@code #c:chests/wooden} (below): every
+ * wood already has its own cart recipe with the correct cargo baked in, and widening this one to
+ * the tag would let it also match a planked chest, racing that wood's own recipe for the same
+ * grid with no cargo component set.
+ *
+ * <p>{@code data/c/tags/item/chests/wooden.json} lists every plain planked chest alongside
+ * {@code minecraft:chest} (not the trapped chests — vanilla's own recipes never took one either),
+ * under Fabric's own convention id for a wooden chest rather than one of this mod's own, so any
+ * other mod already reading {@code c:chests/wooden} recognizes these too. Hand-written overrides
+ * of vanilla's {@code hopper} and all ten {@code *_chest_boat}/{@code bamboo_chest_raft} recipes
+ * (also under {@code data/minecraft/recipe/}) swap their {@code minecraft:chest} ingredient for
+ * that tag. Unlike the cart, neither result is wood-specific to the chest half of the recipe, so
+ * there is nothing for a tag-widened recipe to race.
  */
 public final class ChestRecipeProvider extends FabricRecipeProvider {
     /**

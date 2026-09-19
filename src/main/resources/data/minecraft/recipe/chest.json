@@ -1,0 +1,14 @@
+{
+  "type": "sensiblestorage:mixed_plank_chest",
+  "key": {
+    "#": "#minecraft:planks"
+  },
+  "pattern": [
+    "###",
+    "# #",
+    "###"
+  ],
+  "result": {
+    "id": "minecraft:chest"
+  }
+}

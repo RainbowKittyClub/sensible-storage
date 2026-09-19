@@ -1,0 +1,78 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:chest",
+    "sensiblestorage:oak_chest",
+    "sensiblestorage:spruce_chest",
+    "sensiblestorage:birch_chest",
+    "sensiblestorage:jungle_chest",
+    "sensiblestorage:acacia_chest",
+    "sensiblestorage:dark_oak_chest",
+    "sensiblestorage:mangrove_chest",
+    "sensiblestorage:cherry_chest",
+    "sensiblestorage:pale_oak_chest",
+    "sensiblestorage:bamboo_chest",
+    "sensiblestorage:crimson_chest",
+    "sensiblestorage:warped_chest",
+    {
+      "id": "sensiblestorage:pine_chest",
+      "required": false
+    },
+    {
+      "id": "sensiblestorage:redwood_chest",
+      "required": false
+    },
+    {
+      "id": "sensiblestorage:hemlock_chest",
+      "required": false
+    },
+    {
+      "id": "sensiblestorage:rubber_chest",
+      "required": false
+    },
+    {
+      "id": "sensiblestorage:cypress_chest",
+      "required": false
+    },
+    {
+      "id": "sensiblestorage:willow_chest",
+      "required": false
+    },
+    {
+      "id": "sensiblestorage:japanese_maple_chest",
+      "required": false
+    },
+    {
+      "id": "sensiblestorage:rainbow_eucalyptus_chest",
+      "required": false
+    },
+    {
+      "id": "sensiblestorage:sakura_chest",
+      "required": false
+    },
+    {
+      "id": "sensiblestorage:yucca_palm_chest",
+      "required": false
+    },
+    {
+      "id": "sensiblestorage:celestial_chest",
+      "required": false
+    },
+    {
+      "id": "sensiblestorage:murublight_chest",
+      "required": false
+    },
+    {
+      "id": "sensiblestorage:veiled_chest",
+      "required": false
+    },
+    {
+      "id": "sensiblestorage:scorched_chest",
+      "required": false
+    },
+    {
+      "id": "sensiblestorage:umbral_chest",
+      "required": false
+    }
+  ]
+}

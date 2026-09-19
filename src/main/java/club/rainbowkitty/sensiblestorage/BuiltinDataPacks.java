@@ -15,10 +15,17 @@ import net.minecraft.resources.Identifier;
  */
 public final class BuiltinDataPacks {
     /**
-     * Overrides the vanilla {@code minecraft:chest}/{@code trapped_chest} recipes into unreachable
-     * ones (see {@code resourcepacks/disable_vanilla_recipes/}), so the plank-ring shape only
-     * yields this mod's per-wood chests. Disabling this data pack (e.g. {@code /datapack disable})
-     * restores the vanilla recipes.
+     * Overrides the vanilla {@code trapped_chest} recipe into an unreachable one (see
+     * {@code resourcepacks/disable_vanilla_recipes/}), a purely thematic call - a leftover vanilla
+     * {@code minecraft:chest} (from loot, another mod, or an older save) could otherwise still make
+     * a plain trapped chest sitting next to 27 planked ones. Off by default
+     * ({@code /datapack enable} to turn it on). {@code minecraft:chest} itself needs no such
+     * override: {@link club.rainbowkitty.sensiblestorage.recipe.MixedPlankChestRecipe} already
+     * keeps it out of a uniform plank ring's way unconditionally, so this pack has nothing left to
+     * do for it - see that class for why disabling it outright was never really optional there.
+     * The identifier still reads {@code disable_vanilla_recipes} (plural) despite covering one
+     * recipe now: renaming a built-in pack's id resets its enabled/disabled state on any world that
+     * already recorded it, and this mod has been live since 2026-09-08.
      */
     public static final Identifier DISABLE_VANILLA_RECIPES =
             SensibleStorage.id("disable_vanilla_recipes");
@@ -37,7 +44,7 @@ public final class BuiltinDataPacks {
 
         ResourceLoader.registerBuiltinPack(
                 DISABLE_VANILLA_RECIPES, container,
-                Component.literal("Sensible Storage: disable vanilla chest recipes"),
-                PackActivationType.DEFAULT_ENABLED);
+                Component.literal("Sensible Storage: disable vanilla trapped chest recipe"),
+                PackActivationType.NORMAL);
     }
 }
