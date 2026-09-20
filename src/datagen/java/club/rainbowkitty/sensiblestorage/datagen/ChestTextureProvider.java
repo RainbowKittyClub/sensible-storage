@@ -34,13 +34,13 @@ public final class ChestTextureProvider implements DataProvider {
     // jar or resource pack, and the 12 vanilla plank textures because they are client assets
     // (asset-index objects, not on the mod classpath) and cannot be read at runtime.
     private static final String PLANK_DIR = "sensiblestorage_planks/";
-    private static final String OVERLAY_DIR = "sensiblestorage_overlay/";
+    private static final String OVERLAY_DIR = "sensiblestorage_overlay/block/";
     // Vanilla's entity/chest/normal.png, vendored for the same reason the planks are.
     private static final String VANILLA_DIR = "sensiblestorage_vanilla/";
 
     // Overlay file for a variant (false = plain, true = trapped) and chest type.
     private static String overlayFile(boolean trapped, ChestType type) {
-        String base = trapped ? "chest_overlay_trapped" : "chest_overlay";
+        String base = trapped ? "chest_trapped" : "chest";
         return base + (type == ChestType.SINGLE ? "" : "_" + type.getSerializedName()) + ".png";
     }
 

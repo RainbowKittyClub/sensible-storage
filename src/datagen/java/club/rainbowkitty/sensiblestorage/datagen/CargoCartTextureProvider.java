@@ -78,11 +78,12 @@ public final class CargoCartTextureProvider implements DataProvider {
         // PlankedChestMinecart#cargoState for the turn. Deliberately not its underside: the cargo
         // region samples only the base's top rows, and the underside's plank gaps fall right where
         // the side's iron hoops do, so an icon built on it reads as a barrel lying on its side.
-        icons.add(new Icon(Blocks.BARREL, "barrel_top.png", "barrel_minecart_overlay.png"));
+        icons.add(new Icon(Blocks.BARREL, "barrel_top.png", "icon/barrel_minecart_icon.png"));
         // The eight copper chests — four weather states, each waxed and not — zipped against their
         // metal through the same collection ChestRecipeProvider writes their recipes from.
         WeatheringCopperCollection.zipApply(Blocks.COPPER_CHEST, COPPER,
-                (chest, metal) -> icons.add(new Icon(chest, metal, "copper_chest_minecart.png")));
+                (chest, metal) -> icons.add(
+                        new Icon(chest, metal, "icon/copper_chest_minecart_icon.png")));
 
         List<CompletableFuture<?>> writes = new ArrayList<>();
         Map<Path, JsonObject> json = new HashMap<>();
@@ -112,7 +113,7 @@ public final class CargoCartTextureProvider implements DataProvider {
 
     // A shulker box, which shows the texture named after the block itself.
     private static Icon shell(Block box) {
-        return new Icon(box, Ids.blockPath(box) + ".png", "shulker_minecart_overlay.png");
+        return new Icon(box, Ids.blockPath(box) + ".png", "icon/shulker_minecart_icon.png");
     }
 
     // One icon to draw: `cargo` names it through ChestModels#cargoCartModel, while `base` is

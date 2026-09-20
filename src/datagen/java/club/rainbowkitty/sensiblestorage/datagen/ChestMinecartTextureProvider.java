@@ -46,9 +46,9 @@ public final class ChestMinecartTextureProvider implements DataProvider {
     // Both inputs live in the datagen-only source set, for the reasons ChestTextureProvider gives:
     // the planks and the overlay alike are client assets, not on the mod classpath.
     private static final String PLANK_DIR = "sensiblestorage_planks/";
-    private static final String OVERLAY = "sensiblestorage_overlay/chest_minecart.png";
+    private static final String OVERLAY = "sensiblestorage_overlay/icon/chest_minecart_icon.png";
     private static final String TRAPPED_OVERLAY =
-            "sensiblestorage_overlay/trapped_chest_minecart.png";
+            "sensiblestorage_overlay/icon/trapped_chest_minecart_icon.png";
 
     private final PackOutput.PathProvider textures;
     private final PackOutput.PathProvider models;
