@@ -102,5 +102,4 @@ public final class ChestMinecartTextureProvider implements DataProvider {
     public String getName() {
         return "Sensible Storage Cart Icons";
     }
-
 }
