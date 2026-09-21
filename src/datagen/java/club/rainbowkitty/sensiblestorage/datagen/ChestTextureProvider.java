@@ -38,12 +38,6 @@ public final class ChestTextureProvider implements DataProvider {
     // Vanilla's entity/chest/normal.png, vendored for the same reason the planks are.
     private static final String VANILLA_DIR = "sensiblestorage_vanilla/";
 
-    // Overlay file for a variant (false = plain, true = trapped) and chest type.
-    private static String overlayFile(boolean trapped, ChestType type) {
-        String base = trapped ? "chest_trapped" : "chest";
-        return base + (type == ChestType.SINGLE ? "" : "_" + type.getSerializedName()) + ".png";
-    }
-
     private final PackOutput.PathProvider textures;
 
     /**
@@ -77,7 +71,7 @@ public final class ChestTextureProvider implements DataProvider {
                 String variantBase = trapped ? wood.id() + "_trapped" : wood.id();
                 for (ChestType type : ChestType.values()) {
                     BufferedImage overlay = overlays[trapped ? 1 : 0][type.ordinal()];
-                    BufferedImage image = composite(planks, overlay);
+                    BufferedImage image = PngAssets.composite(planks, overlay);
                     Identifier id = SensibleStorage.id(ChestModels.sprite(variantBase, type));
                     writes.add(PngAssets.save(cache, this.textures.file(id, "png"), image,
                             "sensibleStorageTextures"));
@@ -108,6 +102,12 @@ public final class ChestTextureProvider implements DataProvider {
         return "Sensible Storage Textures";
     }
 
+    // Overlay file for a variant (false = plain, true = trapped) and chest type.
+    private static String overlayFile(boolean trapped, ChestType type) {
+        String base = trapped ? "chest_trapped" : "chest";
+        return base + (type == ChestType.SINGLE ? "" : "_" + type.getSerializedName()) + ".png";
+    }
+
     // 16×16 plank → 64×64 by tiling it 4×4, no scaling.
     private static BufferedImage tile(BufferedImage plank) {
         BufferedImage out = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB);
@@ -117,17 +117,6 @@ public final class ChestTextureProvider implements DataProvider {
                 g.drawImage(plank, x, y, null);
             }
         }
-        g.dispose();
-        return out;
-    }
-
-    // Draws the overlay over the tiled planks with normal alpha compositing. Not
-    // PngAssets.composite: its double-precision rounding lands 131 pixels off by one from AWT's.
-    private static BufferedImage composite(BufferedImage planks, BufferedImage overlay) {
-        BufferedImage out = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = out.createGraphics();
-        g.drawImage(planks, 0, 0, null);
-        g.drawImage(overlay, 0, 0, null);
         g.dispose();
         return out;
     }
