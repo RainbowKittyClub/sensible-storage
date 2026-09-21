@@ -53,13 +53,13 @@ final class CartIcons {
             PackOutput.PathProvider items, CachedOutput cache,
             List<CompletableFuture<?>> writes, Map<Path, JsonObject> json) {
 
-        // Writes one icon: `base` with `overlay` laid over it as the texture, the generated model
-        // pointing at that texture, and the item definition pointing at that model.
+        // Writes one icon: `base` rotated 45° with `overlay` laid over it as the texture, the
+        // generated model pointing at that texture, and the item definition pointing at that model.
         void write(Identifier itemDefId, BufferedImage base, BufferedImage overlay,
                 String saveName) {
             Identifier sprite = SensibleStorage.id("item/" + itemDefId.getPath());
             this.writes.add(PngAssets.save(this.cache, this.textures.file(itemDefId, "png"),
-                    PngAssets.composite(base, overlay), saveName));
+                    PngAssets.composite(PngAssets.rotate45(base), overlay), saveName));
             this.json.put(this.models.json(sprite), PackJson.model(GENERATED, "layer0", sprite));
             this.json.put(this.items.json(itemDefId), PackJson.itemDefinition(sprite));
         }
