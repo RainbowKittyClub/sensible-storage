@@ -3,6 +3,10 @@ package club.rainbowkitty.sensiblestorage.block;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import eu.pb4.polymer.blocks.api.BlockModelType;
+import eu.pb4.polymer.blocks.api.PolymerBlockModel;
+import eu.pb4.polymer.blocks.api.PolymerBlockResourceUtils;
+
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -11,6 +15,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 
 import club.rainbowkitty.kalic0re.common.item.ItemRegistration;
 import club.rainbowkitty.kalic0re.common.item.PolymerModelBlockItem;
@@ -44,7 +49,10 @@ public final class CraftingTableBlocks {
                 continue;
             }
             String path = wood.craftingTableId();
-            PlankedCraftingTableBlock table = new PlankedCraftingTableBlock(wood,
+            // A note block state Polymer sets aside and the pack redraws with this table's model.
+            BlockState packState = PolymerBlockResourceUtils.requestBlock(BlockModelType.FULL_BLOCK,
+                    PolymerBlockModel.of(SensibleStorage.id("block/" + path)));
+            PlankedCraftingTableBlock table = new PlankedCraftingTableBlock(wood, packState,
                     BlockBehaviour.Properties.ofFullCopy(Blocks.CRAFTING_TABLE)
                             .setId(ResourceKey.create(Registries.BLOCK, SensibleStorage.id(path))));
             Registry.register(BuiltInRegistries.BLOCK, SensibleStorage.id(path), table);
