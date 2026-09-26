@@ -16,20 +16,24 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
+import club.rainbowkitty.sensiblestorage.block.CraftingTableBlocks;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
 /**
- * Writes the {@code claimed} tag vanilla's overridden chest recipe names: the planks whose wood has
- * a chest of its own here. A uniform ring of one of these goes to that wood's recipe, and
- * {@code PlankFallbackRecipe} steps aside for it; any other plank still makes vanilla's chest.
+ * Writes the {@code claimed} tags vanilla's two overridden recipes name, one per block: the planks
+ * whose wood has a chest, or a crafting table, of its own here. A uniform grid of one of these goes
+ * to that wood's recipe, and {@code PlankFallbackRecipe} steps aside for it; any other plank still
+ * makes vanilla's block.
  *
- * <p>Generated rather than hand-written so the tag follows exactly the woods that have a chest, the
- * same way {@link ChestCartCargoProvider}'s does.
+ * <p>Generated rather than hand-written so each tag follows exactly the woods that have the block,
+ * oak's missing table included, the same way {@link ChestCartCargoProvider}'s does.
  */
 public final class ClaimedPlanksProvider extends FabricTagsProvider.ItemTagsProvider {
-    // Named by data/minecraft/recipe/chest.json.
+    // Named by data/minecraft/recipe/chest.json and crafting_table.json respectively.
     private static final TagKey<Item> CHEST =
             TagKey.create(Registries.ITEM, SensibleStorage.id("planks_with_chest"));
+    private static final TagKey<Item> CRAFTING_TABLE =
+            TagKey.create(Registries.ITEM, SensibleStorage.id("planks_with_crafting_table"));
 
     /**
      * Initializes the claimed-planks tag provider.
@@ -45,6 +49,7 @@ public final class ClaimedPlanksProvider extends FabricTagsProvider.ItemTagsProv
     @Override
     protected void addTags(HolderLookup.Provider registries) {
         claim(builder(CHEST), List.of(WoodType.values()));
+        claim(builder(CRAFTING_TABLE), CraftingTableBlocks.tables().keySet());
     }
 
     @Override

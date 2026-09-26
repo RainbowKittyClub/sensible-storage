@@ -1,0 +1,15 @@
+{
+  "type": "sensiblestorage:plank_fallback",
+  "claimed": "#sensiblestorage:planks_with_crafting_table",
+  "key": {
+    "#": "#minecraft:planks"
+  },
+  "pattern": [
+    "##",
+    "##"
+  ],
+  "result": {
+    "id": "minecraft:crafting_table"
+  },
+  "show_notification": false
+}

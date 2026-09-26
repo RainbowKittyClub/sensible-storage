@@ -16,6 +16,9 @@ tasks.named('shadowJar') {
 				'assets/sensiblestorage/items/oak_chest_lid.json',
 				'data/sensiblestorage/recipe/oak_chest.json',
 				'data/sensiblestorage/loot_table/blocks/oak_chest.json',
+				'assets/sensiblestorage/textures/block/crafting_table/spruce_front.png',
+				'assets/sensiblestorage/models/block/spruce_crafting_table.json',
+				'data/sensiblestorage/recipe/spruce_crafting_table.json',
 		].collect { new File(generated, it) }.findAll { !it.exists() }
 		if (!missing.isEmpty()) {
 			throw new GradleException(

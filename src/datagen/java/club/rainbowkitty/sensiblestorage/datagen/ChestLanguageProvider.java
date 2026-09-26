@@ -8,12 +8,13 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
 import net.minecraft.core.HolderLookup;
 
 import club.rainbowkitty.sensiblestorage.block.ChestBlocks;
+import club.rainbowkitty.sensiblestorage.block.CraftingTableBlocks;
 import club.rainbowkitty.sensiblestorage.cart.ChestCarts;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
 /**
- * English names for every chest, e.g. "Dark Oak Chest", "Warped Trapped Chest", plus the three
- * keys the minecarts need.
+ * English names for every chest and crafting table, e.g. "Dark Oak Chest", "Warped Trapped Chest",
+ * "Birch Crafting Table", plus the three keys the minecarts need.
  *
  * <p>The carts need three and not thirty: one pattern that {@code kalic0re} fills with the cargo
  * block's own name, one for the plain-chest variant that has no wood to compose from, and the
@@ -45,5 +46,7 @@ public final class ChestLanguageProvider extends FabricLanguageProvider {
             builder.add(ChestBlocks.chests().get(wood), name + " Chest");
             builder.add(ChestBlocks.trappedChests().get(wood), name + " Trapped Chest");
         }
+        CraftingTableBlocks.tables().forEach(
+                (wood, table) -> builder.add(table, wood.displayName() + " Crafting Table"));
     }
 }

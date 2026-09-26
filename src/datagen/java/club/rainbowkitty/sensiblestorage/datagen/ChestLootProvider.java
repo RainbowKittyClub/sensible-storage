@@ -11,11 +11,13 @@ import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.world.level.block.Block;
 
 import club.rainbowkitty.sensiblestorage.block.ChestBlocks;
+import club.rainbowkitty.sensiblestorage.block.CraftingTableBlocks;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
 /**
  * Drop-self loot for every chest, copying a renamed chest's {@code custom_name} off the block
- * entity. Matches vanilla's {@code createNameableBlockEntityTable}.
+ * entity, as vanilla's {@code createNameableBlockEntityTable} does; and plain drop-self for every
+ * crafting table, as vanilla's own table has.
  */
 public final class ChestLootProvider extends FabricBlockLootSubProvider {
     /**
@@ -42,6 +44,11 @@ public final class ChestLootProvider extends FabricBlockLootSubProvider {
                     : withConditions(ResourceConditions.allModsLoaded(wood.requiredModId()));
             output.add(chest, createNameableBlockEntityTable(chest));
             output.add(trapped, createNameableBlockEntityTable(trapped));
+            // No table for oak, whose crafting table is vanilla's own.
+            Block table = CraftingTableBlocks.tables().get(wood);
+            if (table != null) {
+                output.dropSelf(table);
+            }
         }
     }
 }

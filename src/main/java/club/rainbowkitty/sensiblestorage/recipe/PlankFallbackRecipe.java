@@ -34,9 +34,10 @@ import club.rainbowkitty.sensiblestorage.SensibleStorage;
 
 /**
  * A shaped recipe that steps aside for any grid holding one {@code claimed} item alone - vanilla's
- * own {@code minecraft:chest} recipe, rewritten so a uniform ring of a wood with its own chest goes
- * to that wood's recipe, and every other ring still makes vanilla's. Nothing here is specific to a
- * chest: the pattern, result and claimed set all come from the recipe JSON.
+ * own {@code minecraft:chest} and {@code minecraft:crafting_table} recipes, rewritten so a uniform
+ * grid of a wood with its own chest or table goes to that wood's recipe, and every other grid still
+ * makes vanilla's. Nothing here is specific to either block: the pattern, result and claimed set
+ * all come from the recipe JSON, so each override names this one serializer.
  *
  * <p>Without this, {@code minecraft:chest} and {@code sensiblestorage:oak_chest} (etc.) both match
  * a ring of, say, eight oak planks - {@code #minecraft:planks} takes any plank, and vanilla's
@@ -47,12 +48,13 @@ import club.rainbowkitty.sensiblestorage.SensibleStorage;
  * namespace second. Comparing {@code "chest"} against a wood's {@code "<wood>_chest"} is a coin
  * flip that has nothing to do with which recipe should win: {@code "birch_chest"} sorts before it
  * and wins on its own, but {@code "oak_chest"} sorts after it and loses, silently handing a plain
- * oak ring a vanilla chest. This recipe closes that gap by refusing a grid that a wood's own recipe
- * is written for, so such a grid only ever has one match regardless of sort order.
+ * oak ring a vanilla chest. {@code "crafting_table"} against {@code "<wood>_crafting_table"} is the
+ * same coin flip over a 2x2 square. This recipe closes that gap by refusing a grid that a wood's
+ * own recipe is written for, so such a grid only ever has one match regardless of sort order.
  *
  * <p>Refusing only claimed items, rather than every uniform grid, is what keeps a plank with no
- * chest of its own - a wood from a mod this one has no chest for - making vanilla's chest rather
- * than nothing at all.
+ * recipe of its own - a wood from a mod this one has no chest for, or oak, whose crafting table is
+ * vanilla's own - making vanilla's block rather than nothing at all.
  *
  * <p>{@code ShapedRecipe} itself cannot be extended for this - its {@code pattern} and
  * {@code result} fields are private to it, leaving a subclass nothing to build a codec from - so
