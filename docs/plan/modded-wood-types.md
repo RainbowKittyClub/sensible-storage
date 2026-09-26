@@ -252,13 +252,16 @@ dev world on further play.
 | redwood, hemlock, rubber, cypress, willow, japanese_maple, rainbow_eucalyptus, sakura, yucca_palm | `terrestria` | Terrestria |
 | celestial, murublight, veiled | `enderscape` | Enderscape |
 | scorched, umbral | `cinderscapes` | Cinderscapes |
+| fir | `traverse` | Traverse |
 
-No id collides with a vanilla `WoodType` constant or across these four mods. Every plank
+No id collides with a vanilla `WoodType` constant or across these five mods. Every plank
 texture lives at `assets/<modid>/textures/block/<wood>_planks.png` inside its jar and was
 confirmed 16×16 by reading the PNG `IHDR` chunk directly out of the live-server jars
 (`WoodsAndMires-2.1.3-rkc+26.2.jar`, `terrestria-8.1.0-alpha.1.jar`,
-`enderscape-fabric-3.0.2+mc26.2.jar`, `cinderscapes-6.1.0-alpha.2.jar`) this session — the
-size `ChestTextureProvider.tile()`'s 4×4 logic assumes.
+`enderscape-fabric-3.0.2+mc26.2.jar`, `cinderscapes-6.1.0-alpha.2.jar`, and on 2026-09-26
+`traverse-9.1.0-beta.1.jar`) — the size `ChestTextureProvider.tile()`'s 4×4 logic assumes.
+Traverse came later than the other four and adds the one wood; every plank in each jar's
+`blockstates/` is in this table.
 
 `enderscape-polymer-patch-3.0.1.1+26.2.jar`, alongside the main Enderscape jar on the live
 server, adds no wood/plank content — it's a Polymer compatibility shim for Enderscape's

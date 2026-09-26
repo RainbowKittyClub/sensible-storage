@@ -31,7 +31,7 @@ which S2 has to vendor alongside the chest sheet it already vendors.
 **Refusing every uniform grid left planks with no wood of their own unable to craft anything.**
 `MixedPlankChestRecipe` matched only a grid of two or more distinct items, on the premise that
 every uniform ring had a planked chest to go to. The live server's `#minecraft:planks` holds
-`traverse:fir_planks`, which has no `WoodType` (checked against every jar in
+`traverse:fir_planks`, which had no `WoodType` then (checked against every jar in
 `/mnt/WORKSPACE/minecraft-server-data/data/mods/`), so a uniform fir ring already made no chest at
 all, and a `crafting_table.json` override built the same way would have stopped fir making a
 crafting table. Dropping oak's table (see S1's As built) made the same hole for oak. So the
@@ -157,9 +157,18 @@ gate holds; the Polymer pack's `note_block.json` carries one variant per registe
 naming that table's model. In-game, a client that declined the pack sees vanilla's crafting table.
 The client used for the with-pack check never had the pack at all: that Modrinth profile fails
 every server pack's reload with "Cubemap compatible textures must be square, but size is 16x2" and
-drops it (seen since 2026-08-06, on unrelated servers too), then reports `FAILED_RELOAD`. Still to
-observe: a handshake client placing, seeing and opening a table with the menu staying open, and a
-client whose pack does load seeing the planked table.
+drops it (seen since 2026-08-06, on unrelated servers too), then reports `FAILED_RELOAD`.
+
+With terrestria, cinderscapes, woods_and_mires, enderscape and traverse copied in from the live
+server (plus TrimPatcher, which enderscape needs), all 16 modded woods register: each wood's chest,
+trapped chest and table places, is in `mineable/axe` and drops itself; a uniform ring and square of
+its planks craft its chest and table, and its chest crafts into a trapped chest and a cart carrying
+it; mixed modded grids give vanilla's chest and table; and the pack carries all 27 table overrides.
+Of those woods only traverse's fir was missing, from `WoodType` itself, and was added as `FIR`
+(`modded-wood-types.md` has its source); a fir chest also crafts a hopper through
+`c:chests/wooden`. A vanilla client whose pack loads sees the planked tables and their icons.
+Still to observe: a handshake client placing, seeing and opening a table with the menu staying
+open.
 
 ## S2 — Datagen: textures, block/item models, recipes — **done**
 
