@@ -50,17 +50,16 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
  * <p>Also one cart recipe per cargo — each of the 27 woods' chests and trapped chests, plus
  * vanilla's trapped chest, the barrel, the eight copper chests and the seventeen shulker boxes. Of
  * those, every cargo but this mod's own is one vanilla already draws in a cart, and so needs
- * nothing but the recipe. Vanilla's own {@code chest + minecart} is redirected to this
- * mod's cart too, but not from here: that one has to be written at vanilla's recipe id to replace
- * it rather than collide with it, and {@code FabricRecipeProvider#getRecipeIdentifier} rebuilds
- * every id it is given as {@code <modId>:<path>}. Overriding that would also move the generated
- * advancement onto vanilla's, so it is a hand-written
- * {@code src/main/resources/data/minecraft/recipe/chest_minecart.json} instead — beside the
- * {@code mineable/axe} tag, which is in the {@code minecraft} namespace for the same reason. It
- * still names {@code minecraft:chest} exactly rather than {@code #c:chests/wooden} (below): every
- * wood already has its own cart recipe with the correct cargo baked in, and widening this one to
- * the tag would let it also match a planked chest, racing that wood's own recipe for the same
- * grid with no cargo component set.
+ * nothing but the recipe. Vanilla's own {@code chest + minecart} is redirected to this mod's cart
+ * too, but not from here: that one has to be written at vanilla's recipe id to replace it rather
+ * than collide with it, and {@code FabricRecipeProvider#getRecipeIdentifier} rebuilds every id it
+ * is given as {@code <modId>:<path>}. Overriding that would also move the generated advancement
+ * onto vanilla's, so it is a hand-written
+ * {@code src/main/resources/data/minecraft/recipe/chest_minecart.json} instead. It still names
+ * {@code minecraft:chest} exactly rather than {@code #c:chests/wooden} (below): every wood already
+ * has its own cart recipe with the correct cargo baked in, and widening this one to the tag would
+ * let it also match a planked chest, racing that wood's own recipe for the same grid with no cargo
+ * component set.
  *
  * <p>{@code data/c/tags/item/chests/wooden.json} lists every plain planked chest alongside
  * {@code minecraft:chest} (not the trapped chests — vanilla's own recipes never took one either),

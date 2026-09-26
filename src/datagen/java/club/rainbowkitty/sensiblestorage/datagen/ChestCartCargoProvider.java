@@ -27,7 +27,8 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
  * than as twenty-five ids, so a future weathering state or dye colour arrives on its own.
  *
  * <p>Generated rather than hand-written because the per-wood half of it follows {@link WoodType},
- * which the hand-written {@code minecraft:mineable/axe} does not and has drifted from.
+ * which a hand-written {@code minecraft:mineable/axe} once failed to and drifted from (see
+ * {@link AxeMineableProvider}).
  *
  * <p>Not in the list, and each for its own reason:
  *

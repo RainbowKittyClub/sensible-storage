@@ -5,7 +5,7 @@ import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 
 /**
  * Datagen entrypoint: per-wood chest textures, cart icons, blockstates, item-model definitions,
- * lang, the cart cargo and claimed-planks tags, recipes and loot.
+ * lang, the cart cargo, axe-mineable and claimed-planks tags, recipes and loot.
  */
 public final class SensibleStorageDataGenerator implements DataGeneratorEntrypoint {
     @Override
@@ -20,6 +20,7 @@ public final class SensibleStorageDataGenerator implements DataGeneratorEntrypoi
         pack.addProvider(ShulkerAtlasProvider::new);
         pack.addProvider(ChestLanguageProvider::new);
         pack.addProvider(ChestCartCargoProvider::new);
+        pack.addProvider(AxeMineableProvider::new);
         pack.addProvider(ClaimedPlanksProvider::new);
         pack.addProvider(ChestRecipeProvider::new);
         pack.addProvider(ChestLootProvider::new);
