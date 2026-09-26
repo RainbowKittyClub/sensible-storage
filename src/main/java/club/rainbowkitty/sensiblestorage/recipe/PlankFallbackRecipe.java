@@ -51,30 +51,30 @@ import club.rainbowkitty.sensiblestorage.SensibleStorage;
  * {@code result} fields are private to it, leaving a subclass nothing to build a codec from - so
  * this instead duplicates its handful of methods and adds the one predicate.
  */
-public final class MixedPlankChestRecipe extends NormalCraftingRecipe {
-    private static final MapCodec<MixedPlankChestRecipe> MAP_CODEC = RecordCodecBuilder.mapCodec(
+public final class PlankFallbackRecipe extends NormalCraftingRecipe {
+    private static final MapCodec<PlankFallbackRecipe> MAP_CODEC = RecordCodecBuilder.mapCodec(
             i -> i.group(
                     Recipe.CommonInfo.MAP_CODEC.forGetter(o -> o.commonInfo),
                     CraftingRecipe.CraftingBookInfo.MAP_CODEC.forGetter(o -> o.bookInfo),
                     ShapedRecipePattern.MAP_CODEC.forGetter(o -> o.pattern),
                     ItemStackTemplate.CODEC.fieldOf("result").forGetter(o -> o.result))
-                    .apply(i, MixedPlankChestRecipe::new));
-    private static final StreamCodec<RegistryFriendlyByteBuf, MixedPlankChestRecipe> STREAM_CODEC =
+                    .apply(i, PlankFallbackRecipe::new));
+    private static final StreamCodec<RegistryFriendlyByteBuf, PlankFallbackRecipe> STREAM_CODEC =
             StreamCodec.composite(
                     Recipe.CommonInfo.STREAM_CODEC, o -> o.commonInfo,
                     CraftingRecipe.CraftingBookInfo.STREAM_CODEC, o -> o.bookInfo,
                     ShapedRecipePattern.STREAM_CODEC, o -> o.pattern,
                     ItemStackTemplate.STREAM_CODEC, o -> o.result,
-                    MixedPlankChestRecipe::new);
+                    PlankFallbackRecipe::new);
 
-    /** This recipe's serializer, registered under {@code sensiblestorage:mixed_plank_chest}. */
-    public static final RecipeSerializer<MixedPlankChestRecipe> SERIALIZER =
+    /** This recipe's serializer, registered under {@code sensiblestorage:plank_fallback}. */
+    public static final RecipeSerializer<PlankFallbackRecipe> SERIALIZER =
             new RecipeSerializer<>(MAP_CODEC, STREAM_CODEC);
 
     private final ShapedRecipePattern pattern;
     private final ItemStackTemplate result;
 
-    private MixedPlankChestRecipe(Recipe.CommonInfo commonInfo,
+    private PlankFallbackRecipe(Recipe.CommonInfo commonInfo,
             CraftingRecipe.CraftingBookInfo bookInfo, ShapedRecipePattern pattern,
             ItemStackTemplate result) {
         super(commonInfo, bookInfo);
@@ -85,11 +85,11 @@ public final class MixedPlankChestRecipe extends NormalCraftingRecipe {
     /** Registers {@link #SERIALIZER}. Call once from {@code onInitialize}. */
     public static void register() {
         Registry.register(BuiltInRegistries.RECIPE_SERIALIZER,
-                SensibleStorage.id("mixed_plank_chest"), SERIALIZER);
+                SensibleStorage.id("plank_fallback"), SERIALIZER);
     }
 
     @Override
-    public RecipeSerializer<MixedPlankChestRecipe> getSerializer() {
+    public RecipeSerializer<PlankFallbackRecipe> getSerializer() {
         return SERIALIZER;
     }
 

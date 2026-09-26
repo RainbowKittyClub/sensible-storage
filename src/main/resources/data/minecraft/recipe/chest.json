@@ -1,5 +1,5 @@
 {
-  "type": "sensiblestorage:mixed_plank_chest",
+  "type": "sensiblestorage:plank_fallback",
   "key": {
     "#": "#minecraft:planks"
   },

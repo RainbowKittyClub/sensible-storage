@@ -137,7 +137,7 @@ overrides, `bamboo_chest_raft`, and terrestria's/WoodsAndMires' own once S1 pick
 to produce this mod's own per-hull-wood item instead of vanilla's, the way
 `data/minecraft/recipe/chest_minecart.json` already redirects to `sensiblestorage:chest_minecart`.
 The result needs the cargo component set from whichever chest ingredient actually matched —
-`MixedPlankChestRecipe` (`club.rainbowkitty.sensiblestorage.recipe.MixedPlankChestRecipe`) is the
+`PlankFallbackRecipe` (`club.rainbowkitty.sensiblestorage.recipe.PlankFallbackRecipe`) is the
 precedent for a custom recipe that inspects the real matched stack rather than trusting a static
 JSON result.
 

@@ -36,7 +36,7 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
  * tripwire hook → trapped chest. Vanilla's own {@code minecraft:chest} recipe also matches a
  * uniform plank ring - {@code #minecraft:planks} takes any wood, not just this one's - so
  * {@code data/minecraft/recipe/chest.json} is a hand-written override naming a custom serializer,
- * {@link club.rainbowkitty.sensiblestorage.recipe.MixedPlankChestRecipe}, that only matches a
+ * {@link club.rainbowkitty.sensiblestorage.recipe.PlankFallbackRecipe}, that only matches a
  * genuinely mixed-wood ring; see that class for why a wood's own recipe cannot simply be trusted
  * to win a tie against vanilla's. {@code trapped_chest} gets a plain, opt-in-only override instead
  * ({@code disable_vanilla_recipes} built-in data pack, {@code BuiltinDataPacks}, off by default) -
