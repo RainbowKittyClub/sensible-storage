@@ -52,7 +52,7 @@ public final class ChestBlocks {
     private static final Map<WoodType, PlankedTrappedChestBlock> TRAPPED = new LinkedHashMap<>();
 
     // Registration below ignores the mod-presence gate under datagen, so every WoodType still gets
-    // a Block for the lang/recipe/loot providers to read: the 15 modded woods are never Gradle
+    // a Block for the lang/recipe/loot providers to read: the 16 modded woods are never Gradle
     // dependencies of this mod (only their id strings are needed - see
     // docs/plan/modded-wood-types.md), so isModLoaded is always false for them here regardless of
     // what a real target server has installed.

@@ -18,7 +18,7 @@ public final class BuiltinDataPacks {
      * Overrides the vanilla {@code trapped_chest} recipe into an unreachable one (see
      * {@code resourcepacks/disable_vanilla_recipes/}), a purely thematic call - a leftover vanilla
      * {@code minecraft:chest} (from loot, another mod, or an older save) could otherwise still make
-     * a plain trapped chest sitting next to 27 planked ones. Off by default
+     * a plain trapped chest sitting next to 28 planked ones. Off by default
      * ({@code /datapack enable} to turn it on). {@code minecraft:chest} itself needs no such
      * override: {@link club.rainbowkitty.sensiblestorage.recipe.PlankFallbackRecipe} already
      * keeps it out of the way of every uniform ring a wood's own chest is made from, so this pack

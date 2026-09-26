@@ -45,7 +45,9 @@ public enum WoodType implements StringRepresentable {
     VEILED("enderscape"),
 
     SCORCHED("cinderscapes"),
-    UMBRAL("cinderscapes");
+    UMBRAL("cinderscapes"),
+
+    FIR("traverse");
 
     /**
      * Serialises a wood as its {@link #id()}, for the cart item's wood component and the cart

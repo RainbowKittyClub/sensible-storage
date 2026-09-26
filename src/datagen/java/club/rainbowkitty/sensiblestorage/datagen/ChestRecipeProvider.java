@@ -51,7 +51,7 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
  * (a single, {@code required: false} entry) instead of a direct item reference, since this mod is
  * never a build dependency of the wood's source mod - see {@code ChestBlocks#DATAGEN}.
  *
- * <p>Also one cart recipe per cargo — each of the 27 woods' chests and trapped chests, plus
+ * <p>Also one cart recipe per cargo — each of the 28 woods' chests and trapped chests, plus
  * vanilla's trapped chest, the barrel, the eight copper chests and the seventeen shulker boxes. Of
  * those, every cargo but this mod's own is one vanilla already draws in a cart, and so needs
  * nothing but the recipe. Vanilla's own {@code chest + minecart} is redirected to this mod's cart
@@ -128,7 +128,7 @@ public final class ChestRecipeProvider extends FabricRecipeProvider {
                             .save(output);
 
                     // One item for every wood, so the wood travels in the result's components
-                    // instead of in 27 registry entries. The vanilla chest_minecart recipe names
+                    // instead of in 28 registry entries. The vanilla chest_minecart recipe names
                     // minecraft:chest exactly rather than a tag, so none of these collide with it.
                     cartRecipe(chest, output);
                     cartRecipe(trapped, output);

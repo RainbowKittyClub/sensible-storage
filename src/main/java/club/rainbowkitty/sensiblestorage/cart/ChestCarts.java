@@ -62,7 +62,7 @@ public final class ChestCarts {
      * resource pack. {@link #PLAIN_NAME_FALLBACK} keeps the English of that, and such a client
      * never sees vanilla's cart renamed either, so for it the pair reads exactly as it did before.
      * What is genuinely lost is a non-English client that declines the pack, which now reads one
-     * of the two in English — the same deal the 27 woods have taken since S2.
+     * of the two in English — the same deal the 28 woods have taken since S2.
      */
     public static final String PLAIN_NAME_KEY = "item." + SensibleStorage.MOD_ID + "." + ID;
 
@@ -76,7 +76,7 @@ public final class ChestCarts {
      * of that shape produces a cart that lies about itself — {@code /summon} with a furnace made
      * one that looked like a furnace cart and held 27 slots. The list is a tag rather than a
      * method so that a datapack can extend it without this mod knowing about the block, which is
-     * the same reason the cargo is a block holder rather than 27 item ids.
+     * the same reason the cargo is a block holder rather than 28 item ids.
      *
      * <p>Written by {@code ChestCartCargoProvider}, which also says what is in it and why.
      */
@@ -197,7 +197,7 @@ public final class ChestCarts {
     /**
      * Whether a cargo is a trapped chest, and so whether the cart carrying it answers a comparator.
      *
-     * <p>Asked of the block class rather than of a list, so vanilla's trapped chest, this mod's 27
+     * <p>Asked of the block class rather than of a list, so vanilla's trapped chest, this mod's 28
      * and any other mod's {@link TrappedChestBlock} are all in without being enumerated. A datapack
      * that puts a fourth kind in {@link #CARGO_TAG} gets the same answer the block itself would
      * give when placed.
@@ -249,7 +249,7 @@ public final class ChestCarts {
     /**
      * Display name for a cart and its item, e.g. "Minecart with Birch Chest".
      *
-     * <p>Composed by {@code kalic0re} from the cargo block's own name, so the 27 woods need no
+     * <p>Composed by {@code kalic0re} from the cargo block's own name, so the 28 woods need no
      * naming of their own beyond the chest names the blocks already carry. The one exception is
      * vanilla's chest, which is named outright: composing it would read "Minecart with Chest"
      * via a pattern this mod only ships in English, and this is the variant meant to pass for

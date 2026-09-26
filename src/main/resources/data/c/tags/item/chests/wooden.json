@@ -73,6 +73,10 @@
     {
       "id": "sensiblestorage:umbral_chest",
       "required": false
+    },
+    {
+      "id": "sensiblestorage:fir_chest",
+      "required": false
     }
   ]
 }
