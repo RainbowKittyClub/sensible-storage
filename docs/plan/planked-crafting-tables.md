@@ -129,6 +129,22 @@ text:
   so an oak one here only duplicated it; `CraftingTableBlocks.init` skips `WoodType.OAK`, and
   `tables()` is what every datagen provider walks, so oak falls out of those too. A uniform oak
   square makes vanilla's table instead (Findings).
+- **A third tier, for a client with only the resource pack**, added after the first in-game check
+  found such a client on vanilla's table like a pack-less one. The table implements
+  `PolymerTexturedBlock` and holds a note block state that
+  `PolymerBlockResourceUtils.requestBlock(FULL_BLOCK, …)` set aside for it, which the pack redraws
+  with the table's own model; `getPolymerBlockState` sends that state when
+  `PolymerResourcePackUtils.hasMainPack` holds. The marker matters: polymer-blocks' mapper
+  (`BlockExtBlockMapper.java:24-31`) remaps every handed-out state back to a plain note block for
+  any block without it. The pack's `note_block.json` lists only the handed-out states, which is
+  enough because the client stacks blockstate files across packs
+  (`BlockStateModelLoader.java:38-88`), so vanilla's own file still covers every real note block.
+- **Item icons now fall back with the block.** The same check showed missing inventory icons:
+  kalic0re's `PolymerModelBlockItem` sent its custom model to every client, and Polymer applies
+  whatever `getPolymerItemModel` returns, pack or not (`PolymerItemUtils.java:400-420`). kalic0re
+  0.18.0 withholds it from a client with neither the pack nor this mod, as `PolymerArmorItem`
+  already did for armour, so that client sees vanilla's crafting table icon — and vanilla's chest
+  and minecart icons for the chests and carts, which had the same gap.
 
 Also added: the tables in the creative tab after the trapped chests. The menu title stays vanilla's
 `container.crafting`, decided rather than left open.
@@ -137,9 +153,13 @@ Observed on the dev server, which has no client: boot with no mixin failures;
 `setblock … sensiblestorage:spruce_crafting_table` places it and
 `execute if block … #minecraft:mineable/axe` passes; `sensiblestorage:oak_crafting_table` is an
 unknown block, and so is `sensiblestorage:redwood_crafting_table`, terrestria being absent, so the
-gate holds. The Done-when itself — a handshake
-client placing, seeing and opening a table with the menu staying open, and a vanilla client seeing
-vanilla's table — still needs the dev client.
+gate holds; the Polymer pack's `note_block.json` carries one variant per registered table, each
+naming that table's model. In-game, a client that declined the pack sees vanilla's crafting table.
+The client used for the with-pack check never had the pack at all: that Modrinth profile fails
+every server pack's reload with "Cubemap compatible textures must be square, but size is 16x2" and
+drops it (seen since 2026-08-06, on unrelated servers too), then reports `FAILED_RELOAD`. Still to
+observe: a handshake client placing, seeing and opening a table with the menu staying open, and a
+client whose pack does load seeing the planked table.
 
 ## S2 — Datagen: textures, block/item models, recipes — **done**
 
