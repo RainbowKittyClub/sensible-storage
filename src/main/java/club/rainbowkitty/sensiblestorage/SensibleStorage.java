@@ -11,6 +11,7 @@ import club.rainbowkitty.kalic0re.common.label.HoverScanner;
 import club.rainbowkitty.kalic0re.common.net.PolymerClientHandshake;
 import club.rainbowkitty.sensiblestorage.armorstands.ArmorStandLabels;
 import club.rainbowkitty.sensiblestorage.block.ChestBlocks;
+import club.rainbowkitty.sensiblestorage.block.CraftingTableBlocks;
 import club.rainbowkitty.sensiblestorage.books.BookText;
 import club.rainbowkitty.sensiblestorage.books.ShelfLabels;
 import club.rainbowkitty.sensiblestorage.cart.ChestCarts;
@@ -35,6 +36,7 @@ public class SensibleStorage implements ModInitializer {
         HANDSHAKE.register();
         PlankFallbackRecipe.register();
         ChestBlocks.init();
+        CraftingTableBlocks.init();
         ChestCarts.init();
         ChestBlocks.registerCreativeTab();
         BuiltinDataPacks.register();

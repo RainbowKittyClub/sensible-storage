@@ -9,10 +9,10 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.util.StringRepresentable;
 
 /**
- * The wood types that get a chest and a trapped chest: every vanilla wood with a {@code _planks}
- * block, plus one per modded wood from a mod this server runs. One source of truth for the
- * registration loop (gated per wood on {@link #requiredModId()}), datagen and the block-entity menu
- * title.
+ * The wood types that get a chest, a trapped chest and (oak aside) a crafting table: every vanilla
+ * wood with a {@code _planks} block, plus one per modded wood from a mod this server runs. One
+ * source of truth for the registration loop (gated per wood on {@link #requiredModId()}), datagen
+ * and the block-entity menu title.
  */
 public enum WoodType implements StringRepresentable {
     OAK(null),
@@ -58,6 +58,7 @@ public enum WoodType implements StringRepresentable {
     private final String id = name().toLowerCase(Locale.ROOT);
     private final String chestId = id + "_chest";
     private final String trappedChestId = id + "_trapped_chest";
+    private final String craftingTableId = id + "_crafting_table";
     private final String displayName = Stream.of(id.split("_"))
             .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1))
             .collect(Collectors.joining(" "));
@@ -86,6 +87,11 @@ public enum WoodType implements StringRepresentable {
     /** Registry path for this wood's trapped chest, e.g. {@code dark_oak_trapped_chest}. */
     public String trappedChestId() {
         return trappedChestId;
+    }
+
+    /** Registry path for this wood's crafting table, e.g. {@code dark_oak_crafting_table}. */
+    public String craftingTableId() {
+        return craftingTableId;
     }
 
     /** Title-cased wood name for display, e.g. {@code Dark Oak}. */

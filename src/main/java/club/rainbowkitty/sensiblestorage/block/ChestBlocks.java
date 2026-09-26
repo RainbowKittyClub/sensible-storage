@@ -72,10 +72,11 @@ public final class ChestBlocks {
 
     /**
      * Registers a dedicated {@code sensiblestorage:chests} creative tab holding every chest, then
-     * every trapped chest, then every minecart. A Polymer server-side tab: adding entries to the
-     * vanilla tabs does not reliably sync to Polymer clients, but a Polymer-registered tab does
-     * (and shows in {@code /polymer creative}). Call after {@link #init()} and
-     * {@code ChestCarts#init()}, since it reads both.
+     * every trapped chest, then every crafting table, then every minecart. A Polymer server-side
+     * tab: adding entries to the vanilla tabs does not reliably sync to Polymer clients, but a
+     * Polymer-registered tab does (and shows in {@code /polymer creative}). Call after
+     * {@link #init()}, {@link CraftingTableBlocks#init()} and {@code ChestCarts#init()}, since it
+     * reads all three.
      *
      * <p>What this tab is <em>not</em> is a way onto a vanilla client's own creative screen. That
      * screen is built client-side from the client's own registry, and
@@ -91,6 +92,7 @@ public final class ChestBlocks {
                 .displayItems((params, output) -> {
                     CHESTS.values().forEach(output::accept);
                     TRAPPED.values().forEach(output::accept);
+                    CraftingTableBlocks.tables().values().forEach(output::accept);
                     output.acceptAll(ChestCarts.carts());
                 })
                 .build();
