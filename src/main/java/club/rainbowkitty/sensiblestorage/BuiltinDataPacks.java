@@ -21,8 +21,9 @@ public final class BuiltinDataPacks {
      * a plain trapped chest sitting next to 27 planked ones. Off by default
      * ({@code /datapack enable} to turn it on). {@code minecraft:chest} itself needs no such
      * override: {@link club.rainbowkitty.sensiblestorage.recipe.PlankFallbackRecipe} already
-     * keeps it out of a uniform plank ring's way unconditionally, so this pack has nothing left to
-     * do for it - see that class for why disabling it outright was never really optional there.
+     * keeps it out of the way of every uniform ring a wood's own chest is made from, so this pack
+     * has nothing left to do for it - see that class for why disabling it outright was never really
+     * optional there.
      * The identifier still reads {@code disable_vanilla_recipes} (plural) despite covering one
      * recipe now: renaming a built-in pack's id resets its enabled/disabled state on any world that
      * already recorded it, and this mod has been live since 2026-09-08.

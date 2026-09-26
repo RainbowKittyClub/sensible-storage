@@ -36,15 +36,16 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
  * tripwire hook → trapped chest. Vanilla's own {@code minecraft:chest} recipe also matches a
  * uniform plank ring - {@code #minecraft:planks} takes any wood, not just this one's - so
  * {@code data/minecraft/recipe/chest.json} is a hand-written override naming a custom serializer,
- * {@link club.rainbowkitty.sensiblestorage.recipe.PlankFallbackRecipe}, that only matches a
- * genuinely mixed-wood ring; see that class for why a wood's own recipe cannot simply be trusted
- * to win a tie against vanilla's. {@code trapped_chest} gets a plain, opt-in-only override instead
- * ({@code disable_vanilla_recipes} built-in data pack, {@code BuiltinDataPacks}, off by default) -
- * it never collides with a wood's own trapped-chest recipe (different items
- * entirely), so disabling it is a look-and-feel choice, not a correctness one. A modded wood's ring
- * uses its {@code data/sensiblestorage/tags/item/<wood>_planks.json} tag (a single,
- * {@code required: false} entry) instead of a direct item reference, since this mod is never a
- * build dependency of the wood's source mod - see {@code ChestBlocks#DATAGEN}.
+ * {@link club.rainbowkitty.sensiblestorage.recipe.PlankFallbackRecipe}, that refuses a uniform ring
+ * of any plank in its {@code claimed} tag, {@link ClaimedPlanksProvider}'s; see that class for why
+ * a wood's own recipe cannot simply be trusted to win a tie against vanilla's.
+ * {@code trapped_chest} gets a plain, opt-in-only override instead ({@code disable_vanilla_recipes}
+ * built-in data pack, {@code BuiltinDataPacks}, off by default) - it never collides with a wood's
+ * own trapped-chest recipe (different items entirely), so disabling it is a look-and-feel choice,
+ * not a correctness one. A modded wood's ring uses its
+ * {@code data/sensiblestorage/tags/item/<wood>_planks.json} tag (a single, {@code required: false}
+ * entry) instead of a direct item reference, since this mod is never a build dependency of the
+ * wood's source mod - see {@code ChestBlocks#DATAGEN}.
  *
  * <p>Also one cart recipe per cargo — each of the 27 woods' chests and trapped chests, plus
  * vanilla's trapped chest, the barrel, the eight copper chests and the seventeen shulker boxes. Of

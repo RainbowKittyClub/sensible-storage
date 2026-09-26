@@ -1,15 +1,17 @@
 package club.rainbowkitty.sensiblestorage.recipe;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -31,9 +33,10 @@ import net.minecraft.world.level.Level;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 
 /**
- * A shaped recipe that only matches a grid holding more than one distinct item - vanilla's own
- * {@code minecraft:chest} recipe, rewritten to fire for a mixed-wood plank ring and defer to a
- * wood's own chest recipe for a uniform one.
+ * A shaped recipe that steps aside for any grid holding one {@code claimed} item alone - vanilla's
+ * own {@code minecraft:chest} recipe, rewritten so a uniform ring of a wood with its own chest goes
+ * to that wood's recipe, and every other ring still makes vanilla's. Nothing here is specific to a
+ * chest: the pattern, result and claimed set all come from the recipe JSON.
  *
  * <p>Without this, {@code minecraft:chest} and {@code sensiblestorage:oak_chest} (etc.) both match
  * a ring of, say, eight oak planks - {@code #minecraft:planks} takes any plank, and vanilla's
@@ -44,8 +47,12 @@ import club.rainbowkitty.sensiblestorage.SensibleStorage;
  * namespace second. Comparing {@code "chest"} against a wood's {@code "<wood>_chest"} is a coin
  * flip that has nothing to do with which recipe should win: {@code "birch_chest"} sorts before it
  * and wins on its own, but {@code "oak_chest"} sorts after it and loses, silently handing a plain
- * oak ring a vanilla chest. This recipe closes that gap by refusing to match at all unless the
- * ring is genuinely mixed, so a uniform ring only ever has one match regardless of sort order.
+ * oak ring a vanilla chest. This recipe closes that gap by refusing a grid that a wood's own recipe
+ * is written for, so such a grid only ever has one match regardless of sort order.
+ *
+ * <p>Refusing only claimed items, rather than every uniform grid, is what keeps a plank with no
+ * chest of its own - a wood from a mod this one has no chest for - making vanilla's chest rather
+ * than nothing at all.
  *
  * <p>{@code ShapedRecipe} itself cannot be extended for this - its {@code pattern} and
  * {@code result} fields are private to it, leaving a subclass nothing to build a codec from - so
@@ -57,6 +64,8 @@ public final class PlankFallbackRecipe extends NormalCraftingRecipe {
                     Recipe.CommonInfo.MAP_CODEC.forGetter(o -> o.commonInfo),
                     CraftingRecipe.CraftingBookInfo.MAP_CODEC.forGetter(o -> o.bookInfo),
                     ShapedRecipePattern.MAP_CODEC.forGetter(o -> o.pattern),
+                    RegistryCodecs.homogeneousList(Registries.ITEM).fieldOf("claimed")
+                            .forGetter(o -> o.claimed),
                     ItemStackTemplate.CODEC.fieldOf("result").forGetter(o -> o.result))
                     .apply(i, PlankFallbackRecipe::new));
     private static final StreamCodec<RegistryFriendlyByteBuf, PlankFallbackRecipe> STREAM_CODEC =
@@ -64,6 +73,7 @@ public final class PlankFallbackRecipe extends NormalCraftingRecipe {
                     Recipe.CommonInfo.STREAM_CODEC, o -> o.commonInfo,
                     CraftingRecipe.CraftingBookInfo.STREAM_CODEC, o -> o.bookInfo,
                     ShapedRecipePattern.STREAM_CODEC, o -> o.pattern,
+                    ByteBufCodecs.holderSet(Registries.ITEM), o -> o.claimed,
                     ItemStackTemplate.STREAM_CODEC, o -> o.result,
                     PlankFallbackRecipe::new);
 
@@ -72,13 +82,15 @@ public final class PlankFallbackRecipe extends NormalCraftingRecipe {
             new RecipeSerializer<>(MAP_CODEC, STREAM_CODEC);
 
     private final ShapedRecipePattern pattern;
+    private final HolderSet<Item> claimed;
     private final ItemStackTemplate result;
 
     private PlankFallbackRecipe(Recipe.CommonInfo commonInfo,
             CraftingRecipe.CraftingBookInfo bookInfo, ShapedRecipePattern pattern,
-            ItemStackTemplate result) {
+            HolderSet<Item> claimed, ItemStackTemplate result) {
         super(commonInfo, bookInfo);
         this.pattern = pattern;
+        this.claimed = claimed;
         this.result = result;
     }
 
@@ -100,7 +112,7 @@ public final class PlankFallbackRecipe extends NormalCraftingRecipe {
 
     @Override
     public boolean matches(CraftingInput input, Level level) {
-        return this.pattern.matches(input) && isMixed(input);
+        return this.pattern.matches(input) && !isClaimed(input);
     }
 
     @Override
@@ -119,15 +131,20 @@ public final class PlankFallbackRecipe extends NormalCraftingRecipe {
                 new SlotDisplay.ItemSlotDisplay(Items.CRAFTING_TABLE)));
     }
 
-    // True once a second distinct item turns up among the filled slots - a ring of one plank type
-    // is never "mixed", however many of that one plank fill it.
-    private static boolean isMixed(CraftingInput input) {
-        Set<Item> distinct = new HashSet<>();
+    // True when every filled slot holds the same item and that item is claimed - a grid of one
+    // plank type is left to that wood's own recipe, but a second distinct item makes it mixed.
+    private boolean isClaimed(CraftingInput input) {
+        ItemStack first = ItemStack.EMPTY;
         for (ItemStack stack : input.items()) {
-            if (!stack.isEmpty() && distinct.add(stack.getItem()) && distinct.size() > 1) {
-                return true;
+            if (stack.isEmpty()) {
+                continue;
+            }
+            if (first.isEmpty()) {
+                first = stack;
+            } else if (!stack.is(first.getItem())) {
+                return false;
             }
         }
-        return false;
+        return !first.isEmpty() && first.is(this.claimed);
     }
 }
