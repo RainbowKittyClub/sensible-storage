@@ -1,6 +1,7 @@
 {
   "pack": {
-    "pack_format": ${datapack_pack_format},
-    "description": "Sensible Storage: disable the vanilla trapped chest recipe"
+    "description": "Sensible Storage: disable the vanilla trapped chest recipe",
+    "min_format": ${datapack_pack_format},
+    "max_format": ${datapack_pack_format}
   }
 }
