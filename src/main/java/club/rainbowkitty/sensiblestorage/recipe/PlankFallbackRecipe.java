@@ -1,9 +1,12 @@
 package club.rainbowkitty.sensiblestorage.recipe;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -78,6 +81,10 @@ public final class PlankFallbackRecipe extends NormalCraftingRecipe {
     public static final RecipeSerializer<PlankFallbackRecipe> SERIALIZER =
             new RecipeSerializer<>(MAP_CODEC, STREAM_CODEC);
 
+    // The server's recipe list as last sorted by otherCraftingRecipes, and what that sort kept.
+    private static @Nullable Collection<RecipeHolder<?>> scannedRecipes;
+    private static List<CraftingRecipe> otherCrafting = List.of();
+
     private final ShapedRecipePattern pattern;
     private final ItemStackTemplate result;
 
@@ -134,14 +141,30 @@ public final class PlankFallbackRecipe extends NormalCraftingRecipe {
     // True when a crafting recipe other than a fallback matches too. Skipping every fallback, this
     // one included, is also what keeps the check from recursing back into itself.
     private static boolean matchedElsewhere(CraftingInput input, ServerLevel level) {
-        for (RecipeHolder<?> holder : level.recipeAccess().getRecipes()) {
-            if (holder.value().getType() == RecipeType.CRAFTING
-                    && holder.value() instanceof CraftingRecipe recipe
-                    && !(recipe instanceof PlankFallbackRecipe)
-                    && recipe.matches(input, level)) {
+        for (CraftingRecipe recipe : otherCraftingRecipes(level)) {
+            if (recipe.matches(input, level)) {
                 return true;
             }
         }
         return false;
+    }
+
+    // Every crafting recipe but the fallbacks, sorted out once per recipe list rather than on every
+    // grid change: a reload replaces the list the server hands out, which rebuilds this.
+    private static List<CraftingRecipe> otherCraftingRecipes(ServerLevel level) {
+        Collection<RecipeHolder<?>> recipes = level.recipeAccess().getRecipes();
+        if (recipes != scannedRecipes) {
+            List<CraftingRecipe> others = new ArrayList<>();
+            for (RecipeHolder<?> holder : recipes) {
+                if (holder.value().getType() == RecipeType.CRAFTING
+                        && holder.value() instanceof CraftingRecipe recipe
+                        && !(recipe instanceof PlankFallbackRecipe)) {
+                    others.add(recipe);
+                }
+            }
+            otherCrafting = List.copyOf(others);
+            scannedRecipes = recipes;
+        }
+        return otherCrafting;
     }
 }
