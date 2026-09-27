@@ -19,6 +19,7 @@ import club.rainbowkitty.kalic0re.common.datagen.PackJson;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.block.BookshelfBlocks;
 import club.rainbowkitty.sensiblestorage.block.ChiseledBooks;
+import club.rainbowkitty.sensiblestorage.block.ChiseledBookshelfModels;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
 /**
@@ -39,6 +40,8 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
  * every blockstate here ({@link ChiseledBooks}); that includes an override of vanilla's own
  * chiseled bookshelf, redrawn the same way from copies of its own sheets so it takes the random
  * books too.
+ *
+ * <p>Every model id is {@link ChiseledBookshelfModels}'.
  */
 public final class ChiseledBookshelfModelProvider implements DataProvider {
     // Vanilla's body (no north face) and its inventory model (with one), both over top/side keys.
@@ -105,9 +108,9 @@ public final class ChiseledBookshelfModelProvider implements DataProvider {
         files.put(this.models.json(bodyModel(name)),
                 PackJson.model(BODY, Map.of("top", top, "side", side)));
         for (ChiseledSlot slot : ChiseledSlot.values()) {
-            files.put(this.models.json(slotModel(name, "empty", slot)),
+            files.put(this.models.json(emptySlot(name, slot)),
                     PackJson.model(slotTemplate(slot), "texture", empty));
-            files.put(this.models.json(slotModel(name, "occupied", slot)),
+            files.put(this.models.json(occupiedSlot(name, slot)),
                     PackJson.model(slotTemplate(slot), "texture", occupied));
         }
     }
@@ -122,9 +125,9 @@ public final class ChiseledBookshelfModelProvider implements DataProvider {
             parts.add(part(when(facing), apply(bodyModel(name), y, true)));
             for (ChiseledSlot slot : ChiseledSlot.values()) {
                 parts.add(part(when(facing, slot, false),
-                        apply(slotModel(name, "empty", slot), y, false)));
+                        apply(emptySlot(name, slot), y, false)));
                 parts.add(part(when(facing, slot, true),
-                        apply(slotModel(name, "occupied", slot), y, false)));
+                        apply(occupiedSlot(name, slot), y, false)));
                 parts.add(part(when(facing, slot, true), book(slot, y)));
             }
         }
@@ -196,22 +199,26 @@ public final class ChiseledBookshelfModelProvider implements DataProvider {
 
     // Book n in a slot.
     private static Identifier bookModel(ChiseledSlot slot, int n) {
-        return SensibleStorage.id("block/chiseled_bookshelf_book_" + slot.position() + "_" + n);
+        return ChiseledBookshelfModels.book(slot.ordinal(), n);
     }
 
     // A named shelf's body, with no front.
     private static Identifier bodyModel(String name) {
-        return SensibleStorage.id("block/" + name + "_chiseled_bookshelf");
+        return ChiseledBookshelfModels.body(name);
     }
 
     // A named shelf's inventory model, with its empty front.
     private static Identifier inventoryModel(String name) {
-        return SensibleStorage.id("block/" + name + "_chiseled_bookshelf_inventory");
+        return ChiseledBookshelfModels.inventory(name);
     }
 
-    // A named shelf's quad for one slot, empty or occupied.
-    private static Identifier slotModel(String name, String state, ChiseledSlot slot) {
-        return SensibleStorage.id(
-                "block/" + name + "_chiseled_bookshelf_" + state + "_slot_" + slot.position());
+    // A named shelf's quad for an empty slot.
+    private static Identifier emptySlot(String name, ChiseledSlot slot) {
+        return ChiseledBookshelfModels.emptySlot(name, slot.ordinal());
+    }
+
+    // A named shelf's quad behind an occupied slot's book.
+    private static Identifier occupiedSlot(String name, ChiseledSlot slot) {
+        return ChiseledBookshelfModels.occupiedSlot(name, slot.ordinal());
     }
 }
