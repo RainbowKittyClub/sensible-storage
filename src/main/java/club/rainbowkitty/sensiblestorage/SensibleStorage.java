@@ -40,7 +40,7 @@ public class SensibleStorage implements ModInitializer {
         CraftingTableBlocks.init();
         BookshelfBlocks.init();
         ChestCarts.init();
-        ChestBlocks.registerCreativeTab();
+        CreativeTabs.register();
         BuiltinDataPacks.register();
 
         // Advertise the woods this installation actually registered. A client that registered a

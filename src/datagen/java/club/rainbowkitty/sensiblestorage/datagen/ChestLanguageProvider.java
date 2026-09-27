@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
 
 import net.minecraft.core.HolderLookup;
 
+import club.rainbowkitty.sensiblestorage.CreativeTabs;
 import club.rainbowkitty.sensiblestorage.block.BookshelfBlocks;
 import club.rainbowkitty.sensiblestorage.block.ChestBlocks;
 import club.rainbowkitty.sensiblestorage.block.CraftingTableBlocks;
@@ -37,7 +38,7 @@ public final class ChestLanguageProvider extends FabricLanguageProvider {
 
     @Override
     public void generateTranslations(HolderLookup.Provider registries, TranslationBuilder builder) {
-        builder.add(ChestBlocks.CREATIVE_TAB_TITLE_KEY, "Sensible Storage");
+        builder.add(CreativeTabs.TITLE_KEY, "Sensible Storage");
         builder.add(ChestBlocks.LARGE_CHEST_TITLE_KEY, "Large %s Chest");
         builder.add(ChestCarts.NAME_PATTERN_KEY, "Minecart with %s");
         builder.add(ChestCarts.PLAIN_NAME_KEY, ChestCarts.PLAIN_NAME_FALLBACK);

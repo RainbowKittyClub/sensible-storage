@@ -269,9 +269,8 @@ public final class ChestCarts {
      * vanilla cargoes — the barrel, the eight copper chests and the seventeen shulker boxes.
      *
      * <p>The trapped half mirrors the plain half rather than interleaving with it, which is the
-     * order {@code ChestBlocks#registerCreativeTab} already lists the blocks in: every chest, then
-     * every trapped chest. A player looking for the trapped carts finds them where the trapped
-     * chests were.
+     * order {@code CreativeTabs} already lists the blocks in: every chest, then every trapped
+     * chest. A player looking for the trapped carts finds them where the trapped chests were.
      *
      * <p>Only woods this build registered a chest for, so a server without a wood's mod offers no
      * cart for it — the same gate {@code ChestBlocks#init} applies to the chests themselves. The

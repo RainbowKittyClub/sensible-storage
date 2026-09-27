@@ -7,17 +7,13 @@ import java.util.Map;
 import java.util.Set;
 
 import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
-import eu.pb4.polymer.core.api.item.PolymerCreativeModeTabUtils;
 import net.fabricmc.loader.api.FabricLoader;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -29,7 +25,6 @@ import club.rainbowkitty.kalic0re.common.datagen.DatagenRun;
 import club.rainbowkitty.kalic0re.common.item.ItemRegistration;
 import club.rainbowkitty.kalic0re.common.item.PolymerModelBlockItem;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
-import club.rainbowkitty.sensiblestorage.cart.ChestCarts;
 import club.rainbowkitty.sensiblestorage.display.ChestModels;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
@@ -39,10 +34,6 @@ public final class ChestBlocks {
     public static BlockEntityType<PlankedChestBlockEntity> chestType;
     /** Shared type for every trapped chest in this mod; assigned in {@link #init()}. */
     public static BlockEntityType<PlankedTrappedChestBlockEntity> trappedType;
-
-    /** Translation key for the dedicated creative tab's title. */
-    public static final String CREATIVE_TAB_TITLE_KEY =
-            "itemGroup." + SensibleStorage.MOD_ID + ".chests";
 
     /** Double-chest menu title key; takes the wood display name as {@code %s}. */
     public static final String LARGE_CHEST_TITLE_KEY =
@@ -68,38 +59,6 @@ public final class ChestBlocks {
     /** All registered trapped chest blocks, wood order. */
     public static Map<WoodType, PlankedTrappedChestBlock> trappedChests() {
         return TRAPPED;
-    }
-
-    /**
-     * Registers a dedicated {@code sensiblestorage:chests} creative tab holding every chest, then
-     * every trapped chest, crafting table, bookshelf and chiseled bookshelf, then every minecart. A
-     * Polymer server-side tab: adding entries to the vanilla tabs does not reliably sync to Polymer
-     * clients, but a Polymer-registered tab does (and shows in {@code /polymer creative}). Call
-     * after {@link #init()}, {@link CraftingTableBlocks#init()}, {@link BookshelfBlocks#init()} and
-     * {@code ChestCarts#init()}, since it reads all four.
-     *
-     * <p>What this tab is <em>not</em> is a way onto a vanilla client's own creative screen. That
-     * screen is built client-side from the client's own registry, and
-     * {@code PolymerServerProtocol#sendCreativeSyncPackets} sends nothing at all to a connection
-     * that did not negotiate the creative-tab protocol — so a vanilla client reaches this tab only
-     * through {@code /polymer creative}. The carts are craftable and pick-block-able for that
-     * reason, rather than browsing being their only route.
-     */
-    public static void registerCreativeTab() {
-        CreativeModeTab tab = PolymerCreativeModeTabUtils.builder()
-                .title(Component.translatable(CREATIVE_TAB_TITLE_KEY))
-                .icon(() -> new ItemStack(CHESTS.get(WoodType.OAK)))
-                .displayItems((params, output) -> {
-                    CHESTS.values().forEach(output::accept);
-                    TRAPPED.values().forEach(output::accept);
-                    CraftingTableBlocks.tables().values().forEach(output::accept);
-                    BookshelfBlocks.bookshelves().values().forEach(output::accept);
-                    BookshelfBlocks.chiseledBookshelves().values().forEach(output::accept);
-                    output.acceptAll(ChestCarts.carts());
-                })
-                .build();
-        PolymerCreativeModeTabUtils.registerPolymerCreativeModeTab(
-                SensibleStorage.id("chests"), tab);
     }
 
     /** Builds and registers every block, block-entity type and block item. */
