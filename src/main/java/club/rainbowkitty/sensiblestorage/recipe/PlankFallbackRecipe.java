@@ -5,15 +5,11 @@ import java.util.List;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.world.item.Item;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
@@ -23,7 +19,9 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.NormalCraftingRecipe;
 import net.minecraft.world.item.crafting.PlacementInfo;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
@@ -33,28 +31,28 @@ import net.minecraft.world.level.Level;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 
 /**
- * A shaped recipe that steps aside for any grid holding one {@code claimed} item alone - vanilla's
- * own {@code minecraft:chest} and {@code minecraft:crafting_table} recipes, rewritten so a uniform
- * grid of a wood with its own chest or table goes to that wood's recipe, and every other grid still
- * makes vanilla's. Nothing here is specific to either block: the pattern, result and claimed set
- * all come from the recipe JSON, so each override names this one serializer.
+ * A shaped recipe that steps aside for any grid another crafting recipe also matches - vanilla's
+ * own chest, crafting table, bookshelf and chiseled bookshelf recipes, rewritten so a grid a wood's
+ * own recipe is written for goes to that recipe, and every other grid still makes vanilla's block.
+ * Nothing here is specific to any one block: the pattern and result come from the recipe JSON, so
+ * each override names this one serializer.
  *
- * <p>Without this, {@code minecraft:chest} and {@code sensiblestorage:oak_chest} (etc.) both match
- * a ring of, say, eight oak planks - {@code #minecraft:planks} takes any plank, and vanilla's
- * shaped recipe does not require its eight matched slots to hold the *same* item. Recipes of one
- * {@link net.minecraft.world.item.crafting.RecipeType} that both match one input are resolved by
- * {@link net.minecraft.world.item.crafting.RecipeMap#getRecipesFor}, which returns the first match
- * of a list sorted by {@link net.minecraft.resources.Identifier}'s natural order - path first,
- * namespace second. Comparing {@code "chest"} against a wood's {@code "<wood>_chest"} is a coin
- * flip that has nothing to do with which recipe should win: {@code "birch_chest"} sorts before it
- * and wins on its own, but {@code "oak_chest"} sorts after it and loses, silently handing a plain
- * oak ring a vanilla chest. {@code "crafting_table"} against {@code "<wood>_crafting_table"} is the
- * same coin flip over a 2x2 square. This recipe closes that gap by refusing a grid that a wood's
- * own recipe is written for, so such a grid only ever has one match regardless of sort order.
+ * <p>Without this, {@code minecraft:chest} and {@code sensiblestorage:birch_chest} (etc.) both
+ * match a ring of, say, eight birch planks - {@code #minecraft:planks} takes any plank, and
+ * vanilla's shaped recipe does not require its eight matched slots to hold the *same* item. Recipes
+ * of one {@link net.minecraft.world.item.crafting.RecipeType} that both match one input are
+ * resolved by {@link net.minecraft.world.item.crafting.RecipeMap#getRecipesFor}, which returns the
+ * first match of a list sorted by {@link net.minecraft.resources.Identifier}'s natural order - path
+ * first, namespace second. Comparing {@code "chest"} against a wood's {@code "<wood>_chest"} is a
+ * coin flip that has nothing to do with which recipe should win: {@code "birch_chest"} sorts before
+ * it and wins on its own, but {@code "spruce_chest"} sorts after it and loses, silently handing a
+ * plain spruce ring a vanilla chest. This recipe closes that gap by refusing any grid another
+ * recipe matches, so such a grid only ever has one match regardless of sort order.
  *
- * <p>Refusing only claimed items, rather than every uniform grid, is what keeps a plank with no
- * recipe of its own - a wood from a mod this one has no chest for, or oak, whose crafting table is
- * vanilla's own - making vanilla's block rather than nothing at all.
+ * <p>Deferring to whatever else matches, rather than to a list of woods, is what keeps every other
+ * grid making vanilla's block: planks of a wood this mod has no block for, oak's (vanilla's own
+ * blocks are oak), a mixed ring, or a chiseled bookshelf's planks over another wood's slabs. None
+ * has a recipe of its own to defer to.
  *
  * <p>{@code ShapedRecipe} itself cannot be extended for this - its {@code pattern} and
  * {@code result} fields are private to it, leaving a subclass nothing to build a codec from - so
@@ -66,8 +64,6 @@ public final class PlankFallbackRecipe extends NormalCraftingRecipe {
                     Recipe.CommonInfo.MAP_CODEC.forGetter(o -> o.commonInfo),
                     CraftingRecipe.CraftingBookInfo.MAP_CODEC.forGetter(o -> o.bookInfo),
                     ShapedRecipePattern.MAP_CODEC.forGetter(o -> o.pattern),
-                    RegistryCodecs.homogeneousList(Registries.ITEM).fieldOf("claimed")
-                            .forGetter(o -> o.claimed),
                     ItemStackTemplate.CODEC.fieldOf("result").forGetter(o -> o.result))
                     .apply(i, PlankFallbackRecipe::new));
     private static final StreamCodec<RegistryFriendlyByteBuf, PlankFallbackRecipe> STREAM_CODEC =
@@ -75,7 +71,6 @@ public final class PlankFallbackRecipe extends NormalCraftingRecipe {
                     Recipe.CommonInfo.STREAM_CODEC, o -> o.commonInfo,
                     CraftingRecipe.CraftingBookInfo.STREAM_CODEC, o -> o.bookInfo,
                     ShapedRecipePattern.STREAM_CODEC, o -> o.pattern,
-                    ByteBufCodecs.holderSet(Registries.ITEM), o -> o.claimed,
                     ItemStackTemplate.STREAM_CODEC, o -> o.result,
                     PlankFallbackRecipe::new);
 
@@ -84,15 +79,13 @@ public final class PlankFallbackRecipe extends NormalCraftingRecipe {
             new RecipeSerializer<>(MAP_CODEC, STREAM_CODEC);
 
     private final ShapedRecipePattern pattern;
-    private final HolderSet<Item> claimed;
     private final ItemStackTemplate result;
 
     private PlankFallbackRecipe(Recipe.CommonInfo commonInfo,
             CraftingRecipe.CraftingBookInfo bookInfo, ShapedRecipePattern pattern,
-            HolderSet<Item> claimed, ItemStackTemplate result) {
+            ItemStackTemplate result) {
         super(commonInfo, bookInfo);
         this.pattern = pattern;
-        this.claimed = claimed;
         this.result = result;
     }
 
@@ -112,9 +105,14 @@ public final class PlankFallbackRecipe extends NormalCraftingRecipe {
         return PlacementInfo.createFromOptionals(this.pattern.ingredients());
     }
 
+    /**
+     * Matches the pattern, unless another crafting recipe matches the same grid. Only a server
+     * level holds recipes to ask; anywhere else this is the pattern alone.
+     */
     @Override
     public boolean matches(CraftingInput input, Level level) {
-        return this.pattern.matches(input) && !isClaimed(input);
+        return this.pattern.matches(input)
+                && !(level instanceof ServerLevel server && matchedElsewhere(input, server));
     }
 
     @Override
@@ -133,20 +131,17 @@ public final class PlankFallbackRecipe extends NormalCraftingRecipe {
                 new SlotDisplay.ItemSlotDisplay(Items.CRAFTING_TABLE)));
     }
 
-    // True when every filled slot holds the same item and that item is claimed - a grid of one
-    // plank type is left to that wood's own recipe, but a second distinct item makes it mixed.
-    private boolean isClaimed(CraftingInput input) {
-        ItemStack first = ItemStack.EMPTY;
-        for (ItemStack stack : input.items()) {
-            if (stack.isEmpty()) {
-                continue;
-            }
-            if (first.isEmpty()) {
-                first = stack;
-            } else if (!stack.is(first.getItem())) {
-                return false;
+    // True when a crafting recipe other than a fallback matches too. Skipping every fallback, this
+    // one included, is also what keeps the check from recursing back into itself.
+    private static boolean matchedElsewhere(CraftingInput input, ServerLevel level) {
+        for (RecipeHolder<?> holder : level.recipeAccess().getRecipes()) {
+            if (holder.value().getType() == RecipeType.CRAFTING
+                    && holder.value() instanceof CraftingRecipe recipe
+                    && !(recipe instanceof PlankFallbackRecipe)
+                    && recipe.matches(input, level)) {
+                return true;
             }
         }
-        return !first.isEmpty() && first.is(this.claimed);
+        return false;
     }
 }

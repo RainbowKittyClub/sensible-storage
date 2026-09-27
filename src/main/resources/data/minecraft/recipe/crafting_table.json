@@ -1,6 +1,5 @@
 {
   "type": "sensiblestorage:plank_fallback",
-  "claimed": "#sensiblestorage:planks_with_crafting_table",
   "key": {
     "#": "#minecraft:planks"
   },

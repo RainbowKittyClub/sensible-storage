@@ -40,10 +40,10 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
  * recipe also matches a uniform plank ring - {@code #minecraft:planks} takes any wood, not just
  * this one's - so {@code data/minecraft/recipe/chest.json} is a hand-written override naming a
  * custom serializer, {@link club.rainbowkitty.sensiblestorage.recipe.PlankFallbackRecipe}, that
- * refuses a uniform ring of any plank in its {@code claimed} tag; see that class for why a wood's
- * own recipe cannot simply be trusted to win a tie against vanilla's. The two claimed tags are
- * {@link ClaimedPlanksProvider}'s, and oak's table is deliberately missing from its: vanilla's own
- * crafting table is already oak, so a uniform oak square still makes that. {@code trapped_chest}
+ * refuses any grid another recipe here also matches; see that class for why a wood's own recipe
+ * cannot simply be trusted to win a tie against vanilla's. Oak has no table, since vanilla's own
+ * crafting table is already oak, so a uniform oak square has nothing else to match and still makes
+ * that. {@code trapped_chest}
  * gets a plain, opt-in-only override instead ({@code disable_vanilla_recipes} built-in data pack,
  * {@code BuiltinDataPacks}, off by default) - it never collides with a wood's own trapped-chest
  * recipe (different items entirely), so disabling it is a look-and-feel choice, not a correctness
