@@ -22,6 +22,9 @@ tasks.named('shadowJar') {
 				'assets/sensiblestorage/textures/block/bookshelf/spruce.png',
 				'assets/sensiblestorage/models/block/spruce_bookshelf.json',
 				'data/sensiblestorage/recipe/spruce_bookshelf.json',
+				'assets/sensiblestorage/textures/block/chiseled_bookshelf/spruce_occupied.png',
+				'assets/sensiblestorage/blockstates/spruce_chiseled_bookshelf.json',
+				'data/sensiblestorage/recipe/spruce_chiseled_bookshelf.json',
 		].collect { new File(generated, it) }.findAll { !it.exists() }
 		if (!missing.isEmpty()) {
 			throw new GradleException(

@@ -99,6 +99,7 @@ public final class ChestRecipeProvider extends FabricRecipeProvider {
                     Block trapped = ChestBlocks.trappedChests().get(wood);
                     Block table = CraftingTableBlocks.tables().get(wood);
                     Block bookshelf = BookshelfBlocks.bookshelves().get(wood);
+                    Block chiseled = BookshelfBlocks.chiseledBookshelves().get(wood);
 
                     // The recipes' *outputs* (the blocks above) still need conditioning
                     // though the planks ingredient below no longer does: ChestBlocks#DATAGEN
@@ -130,6 +131,14 @@ public final class ChestRecipeProvider extends FabricRecipeProvider {
                                 .pattern("###")
                                 .pattern("XXX")
                                 .pattern("###"), wood)
+                                .save(output);
+                    }
+                    // The wood's own slabs, not any: another wood's leaves the grid to vanilla.
+                    if (chiseled != null) {
+                        withSlabs(withPlanks(this.shaped(RecipeCategory.BUILDING_BLOCKS, chiseled)
+                                .pattern("###")
+                                .pattern("XXX")
+                                .pattern("###"), wood), wood)
                                 .save(output);
                     }
 
@@ -167,6 +176,17 @@ public final class ChestRecipeProvider extends FabricRecipeProvider {
                         Registries.ITEM, SensibleStorage.id(wood.id() + "_planks"));
                 return recipe.define('#', planks)
                         .unlockedBy("has_" + wood.id() + "_planks", this.has(planks));
+            }
+
+            // Keys 'X' to one wood's slab: the item for a vanilla wood, and for a modded one the
+            // one-entry tag BookshelfItemTagsProvider writes, as the planks have.
+            private ShapedRecipeBuilder withSlabs(ShapedRecipeBuilder recipe, WoodType wood) {
+                if (wood.requiredModId() == null) {
+                    return recipe.define('X', BuiltInRegistries.ITEM.getValueOrThrow(
+                            ResourceKey.create(Registries.ITEM, Identifier.withDefaultNamespace(
+                                    wood.id() + "_slab"))));
+                }
+                return recipe.define('X', BookshelfItemTagsProvider.slabs(wood));
             }
 
             // A cart carrying one cargo, crafted from that block and a minecart. The cargo rides in

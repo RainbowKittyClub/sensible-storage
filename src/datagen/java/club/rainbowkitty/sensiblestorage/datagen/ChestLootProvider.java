@@ -20,8 +20,9 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
 /**
  * Drop-self loot for every chest, copying a renamed chest's {@code custom_name} off the block
  * entity, as vanilla's {@code createNameableBlockEntityTable} does; plain drop-self for every
- * crafting table, as vanilla's own table has; and for every bookshelf, itself with silk touch and
- * otherwise three books, as vanilla's.
+ * crafting table, as vanilla's own table has; for every bookshelf, itself with silk touch and
+ * otherwise three books; and for every chiseled bookshelf, itself with silk touch only, its books
+ * spilling from the block entity — both as vanilla's.
  */
 public final class ChestLootProvider extends FabricBlockLootSubProvider {
     /**
@@ -57,6 +58,10 @@ public final class ChestLootProvider extends FabricBlockLootSubProvider {
             if (bookshelf != null) {
                 output.add(bookshelf, createSingleItemTableWithSilkTouch(
                         bookshelf, Items.BOOK, ConstantValue.exactly(3.0F)));
+            }
+            Block chiseled = BookshelfBlocks.chiseledBookshelves().get(wood);
+            if (chiseled != null) {
+                output.dropWhenSilkTouch(chiseled);
             }
         }
     }

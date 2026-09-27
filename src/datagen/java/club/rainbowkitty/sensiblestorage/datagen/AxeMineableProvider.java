@@ -19,8 +19,8 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
 /**
  * Adds every block this mod registers to {@code minecraft:mineable/axe}, as vanilla has its own
- * chests, crafting table and bookshelves: each wood's chest, trapped chest, crafting table and
- * bookshelf.
+ * chests, crafting table and bookshelves: each wood's chest, trapped chest, crafting table,
+ * bookshelf and chiseled bookshelf.
  *
  * <p>The tag lives in the {@code minecraft} namespace because that is the tag the mining speed is
  * read from; one under this mod's own namespace would be a tag nothing reads. It used to be
@@ -53,6 +53,9 @@ public final class AxeMineableProvider extends FabricTagsProvider.BlockTagsProvi
         }
         for (WoodType wood : BookshelfBlocks.bookshelves().keySet()) {
             axe.addOptional(block(wood.bookshelfId()));
+        }
+        for (WoodType wood : BookshelfBlocks.chiseledBookshelves().keySet()) {
+            axe.addOptional(block(wood.chiseledBookshelfId()));
         }
     }
 

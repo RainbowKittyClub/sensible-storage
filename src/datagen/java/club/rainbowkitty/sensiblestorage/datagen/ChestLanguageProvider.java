@@ -51,5 +51,7 @@ public final class ChestLanguageProvider extends FabricLanguageProvider {
                 (wood, table) -> builder.add(table, wood.displayName() + " Crafting Table"));
         BookshelfBlocks.bookshelves().forEach(
                 (wood, shelf) -> builder.add(shelf, wood.displayName() + " Bookshelf"));
+        BookshelfBlocks.chiseledBookshelves().forEach(
+                (wood, shelf) -> builder.add(shelf, wood.displayName() + " Chiseled Bookshelf"));
     }
 }
