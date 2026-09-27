@@ -33,3 +33,16 @@ tasks.named('shadowJar') {
 		}
 	}
 }
+
+// Server-only mods for the dev server, from run/mods-server rather than run/mods, which
+// run/client/mods links to (gradle/devserver.gradle). The live modpack ships the Polymer patches
+// side = "server". Loaded on the dev client as well, a patch assigns Polymer's borrowed note block
+// states again in the client's own order, which differs from the server's, and the client draws
+// the patched mods' blocks as whichever block its own order gave that state.
+loom {
+	runs {
+		server {
+			property 'fabric.addMods', file('run/mods-server').absolutePath
+		}
+	}
+}
