@@ -10,6 +10,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 
 import club.rainbowkitty.sensiblestorage.block.BookshelfBlocks;
@@ -18,9 +19,10 @@ import club.rainbowkitty.sensiblestorage.block.CraftingTableBlocks;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
 /**
- * Drop-self loot for every chest, copying a renamed chest's {@code custom_name} off the block
- * entity, as vanilla's {@code createNameableBlockEntityTable} does; plain drop-self for every
- * crafting table, as vanilla's own table has; for every bookshelf, itself with silk touch and
+ * Drop-self loot for every chest and crafting table, copying a renamed one's {@code custom_name}
+ * off the block entity, as vanilla's {@code createNameableBlockEntityTable} does for a chest.
+ * Vanilla's own crafting table gets the same, overriding its plain drop-self: every table now keeps
+ * a grid, and with it a name. For every bookshelf, itself with silk touch and
  * otherwise three books; and for every chiseled bookshelf, itself with silk touch only, its books
  * spilling from the block entity — both as vanilla's.
  */
@@ -38,6 +40,7 @@ public final class ChestLootProvider extends FabricBlockLootSubProvider {
 
     @Override
     public void generate() {
+        add(Blocks.CRAFTING_TABLE, createNameableBlockEntityTable(Blocks.CRAFTING_TABLE));
         for (WoodType wood : WoodType.values()) {
             Block chest = ChestBlocks.chests().get(wood);
             Block trapped = ChestBlocks.trappedChests().get(wood);
@@ -52,7 +55,7 @@ public final class ChestLootProvider extends FabricBlockLootSubProvider {
             // No table or bookshelf for oak, whose are vanilla's own.
             Block table = CraftingTableBlocks.tables().get(wood);
             if (table != null) {
-                output.dropSelf(table);
+                output.add(table, createNameableBlockEntityTable(table));
             }
             Block bookshelf = BookshelfBlocks.bookshelves().get(wood);
             if (bookshelf != null) {
