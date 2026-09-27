@@ -3,10 +3,13 @@ package club.rainbowkitty.sensiblestorage.datagen;
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 
+import club.rainbowkitty.kalic0re.common.datagen.SpecialModelExtentsProvider;
+
 /**
  * Datagen entrypoint: per-wood chest, crafting table and both bookshelves' textures, cart icons,
  * blockstates, models, item-model definitions, lang, the cart cargo, axe-mineable and bookshelf
- * tags, recipes and loot.
+ * tags, recipes and loot. Also the measurements of vanilla's special item models, which the
+ * crafting table grid's display positions items by.
  */
 public final class SensibleStorageDataGenerator implements DataGeneratorEntrypoint {
     @Override
@@ -34,5 +37,6 @@ public final class SensibleStorageDataGenerator implements DataGeneratorEntrypoi
         pack.addProvider(NonFlammableWoodProvider::new);
         pack.addProvider(ChestRecipeProvider::new);
         pack.addProvider(ChestLootProvider::new);
+        pack.addProvider(SpecialModelExtentsProvider::new);
     }
 }

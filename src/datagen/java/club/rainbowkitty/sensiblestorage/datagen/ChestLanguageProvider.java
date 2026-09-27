@@ -58,5 +58,7 @@ public final class ChestLanguageProvider extends FabricLanguageProvider {
         builder.add(CraftingTableRules.HOLD_ITEMS.getDescriptionId(), "Crafting tables hold items");
         builder.add(CraftingTableRules.HOPPERS_CAN_ACCESS.getDescriptionId(),
                 "Hoppers can access crafting tables");
+        builder.add(CraftingTableRules.SHOW_INVENTORY.getDescriptionId(),
+                "Crafting tables show inventory");
     }
 }
