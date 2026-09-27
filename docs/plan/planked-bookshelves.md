@@ -7,7 +7,8 @@ grayscale overlays tinted with the wood's median plank colour rather than cut fr
 themselves. The chiseled bookshelf also gets a book per slot drawn at random from 18 book sprites,
 instead of vanilla's fixed six — and so does vanilla's own chiseled bookshelf, for every client that
 runs the mod or has the pack. There is no oak variant of either: vanilla's are oak already. Fuel
-values are a separate change, for every planked block at once, and not part of this plan.
+values were a separate change, for every planked block at once, and not part of this plan; it
+landed afterwards as `Flammability`, which also took over the bookshelves' fire odds.
 
 Every claim here was checked against the 26.2 decompile (`libs/decompiledjava/minecraft-26.2/`),
 the merged deobf jar's own assets and data, the Fabric API 0.159.0 bundle, the Polymer checkout,
@@ -255,7 +256,7 @@ Vanilla's behaviour that is not in the block itself, each wired here:
 | Vanilla wiring | Where | Planked equivalent |
 |---|---|---|
 | Enchanting power | `enchantment_power_provider` tag, read at `EnchantingTableBlock.java:48-49` | Generated tag entries, S4 |
-| Flammable 30/20 | `FireBlock.java:412` | `FlammableBlockRegistry` |
+| Flammable 30/20 | `FireBlock.java:412` | `FlammableBlockRegistry`, flammable woods only (`Flammability`, later) |
 | Axe | `mineable/axe` | `AxeMineableProvider`, S4 |
 | Lectern ingredient | `lectern.json` names `minecraft:bookshelf` | `c:bookshelves` item and block tags, S4; `lectern.json` override naming `#c:bookshelves` |
 

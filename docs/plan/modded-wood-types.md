@@ -263,6 +263,16 @@ confirmed 16×16 by reading the PNG `IHDR` chunk directly out of the live-server
 Traverse came later than the other four and adds the one wood; every plank in each jar's
 `blockstates/` is in this table.
 
+**Which woods burn** (checked 2026-09-26 against the same jars, for `WoodType#flammable`).
+Cinderscapes lists scorched's and umbral's planks, and every other block of both woods, in
+`minecraft:non_flammable_wood` and registers no fire odds at all, so both are non-flammable, as
+crimson and warped are. Every other modded wood registers its planks with `FlammableBlockRegistry`
+— Terrestria's through `WoodBlocks#addFlammables` for all nine woods, Enderscape's three at 5/5,
+Traverse's fir at 5/20 — except pine: Woods and Mires registers pine's logs, wood and leaves but
+not its planks (`WamBlocks#init`, the same in the local fork), and does not list pine in
+`minecraft:non_flammable_wood`. Pine is treated as flammable, the planks' omission looking like an
+oversight rather than a choice.
+
 `enderscape-polymer-patch-3.0.1.1+26.2.jar`, alongside the main Enderscape jar on the live
 server, adds no wood/plank content — it's a Polymer compatibility shim for Enderscape's
 other blocks and is irrelevant here.
