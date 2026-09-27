@@ -9,6 +9,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
+import club.rainbowkitty.kalic0re.common.craft.CraftingGridBlockEntity;
+
 /**
  * What every crafting table with a grid does beyond vanilla's: vanilla's own through
  * {@code CraftingTableBlockMixin}, each planked one by inheriting from it. A crafting table from
@@ -33,5 +35,11 @@ public final class CraftingTableGrids {
     /** The table's grid as its menu provider, or null to leave the table to vanilla's menu. */
     public static @Nullable MenuProvider menuProvider(Level level, BlockPos pos) {
         return level.getBlockEntity(pos) instanceof CraftingTableBlockEntity grid ? grid : null;
+    }
+
+    /** The comparator signal: how many of the grid's slots hold anything. */
+    public static int signal(Level level, BlockPos pos) {
+        return level.getBlockEntity(pos) instanceof CraftingGridBlockEntity grid
+                ? grid.filledSlotCount() : 0;
     }
 }

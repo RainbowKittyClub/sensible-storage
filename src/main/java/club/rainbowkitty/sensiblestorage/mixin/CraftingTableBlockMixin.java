@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -20,7 +21,7 @@ import club.rainbowkitty.sensiblestorage.block.CraftingTableGrids;
 
 /**
  * Gives vanilla's crafting table, and every planked one by inheritance, a grid that keeps its
- * items. {@link CraftingTableGrids} decides which do.
+ * items and a comparator signal. {@link CraftingTableGrids} decides each.
  */
 @Mixin(CraftingTableBlock.class)
 public abstract class CraftingTableBlockMixin extends Block
@@ -33,6 +34,17 @@ public abstract class CraftingTableBlockMixin extends Block
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return CraftingTableGrids.newBlockEntity(pos, state);
+    }
+
+    @Override
+    protected boolean hasAnalogOutputSignal(BlockState state) {
+        return CraftingTableGrids.hasGrid(state);
+    }
+
+    @Override
+    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos,
+            Direction direction) {
+        return CraftingTableGrids.signal(level, pos);
     }
 
     // The grid's own menu, which keeps its contents; vanilla's for a table from another mod.
