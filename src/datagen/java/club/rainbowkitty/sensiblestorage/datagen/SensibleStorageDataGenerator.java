@@ -31,6 +31,7 @@ public final class SensibleStorageDataGenerator implements DataGeneratorEntrypoi
         pack.addProvider(AxeMineableProvider::new);
         pack.addProvider(BookshelfTagsProvider::new);
         pack.addProvider(BookshelfItemTagsProvider::new);
+        pack.addProvider(NonFlammableWoodProvider::new);
         pack.addProvider(ChestRecipeProvider::new);
         pack.addProvider(ChestLootProvider::new);
     }

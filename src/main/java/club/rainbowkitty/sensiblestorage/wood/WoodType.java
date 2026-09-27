@@ -25,8 +25,8 @@ public enum WoodType implements StringRepresentable {
     CHERRY(null),
     PALE_OAK(null),
     BAMBOO(null),
-    CRIMSON(null),
-    WARPED(null),
+    CRIMSON(null, false),
+    WARPED(null, false),
 
     PINE("woods_and_mires"),
 
@@ -44,8 +44,8 @@ public enum WoodType implements StringRepresentable {
     MURUBLIGHT("enderscape"),
     VEILED("enderscape"),
 
-    SCORCHED("cinderscapes"),
-    UMBRAL("cinderscapes"),
+    SCORCHED("cinderscapes", false),
+    UMBRAL("cinderscapes", false),
 
     FIR("traverse");
 
@@ -67,9 +67,16 @@ public enum WoodType implements StringRepresentable {
             .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1))
             .collect(Collectors.joining(" "));
     private final @Nullable String requiredModId;
+    private final boolean flammable;
 
     WoodType(@Nullable String requiredModId) {
+        this(requiredModId, true);
+    }
+
+    // flammable is false for a wood whose planks are in minecraft:non_flammable_wood.
+    WoodType(@Nullable String requiredModId, boolean flammable) {
         this.requiredModId = requiredModId;
+        this.flammable = flammable;
     }
 
     /** The wood's lowercase id, e.g. {@code dark_oak}. */
@@ -116,6 +123,16 @@ public enum WoodType implements StringRepresentable {
     /** The mod this wood's planks come from, or {@code null} for a vanilla wood. */
     public @Nullable String requiredModId() {
         return requiredModId;
+    }
+
+    /**
+     * Whether this wood burns. False for crimson and warped, and for cinderscapes' scorched and
+     * umbral, whose planks their game or mod lists in {@code minecraft:non_flammable_wood} and
+     * gives no fire odds; this wood's planked blocks then neither catch fire nor fuel a furnace
+     * where vanilla's counterpart would ({@code Flammability}).
+     */
+    public boolean flammable() {
+        return flammable;
     }
 
     /**

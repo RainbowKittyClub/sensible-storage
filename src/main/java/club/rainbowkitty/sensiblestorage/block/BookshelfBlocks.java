@@ -9,7 +9,6 @@ import eu.pb4.polymer.blocks.api.MultiPolymerBlockModel;
 import eu.pb4.polymer.blocks.api.PolymerBlockModel;
 import eu.pb4.polymer.blocks.api.PolymerBlockResourceUtils;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityType;
-import net.fabricmc.fabric.api.registry.FlammableBlockRegistry;
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.Direction;
@@ -74,8 +73,6 @@ public final class BookshelfBlocks {
                     BlockBehaviour.Properties.ofFullCopy(Blocks.BOOKSHELF)
                             .setId(ResourceKey.create(Registries.BLOCK, SensibleStorage.id(path))));
             Registry.register(BuiltInRegistries.BLOCK, SensibleStorage.id(path), shelf);
-            // Vanilla's own entry (FireBlock#bootStrap) is by block, so it does not reach these.
-            FlammableBlockRegistry.getDefaultInstance().add(shelf, 30, 20);
             registerItem(path, shelf, Items.BOOKSHELF, new Item.Properties());
             BOOKSHELVES.put(wood, shelf);
 
