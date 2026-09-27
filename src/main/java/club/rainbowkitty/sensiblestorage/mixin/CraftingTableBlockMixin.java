@@ -1,5 +1,7 @@
 package club.rainbowkitty.sensiblestorage.mixin;
 
+import eu.pb4.polymer.virtualentity.api.BlockWithElementHolder;
+import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -8,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -21,11 +24,11 @@ import club.rainbowkitty.sensiblestorage.block.CraftingTableGrids;
 
 /**
  * Gives vanilla's crafting table, and every planked one by inheritance, a grid that keeps its
- * items and a comparator signal. {@link CraftingTableGrids} decides each.
+ * items, a display of them and a comparator signal. {@link CraftingTableGrids} decides each.
  */
 @Mixin(CraftingTableBlock.class)
 public abstract class CraftingTableBlockMixin extends Block
-        implements EntityBlock {
+        implements EntityBlock, BlockWithElementHolder {
     // Never called: a mixin's constructor exists only to satisfy extending Block.
     private CraftingTableBlockMixin(BlockBehaviour.Properties properties) {
         super(properties);
@@ -34,6 +37,12 @@ public abstract class CraftingTableBlockMixin extends Block
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return CraftingTableGrids.newBlockEntity(pos, state);
+    }
+
+    @Override
+    public @Nullable ElementHolder createElementHolder(ServerLevel level, BlockPos pos,
+            BlockState initialBlockState) {
+        return CraftingTableGrids.elementHolder(level, pos, initialBlockState);
     }
 
     @Override

@@ -16,14 +16,14 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
 /**
  * A wooden crafting table. Server-side it behaves exactly like vanilla's, which with this mod means
- * a grid that keeps its items: {@code CraftingTableBlockMixin} gives vanilla's table that grid, and
- * this inherits it. What a client is sent
+ * a grid that keeps its items: {@code CraftingTableBlockMixin} gives vanilla's table that grid, its
+ * display and its comparator signal, and this inherits all three. What a client is sent
  * comes in three tiers: one that also runs this mod (see {@link SensibleStorage#HANDSHAKE}) gets
  * the real block state and draws it from its own block model; one with this server's resource pack
  * gets a full-block state Polymer set aside for this table, which the pack draws with the same
  * model; and every other client gets vanilla's crafting table itself. Unlike
  * {@link PlankedChestBlock} there is nothing to animate and no shape to fake, so no display entity
- * stands in for it and no barrier hides it.
+ * stands in for the table itself and no barrier hides it; the only displays are the grid's items.
  *
  * <p>{@link PolymerTexturedBlock} is what keeps that set-aside state intact on its way out: Polymer
  * remaps every state it has handed out back to a plain one for any block not carrying the marker.

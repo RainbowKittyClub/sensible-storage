@@ -11,8 +11,9 @@ import net.minecraft.world.level.gamerules.GameRuleCategory;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 
 /**
- * The game rules gating the crafting-table grid. Both are read on every use rather than cached,
- * so flipping one takes effect at once.
+ * The game rules gating the crafting-table grid. Each is read on every use rather than cached, so
+ * flipping one takes effect at once; the displays, which are not reread on their own, refresh when
+ * {@link #SHOW_INVENTORY} changes.
  */
 public final class CraftingTableRules {
     /**
@@ -29,6 +30,11 @@ public final class CraftingTableRules {
             .category(GameRuleCategory.MISC)
             .buildAndRegister(SensibleStorage.id("hoppers_can_access_crafting_tables"));
 
+    /** Whether a table shows the items in its grid on its top. */
+    public static final GameRule<Boolean> SHOW_INVENTORY = GameRuleBuilder.forBoolean(true)
+            .category(GameRuleCategory.MISC)
+            .buildAndRegister(SensibleStorage.id("crafting_tables_show_inventory"));
+
     private CraftingTableRules() {
     }
 
@@ -39,6 +45,12 @@ public final class CraftingTableRules {
     /** Whether tables in this level hold items; the default where the level has no rules. */
     public static boolean holdItems(@Nullable Level level) {
         return level instanceof ServerLevel server ? server.getGameRules().get(HOLD_ITEMS) : true;
+    }
+
+    /** Whether tables in this level show their items; the default where it has no rules. */
+    public static boolean showInventory(@Nullable Level level) {
+        return level instanceof ServerLevel server ? server.getGameRules().get(SHOW_INVENTORY)
+                : true;
     }
 
     /** Whether hoppers reach tables in this level; the default where the level has no rules. */

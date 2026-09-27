@@ -7,7 +7,8 @@ import club.rainbowkitty.kalic0re.common.craft.CraftingGridBlockEntity;
 
 /**
  * The grid of vanilla's crafting table and of every planked one, under one block entity type
- * ({@link CraftingTableBlocks#gridType()}). No client is ever sent it.
+ * ({@link CraftingTableBlocks#gridType()}). No client is ever sent it: what a client sees of the
+ * grid is the display over the table's top.
  */
 public class CraftingTableBlockEntity extends CraftingGridBlockEntity {
     /**
@@ -26,5 +27,10 @@ public class CraftingTableBlockEntity extends CraftingGridBlockEntity {
     @Override
     protected boolean hoppersCanAccess() {
         return CraftingTableRules.hoppersCanAccess(level);
+    }
+
+    @Override
+    protected void onGridChanged() {
+        CraftingTableGrids.showGrid(this);
     }
 }
