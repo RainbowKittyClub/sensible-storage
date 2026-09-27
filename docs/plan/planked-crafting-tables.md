@@ -233,6 +233,11 @@ does oak with birch; uniform oak and spruce rings still give their own chests, a
 was dropped). How a table looks in-world needs a handshake client, and is S1's to observe rather
 than this stage's.
 
+Since superseded for the recipe: `planked-bookshelves.md`'s S2 made `PlankFallbackRecipe` step
+aside for any other matching recipe instead, which the bookshelves' mixed grids need, so the
+`claimed` field, `ClaimedPlanksProvider` and both claimed tags are gone. Chests and tables craft as
+before.
+
 ## S3 — Overlay art — **done**
 
 **Build.** Replace the three placeholder overlays' all-magenta/transparent content with real art:

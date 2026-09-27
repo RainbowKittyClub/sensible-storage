@@ -116,12 +116,16 @@ other, as in vanilla.
 
 **Books go on top of the slot as a second quad, which keeps the book textures shared.** Rather than
 baking 18 occupied sheets per wood, an occupied slot is drawn as the wood's slot background plus a
-book quad in the same plane, cut to the book's own 4×6. Vanilla already layers coplanar quads — the
-grass block's side overlay is a second element with the same bounds — and 26.2 picks each quad's
-chunk layer from its own sprite's transparency (`SectionCompiler.java:68`,
-`ChunkSectionLayer.byTransparency`), so a book with transparent corners goes to the cutout layer
-over a solid background. The 18 book sprites and their 108 per-slot models are then
-wood-independent; only the background is per wood.
+book quad in the same plane. Vanilla already layers coplanar quads — the grass block's side overlay
+is a second element with the same bounds — and 26.2 picks each quad's chunk layer from its own
+sprite's transparency (`SectionCompiler.java:68`, `ChunkSectionLayer.byTransparency`), so the book
+goes to the cutout layer, drawn after the solid background. What makes that work is the *same
+bounds*: terrain's depth test passes on equal (`DepthStencilState.DEFAULT` is
+`GREATER_THAN_OR_EQUAL`), so a quad with identical corners lands exactly on the one beneath and the
+later one wins, where a smaller quad in the same plane rounds its depth differently and z-fights —
+which the first build, cut to the book's own 4×6, did (S6's As built). So each book is a 16×16
+sheet, transparent but for the book at every slot's position, drawn on vanilla's own slot template:
+18 sheets and 108 per-slot models, all wood-independent; only the background is per wood.
 
 **Vanilla's occupied sheet also darkens a column beside each left and middle book.** Outside the
 books' own footprints, 20 pixels differ between `chiseled_bookshelf_occupied.png` and `_empty.png`:
@@ -152,7 +156,7 @@ in `run/mods`, so all 28 woods register. How a shelf looks — tint, book placem
 needs the dev client, and both pack tiers a vanilla client with the pack. A stage is not finished
 until its Done when is observed.
 
-## S1 — Median colour and colourise in kalic0re — **planned**
+## S1 — Median colour and colourise in kalic0re — **done**
 
 **Build.** Two helpers beside `tint` in kalic0re's `PngAssets`. `medianColour(BufferedImage)`: the
 per-channel median over opaque pixels, which for every one of the 28 plank textures is within 6 per
@@ -170,7 +174,17 @@ run; and kalic0re's build and lint pass. The reference is worth computing rather
 is the Rec. 709 luma of oak's median, truncated, so a datagen assertion that it still comes to 145
 catches a change to the vendored oak planks.
 
-## S2 — The fallback recipe defers to any other match — **planned**
+### As built
+
+`PngAssets.medianColour` and `PngAssets.colourise` as planned, released as kalic0re 0.19.0.
+`colourise` also refuses a pixel that is not gray, naming it, so a stray colour in an overlay fails
+the datagen run rather than tinting oddly. Measured against the published jar itself, with a
+single-file Java program rather than a datagen run: oak's median comes out `#AF8F55`, and the four
+overlays land at 2.84, 2.36, 2.60 and 2.19 per channel against vanilla's oak textures, magenta
+passing through untouched. The reference gray is computed in datagen, not typed: `WoodTints`
+takes oak's median's Rec. 709 luma and fails the run if it is not 145.
+
+## S2 — The fallback recipe defers to any other match — **done**
 
 **Build.** After `pattern.matches`, `PlankFallbackRecipe#matches` also requires that no other
 crafting recipe matches the same input. On a `ServerLevel`, `recipeAccess()` is the
@@ -188,7 +202,16 @@ tags disappearing, and on the dev server the chest and table crafter checks from
 `planked-crafting-tables.md` pass unchanged: each wood's uniform ring and square give its own,
 oak's square and every mixed grid give vanilla's.
 
-## S3 — Bookshelf blocks, registration and disguise — **planned**
+### As built
+
+As planned. On a level that is not a `ServerLevel` the recipe is its pattern alone; nothing else
+evaluates recipes in 26.2. Against a `HEAD` baseline the datagen output was byte-identical but for
+`planks_with_chest.json` and `planks_with_crafting_table.json` disappearing, and every chest and
+table crafter check passed: birch, spruce, oak, fir and redwood rings to their own chests, oak with
+spruce to vanilla's; birch, spruce and fir squares to their own tables, oak's and oak with birch to
+vanilla's.
+
+## S3 — Bookshelf blocks, registration and disguise — **done**
 
 **Build.** `PlankedBookshelfBlock`, a `Block` implementing `PolymerTexturedBlock` and
 `PolymerClientDecoded`, takes the table's three tiers exactly: the real state for a client that
@@ -215,7 +238,17 @@ A uniform oak grid crafts vanilla's through S2.
 until S4); a vanilla client without the pack sees `minecraft:bookshelf`; and fifteen planked
 bookshelves around an enchanting table raise it to level-30 offers.
 
-## S4 — Bookshelf datagen — **planned**
+### As built
+
+`PlankedBookshelfBlock` and `BookshelfBlocks`, which S5 extends to the chiseled shelf. Flammability
+is `FlammableBlockRegistry` (30, 20), vanilla's own entry being by block. The enchanting-power tag
+is datagen, so it arrived with S4's tags, and the enchanting check moved with it. Observed on the
+dev server: every wood but oak places, vanilla and modded alike, and oak is an unknown block. From a
+client running the mod the shelves look right, and fifteen of them give an enchanting table its
+level-30 offers. A vanilla client without the pack sees vanilla's bookshelf in its place, and one
+with the pack the wood's own (S4).
+
+## S4 — Bookshelf datagen — **done**
 
 **Build.**
 - **Textures:** each wood's side is `colourise(bookshelf.png, median, 145)` cut to the frame and
@@ -241,7 +274,23 @@ a planked bookshelf crafts a lectern; a plain axe drops three books and a silk-t
 in-game, a client running the mod and a vanilla client with the pack both see the tinted frame with
 vanilla's books.
 
-## S5 — Chiseled bookshelf blocks, registration and disguise — **planned**
+### As built
+
+The shared plank sprite is `PlankSpriteProvider`'s, written once per wood with a table or bookshelf;
+the table's model points there and its `_bottom` sprites are gone. Tints go through `WoodTints`.
+Block and item tags are `BookshelfTagsProvider` and `BookshelfItemTagsProvider`; `bookshelf.json`
+and `lectern.json` are vanilla's own files with the serializer, or the ingredient, swapped. Against
+S2's output: lang and `mineable/axe` changed, the 27 table models changed only their bottom sprite,
+the 27 `_bottom` sprites went, and 219 files were added — per wood a side, planks sprite, model,
+blockstate, item, recipe, advancement and loot table, plus the three tags. On the dev server:
+birch, spruce and fir planks around books give their own shelves, oak's and birch with spruce give
+vanilla's; a planked shelf makes a lectern, as vanilla's still does; a plain axe drops three books
+and a silk-touch one the shelf; the axe, enchanting-power and `c:bookshelves` tags all hold; and
+the pack carries 27 bookshelf states beside the tables' 27. In-game, a client running the mod and a
+vanilla client with the pack both see each wood's tinted frame, and planked shelves power an
+enchanting table.
+
+## S5 — Chiseled bookshelf blocks, registration and disguise — **in progress**
 
 **Build.** `PlankedChiseledBookshelfBlock`, extending `ChiseledBookShelfBlock` and implementing
 `PolymerBlock` and `PolymerClientDecoded` (public constructor, `ChiseledBookShelfBlock.java:65`).
@@ -260,7 +309,18 @@ S6.
 client running the mod sees the real block (untextured until S6); a vanilla client sees vanilla's
 chiseled shelf with the same slots filled; and the hover label names the book under the crosshair.
 
-## S6 — Chiseled bookshelf datagen, vanilla's books — **planned**
+### As built
+
+As planned. The cast to `FabricBlockEntityType` compiles directly, `BlockEntityType` not being
+final. On the dev server a planked shelf's block entity is vanilla's `minecraft:chiseled_bookshelf`;
+`item replace` and a hopper above both fill slots, `slot_<n>_occupied` following; and a comparator
+reads 3 after a book goes into slot 2, exactly as it does beside a vanilla shelf. In-game, from a
+client running the mod, the shelf and its redstone behave, and a vanilla client, with the pack or
+without, sees vanilla's shelf in its place with the same slots filled. Still to observe: the hover
+label over a planked shelf. `ShelfLabels` takes any `ChiseledBookShelfBlock` with vanilla's block
+entity, so it should name the book as it does on vanilla's.
+
+## S6 — Chiseled bookshelf datagen, vanilla's books — **in progress**
 
 **Build.**
 - **Textures, per wood:** `colourise` over the three gray overlays gives top, side and the empty
@@ -305,7 +365,36 @@ in-game, a client running the mod sees a planked chiseled shelf whose six filled
 vanilla chiseled shelf beside it book for book and pixel for pixel, shadow included, in all four
 facings, and a comparator placed against a planked shelf grants "The Power of Books".
 
-## S7 — Random books — **planned**
+### As built
+
+`ChiseledSlot` holds the slot geometry; `ChiseledBookshelfTextureProvider` and
+`ChiseledBookshelfModelProvider` write the sheets, models and blockstates. The body and inventory
+models are vanilla's with their textures overridden, and the slot quads are vanilla's slot templates
+over the wood's sheets. The shadow is found at datagen as planned: 20 pixels, columns 5 and 10, rows
+2–6 and 10–14, the wood's median at gray 19 and 60, checked on birch, dark oak and fir. The modded
+slab tags are generated (`sensiblestorage:<wood>_slabs`); the advancement override was written from
+vanilla's own file, its four comparator predicates and its placed-block check moved onto the tag.
+Against S4's output: lang and `mineable/axe` changed and 770 files were added. An offline rasterizer
+reading the generated blockstate and models through vanilla's parents confirmed the geometry: with
+vanilla's sheets in place of the wood's, a full planked shelf reproduces vanilla's occupied sheet,
+an empty one its empty sheet, and alternating slots each slot's own region, all to the pixel. On the
+dev server: each wood's planks over its own slabs — vanilla, terrestria, traverse and bamboo — give
+its chiseled shelf; another wood's slabs, oak's, mixed planks and mixed slabs give vanilla's; the
+tags hold for planked and vanilla shelves; the loot is silk-touch only; and the server loads its
+advancements with no errors.
+
+In-game, from a client running the mod, the shelves looked right but the books z-fought the slot
+behind them: each book was its own 4×6 quad, which depth-rounds differently from the slot quad it
+shares a plane with. The books became 16×16 sheets drawn on vanilla's own slot templates instead,
+the same quad as the background, which terrain's equal-passing depth test resolves in the later,
+cut-out layer's favour (Findings). Against the build before: the 18 book textures and 108 book
+models changed and the six custom book templates went; every book quad now has its background's
+exact corners and UVs, and both geometry renders above still come out pixel-identical to vanilla.
+The advancement fires for a planked shelf read by a comparator. A vanilla client with the pack draws
+vanilla's shelf with these same book quads, and they render as expected there; the fix is still to
+be seen from a client running the mod.
+
+## S7 — Random books — **in progress**
 
 **Build.** Replace each slot's single book with a weighted list of all 18, the same list in every
 facing and every wood, with slot *s*'s 18 weights summing to the *s*-th of six distinct primes near
@@ -337,6 +426,26 @@ it brings back the same book; filling or emptying one slot leaves every other sl
 was; and a vanilla chiseled shelf shows random books to that client and to a vanilla client with
 the pack, and vanilla's fixed six to a vanilla client without it.
 
+### As built
+
+The weights live in `ChiseledBooks`, in the mod's own code rather than datagen, so S8 can reach the
+same definition at runtime. The vanilla override's textures and models sit under this mod's
+namespace as a pseudo-wood named `vanilla`, and vanilla's item keeps its own definition. Against
+S6's output: the 27 planked blockstates changed and 18 files were added — vanilla's four sheets, its
+13 models and `minecraft:blockstates/chiseled_bookshelf.json`. All 28 blockstates carry identical
+lists, totals 1009 to 1033. Rendered from its own generated textures with vanilla's book chosen per
+slot, the override reproduces vanilla's occupied and empty sheets to the pixel, shadow included.
+Minecraft's own arithmetic, reimplemented (`Mth.getSeed`, the 48-bit LCG, the per-part reset,
+`nextInt` and the cumulative walk) over 4096 full shelves: six distinct books in 40.7% of shelves
+(independent: 39.3%), slot 0 matching slot 1 in 5.5% (5.6%), every book between 4.7% and 6.5% in
+every slot, no two neighbouring shelves alike, and at 256 positions every slot's book the same
+whether the other five are full or empty. The dev server's pack carries the override, the 18 book
+sprites and vanilla's copied sheets. In-game, a vanilla client with the pack sees random books,
+placed consistently, on vanilla's shelf and on planked ones disguised as it, and a vanilla client
+without the pack sees vanilla's fixed six. Still to observe from a client running the mod: vanilla's
+shelf's random books, the same books a pack client sees on the same shelf, and a refilled slot
+bringing back its book.
+
 ## S8 — Resource-pack tier for empty and full chiseled shelves — **planned**
 
 **Build.** `PlankedChiseledBookshelfBlock` swaps `PolymerBlock` for `PolymerTexturedBlock`, without
@@ -362,9 +471,11 @@ it was, and putting it back restores the planked frame.
 
 From vanilla's `template_chiseled_bookshelf_slot_*.json` and `blockstates/chiseled_bookshelf.json`.
 Model coordinates are for the north-facing model; a book at texture pixel `(u, v)` sits at model
-`x` from `16 − (u + 4)` to `16 − u` and `y` from `16 − (v + 6)` to `16 − v`, on `z = 0`.
+`x` from `16 − (u + 4)` to `16 − u` and `y` from `16 − (v + 6)` to `16 − v`, on `z = 0`. The book is
+not a quad of its own there: it is drawn on the slot's quad, from a 16×16 sheet holding it at those
+texels, so the last column is where its pixels land rather than any element's bounds.
 
-| Slot | Position | Slot quad from → to | Slot UV | Vanilla book | Book at (u, v) | Book quad from → to |
+| Slot | Position | Slot quad from → to | Slot UV | Vanilla book | Book at (u, v) | Book texels, model space |
 |---|---|---|---|---|---|---|
 | 0 | top left | 10,8,0 → 16,16,0 | 0,0 → 6,8 | 2 | 1,1 | 11,9,0 → 15,15,0 |
 | 1 | top mid | 5,8,0 → 10,16,0 | 6,0 → 11,8 | 1 | 6,1 | 6,9,0 → 10,15,0 |
