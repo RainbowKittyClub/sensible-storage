@@ -344,9 +344,8 @@ final. On the dev server a planked shelf's block entity is vanilla's `minecraft:
 `item replace` and a hopper above both fill slots, `slot_<n>_occupied` following; and a comparator
 reads 3 after a book goes into slot 2, exactly as it does beside a vanilla shelf. In-game, from a
 client running the mod, the shelf and its redstone behave, and a vanilla client, with the pack or
-without, sees vanilla's shelf in its place with the same slots filled. The hover label over a
-planked shelf was not checked on its own; `ShelfLabels` takes any `ChiseledBookShelfBlock` with
-vanilla's block entity. Signed off in-game with the rest of the feature on 2026-09-26.
+without, sees vanilla's shelf in its place with the same slots filled, and the hover label names
+the book under the crosshair on a planked shelf as on vanilla's.
 
 ## S6 — Chiseled bookshelf datagen, vanilla's books — **done**
 
