@@ -11,6 +11,7 @@ import club.rainbowkitty.sensiblestorage.CreativeTabs;
 import club.rainbowkitty.sensiblestorage.block.BookshelfBlocks;
 import club.rainbowkitty.sensiblestorage.block.ChestBlocks;
 import club.rainbowkitty.sensiblestorage.block.CraftingTableBlocks;
+import club.rainbowkitty.sensiblestorage.block.CraftingTableRules;
 import club.rainbowkitty.sensiblestorage.cart.ChestCarts;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
@@ -54,5 +55,8 @@ public final class ChestLanguageProvider extends FabricLanguageProvider {
                 (wood, shelf) -> builder.add(shelf, wood.displayName() + " Bookshelf"));
         BookshelfBlocks.chiseledBookshelves().forEach(
                 (wood, shelf) -> builder.add(shelf, wood.displayName() + " Chiseled Bookshelf"));
+        builder.add(CraftingTableRules.HOLD_ITEMS.getDescriptionId(), "Crafting tables hold items");
+        builder.add(CraftingTableRules.HOPPERS_CAN_ACCESS.getDescriptionId(),
+                "Hoppers can access crafting tables");
     }
 }
