@@ -19,12 +19,14 @@ import net.minecraft.resources.Identifier;
 import club.rainbowkitty.kalic0re.common.datagen.PngAssets;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.block.BookshelfBlocks;
+import club.rainbowkitty.sensiblestorage.block.ChiseledBooks;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
 /**
  * The chiseled bookshelves' textures, under {@code textures/block/chiseled_bookshelf/}: per wood,
- * the top, side and empty front recoloured to the wood, and an occupied background; once, the 18
- * book sprites, drawn over an occupied slot by {@link ChiseledBookshelfModelProvider}.
+ * the top, side and empty front recoloured to the wood, and an occupied background; the same four
+ * for vanilla's own shelf, untinted ({@link #VANILLA}); and once, the 18 book sprites, drawn over
+ * an occupied slot by {@link ChiseledBookshelfModelProvider}.
  *
  * <p>The three overlays are gray end to end, the luma of vanilla's own oak sheets, so each is
  * {@link PngAssets#colourise}d whole with the wood's median plank colour. There is no overlay for
@@ -39,6 +41,13 @@ public final class ChiseledBookshelfTextureProvider implements DataProvider {
 
     /** The per-wood occupied background's sheet name. */
     public static final String OCCUPIED = "occupied";
+
+    /**
+     * The name vanilla's own sheets go under, for the override of vanilla's chiseled bookshelf that
+     * gives it the random books too: copied untinted, so the override draws vanilla's look from
+     * this mod's namespace, and a texture pack's version no longer reaches it.
+     */
+    public static final String VANILLA = "vanilla";
 
     private static final String OVERLAY_DIR = "sensiblestorage_overlay/block/chiseled_bookshelf/";
     private static final String VANILLA_DIR = "sensiblestorage_vanilla/";
@@ -75,7 +84,7 @@ public final class ChiseledBookshelfTextureProvider implements DataProvider {
     public CompletableFuture<?> run(CachedOutput cache) {
         ClassLoader loader = ChiseledBookshelfTextureProvider.class.getClassLoader();
         List<BufferedImage> books = new ArrayList<>();
-        for (int n = 1; n <= ChiseledSlot.BOOKS; n++) {
+        for (int n = 1; n <= ChiseledBooks.BOOKS; n++) {
             books.add(PngAssets.read(loader, OVERLAY_DIR + "book" + n + ".png"));
         }
         BufferedImage[] overlays = new BufferedImage[SHEETS.size()];
@@ -83,12 +92,20 @@ public final class ChiseledBookshelfTextureProvider implements DataProvider {
             overlays[i] =
                     read(loader, OVERLAY_DIR + "chiseled_bookshelf_" + SHEETS.get(i) + ".png");
         }
-        BufferedImage occupied = withShadow(overlays[SHEETS.indexOf("empty")],
-                shadow(read(loader, VANILLA_DIR + "chiseled_bookshelf_empty.png"),
-                        read(loader, VANILLA_DIR + "chiseled_bookshelf_occupied.png"), books));
+        BufferedImage vanillaEmpty = read(loader, VANILLA_DIR + "chiseled_bookshelf_empty.png");
+        Map<Integer, Integer> shadow = shadow(vanillaEmpty,
+                read(loader, VANILLA_DIR + "chiseled_bookshelf_occupied.png"), books);
+        BufferedImage occupied = withShadow(overlays[SHEETS.indexOf("empty")], shadow);
         int reference = WoodTints.referenceGray(loader);
 
         List<CompletableFuture<?>> writes = new ArrayList<>();
+        for (String sheet : SHEETS) {
+            writes.add(save(cache, sprite(VANILLA, sheet),
+                    read(loader, VANILLA_DIR + "chiseled_bookshelf_" + sheet + ".png")));
+        }
+        BufferedImage vanillaOccupied = copy(vanillaEmpty);
+        shadow.forEach((at, colour) -> vanillaOccupied.setRGB(at % 16, at / 16, colour));
+        writes.add(save(cache, sprite(VANILLA, OCCUPIED), vanillaOccupied));
         for (WoodType wood : BookshelfBlocks.chiseledBookshelves().keySet()) {
             int median = PngAssets.medianColour(WoodTints.planks(loader, wood));
             for (int i = 0; i < overlays.length; i++) {
@@ -98,7 +115,7 @@ public final class ChiseledBookshelfTextureProvider implements DataProvider {
             writes.add(save(cache, sprite(wood, OCCUPIED),
                     PngAssets.colourise(occupied, median, reference)));
         }
-        for (int n = 1; n <= ChiseledSlot.BOOKS; n++) {
+        for (int n = 1; n <= ChiseledBooks.BOOKS; n++) {
             writes.add(save(cache, book(n), books.get(n - 1)));
         }
         return CompletableFuture.allOf(writes.toArray(CompletableFuture[]::new));
@@ -143,12 +160,18 @@ public final class ChiseledBookshelfTextureProvider implements DataProvider {
     // A copy of a gray overlay with each shadow pixel set to its colour's luma, as overlays are.
     private static BufferedImage withShadow(BufferedImage gray,
             Map<Integer, Integer> shadow) {
-        BufferedImage out = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
-        out.getGraphics().drawImage(gray, 0, 0, null);
+        BufferedImage out = copy(gray);
         shadow.forEach((at, colour) -> {
             int luma = WoodTints.luma(colour);
             out.setRGB(at % 16, at / 16, 0xFF000000 | luma << 16 | luma << 8 | luma);
         });
+        return out;
+    }
+
+    // A 16x16 ARGB copy of an image.
+    private static BufferedImage copy(BufferedImage image) {
+        BufferedImage out = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+        out.getGraphics().drawImage(image, 0, 0, null);
         return out;
     }
 

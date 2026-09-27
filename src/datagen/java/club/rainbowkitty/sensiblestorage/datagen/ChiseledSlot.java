@@ -12,10 +12,9 @@ enum ChiseledSlot {
     BOTTOM_MID("bottom_mid", 3, 6, 9),
     BOTTOM_RIGHT("bottom_right", 4, 11, 9);
 
-    // Every book sprite's size, and how many there are.
+    // Every book sprite's size.
     static final int BOOK_WIDTH = 4;
     static final int BOOK_HEIGHT = 6;
-    static final int BOOKS = 18;
 
     private final String position;
     private final int vanillaBook;

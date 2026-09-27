@@ -18,6 +18,7 @@ import net.minecraft.resources.Identifier;
 import club.rainbowkitty.kalic0re.common.datagen.PackJson;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.block.BookshelfBlocks;
+import club.rainbowkitty.sensiblestorage.block.ChiseledBooks;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
 /**
@@ -30,6 +31,9 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
  *
  * <p>A book quad sits at the texels vanilla's occupied sheet draws that slot's book at
  * ({@link ChiseledSlot}), so a slot showing vanilla's own book for it matches vanilla's sheet.
+ * Which book a slot shows is a weighted list of all 18, the same in every blockstate here
+ * ({@link ChiseledBooks}); that includes an override of vanilla's own chiseled bookshelf, redrawn
+ * the same way from copies of its own sheets so it takes the random books too.
  */
 public final class ChiseledBookshelfModelProvider implements DataProvider {
     // Vanilla's body (no north face) and its inventory model (with one), both over top/side keys.
@@ -61,7 +65,7 @@ public final class ChiseledBookshelfModelProvider implements DataProvider {
         Map<Path, JsonObject> files = new HashMap<>();
         for (ChiseledSlot slot : ChiseledSlot.values()) {
             files.put(this.models.json(bookTemplate(slot)), bookTemplateJson(slot));
-            for (int n = 1; n <= ChiseledSlot.BOOKS; n++) {
+            for (int n = 1; n <= ChiseledBooks.BOOKS; n++) {
                 files.put(this.models.json(bookModel(slot, n)), PackJson.model(
                         bookTemplate(slot), "book", ChiseledBookshelfTextureProvider.book(n)));
             }
@@ -69,9 +73,16 @@ public final class ChiseledBookshelfModelProvider implements DataProvider {
         for (WoodType wood : BookshelfBlocks.chiseledBookshelves().keySet()) {
             Identifier id = SensibleStorage.id(wood.chiseledBookshelfId());
             putShelfModels(files, wood.id());
+            files.put(this.models.json(inventoryModel(wood.id())), inventoryModelJson(wood.id()));
             files.put(this.blockStates.json(id), blockState(wood.id()));
             files.put(this.items.json(id), PackJson.itemDefinition(inventoryModel(wood.id())));
         }
+        // Vanilla's shelf, redrawn the same way from its own sheets so it takes the random books
+        // too. Its item keeps vanilla's own definition and inventory model, so neither is written.
+        String vanilla = ChiseledBookshelfTextureProvider.VANILLA;
+        putShelfModels(files, vanilla);
+        files.put(this.blockStates.json(Identifier.withDefaultNamespace("chiseled_bookshelf")),
+                blockState(vanilla));
         return DataProvider.saveAll(cache, json -> json, path -> path, files);
     }
 
@@ -80,7 +91,7 @@ public final class ChiseledBookshelfModelProvider implements DataProvider {
         return "Sensible Storage Chiseled Bookshelf Models";
     }
 
-    // The body, inventory and twelve slot models of the shelf drawn from a named set of sheets.
+    // The body and twelve slot models of the shelf drawn from a named set of sheets.
     private void putShelfModels(Map<Path, JsonObject> files, String name) {
         Identifier top = ChiseledBookshelfTextureProvider.sprite(name, "top");
         Identifier side = ChiseledBookshelfTextureProvider.sprite(name, "side");
@@ -89,8 +100,6 @@ public final class ChiseledBookshelfModelProvider implements DataProvider {
                 ChiseledBookshelfTextureProvider.OCCUPIED);
         files.put(this.models.json(bodyModel(name)),
                 PackJson.model(BODY, Map.of("top", top, "side", side)));
-        files.put(this.models.json(inventoryModel(name)),
-                PackJson.model(INVENTORY, Map.of("top", top, "side", side, "front", empty)));
         for (ChiseledSlot slot : ChiseledSlot.values()) {
             files.put(this.models.json(slotModel(name, "empty", slot)),
                     PackJson.model(slotTemplate(slot), "texture", empty));
@@ -120,9 +129,24 @@ public final class ChiseledBookshelfModelProvider implements DataProvider {
         return root;
     }
 
-    // The book drawn in an occupied slot: vanilla's own book for that slot.
+    // The book drawn in an occupied slot: any of the 18, weighted by ChiseledBooks - the same list,
+    // in the same order, in every blockstate, which is what keeps every client's books in step.
     private static JsonElement book(ChiseledSlot slot, int y) {
-        return apply(bookModel(slot, slot.vanillaBook()), y, false);
+        JsonArray books = new JsonArray();
+        for (int n = 1; n <= ChiseledBooks.BOOKS; n++) {
+            JsonObject book = apply(bookModel(slot, n), y, false);
+            book.addProperty("weight", ChiseledBooks.weight(slot.ordinal(), n));
+            books.add(book);
+        }
+        return books;
+    }
+
+    // The inventory model of a named shelf: vanilla's, with its sheets and the empty front.
+    private static JsonObject inventoryModelJson(String name) {
+        return PackJson.model(INVENTORY, Map.of(
+                "top", ChiseledBookshelfTextureProvider.sprite(name, "top"),
+                "side", ChiseledBookshelfTextureProvider.sprite(name, "side"),
+                "front", ChiseledBookshelfTextureProvider.sprite(name, "empty")));
     }
 
     // One multipart entry.
