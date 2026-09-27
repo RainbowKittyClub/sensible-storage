@@ -25,8 +25,8 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
 /**
  * The chiseled bookshelves' textures, under {@code textures/block/chiseled_bookshelf/}: per wood,
  * the top, side and empty front recoloured to the wood, and an occupied background; the same four
- * for vanilla's own shelf, untinted ({@link #VANILLA}); and once, the 18 book sprites, drawn over
- * an occupied slot by {@link ChiseledBookshelfModelProvider}.
+ * for vanilla's own shelf, untinted ({@link #VANILLA}); and once, a sheet per book, drawn over an
+ * occupied slot by {@link ChiseledBookshelfModelProvider}.
  *
  * <p>The three overlays are gray end to end, the luma of vanilla's own oak sheets, so each is
  * {@link PngAssets#colourise}d whole with the wood's median plank colour. There is no overlay for
@@ -74,7 +74,8 @@ public final class ChiseledBookshelfTextureProvider implements DataProvider {
     }
 
     /**
-     * Book sprite {@code n}, 1 to 18, e.g. {@code sensiblestorage:block/chiseled_bookshelf/book_7}.
+     * Book sheet {@code n}, 1 to 18, e.g. {@code sensiblestorage:block/chiseled_bookshelf/book_7}:
+     * a 16x16 front, transparent but for book {@code n} at each slot's book position.
      */
     public static Identifier book(int n) {
         return SensibleStorage.id("block/chiseled_bookshelf/book_" + n);
@@ -116,7 +117,7 @@ public final class ChiseledBookshelfTextureProvider implements DataProvider {
                     PngAssets.colourise(occupied, median, reference)));
         }
         for (int n = 1; n <= ChiseledBooks.BOOKS; n++) {
-            writes.add(save(cache, book(n), books.get(n - 1)));
+            writes.add(save(cache, book(n), bookSheet(books.get(n - 1))));
         }
         return CompletableFuture.allOf(writes.toArray(CompletableFuture[]::new));
     }
@@ -166,6 +167,16 @@ public final class ChiseledBookshelfTextureProvider implements DataProvider {
             out.setRGB(at % 16, at / 16, 0xFF000000 | luma << 16 | luma << 8 | luma);
         });
         return out;
+    }
+
+    // A transparent 16x16 front with one book drawn at every slot's book position, so each slot's
+    // quad, sampling its own region as vanilla's slot templates do, finds the book where it goes.
+    private static BufferedImage bookSheet(BufferedImage book) {
+        BufferedImage sheet = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+        for (ChiseledSlot slot : ChiseledSlot.values()) {
+            sheet.getGraphics().drawImage(book, slot.bookU(), slot.bookV(), null);
+        }
+        return sheet;
     }
 
     // A 16x16 ARGB copy of an image.
