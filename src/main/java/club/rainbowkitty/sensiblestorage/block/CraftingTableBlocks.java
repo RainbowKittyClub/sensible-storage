@@ -1,11 +1,14 @@
 package club.rainbowkitty.sensiblestorage.block;
 
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import eu.pb4.polymer.blocks.api.BlockModelType;
 import eu.pb4.polymer.blocks.api.PolymerBlockModel;
 import eu.pb4.polymer.blocks.api.PolymerBlockResourceUtils;
+import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -13,7 +16,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -23,17 +28,28 @@ import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
 /**
- * Registers a crafting table per {@link WoodType} but oak, with its block item. Vanilla's own
- * crafting table is already oak, so an oak one here would only be a second copy of it.
+ * Registers a crafting table per {@link WoodType} but oak, with its block item, and the grid block
+ * entity type those tables share with vanilla's. Vanilla's own crafting table is already oak, so an
+ * oak one here would only be a second copy of it.
  */
 public final class CraftingTableBlocks {
     private static final Map<WoodType, PlankedCraftingTableBlock> TABLES = new LinkedHashMap<>();
+
+    private static BlockEntityType<CraftingTableBlockEntity> gridType;
 
     private CraftingTableBlocks() {}
 
     /** All registered crafting tables, wood order; never one for oak. */
     public static Map<WoodType, PlankedCraftingTableBlock> tables() {
         return TABLES;
+    }
+
+    /**
+     * The grid's block entity type, valid for vanilla's crafting table and every planked one; null
+     * before {@link #init()}.
+     */
+    public static BlockEntityType<CraftingTableBlockEntity> gridType() {
+        return gridType;
     }
 
     /**
@@ -59,6 +75,18 @@ public final class CraftingTableBlocks {
             registerItem(path, table);
             TABLES.put(wood, table);
         }
+        registerGridType();
+    }
+
+    // One grid type for every table. No client is sent it, what a client sees of the grid being
+    // its display: a handshake client's crafting table has no renderer for it either.
+    private static void registerGridType() {
+        Set<Block> blocks = new HashSet<>(TABLES.values());
+        blocks.add(Blocks.CRAFTING_TABLE);
+        gridType = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE,
+                SensibleStorage.id("crafting_table"),
+                new BlockEntityType<>(CraftingTableBlockEntity::new, Set.copyOf(blocks)));
+        PolymerBlockUtils.registerBlockEntity(gridType);
     }
 
     // A client running this mod and carrying this wood gets the real item; a client with only the

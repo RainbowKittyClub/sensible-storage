@@ -6,16 +6,6 @@ import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import org.jspecify.annotations.Nullable;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ContainerLevelAccess;
-import net.minecraft.world.inventory.CraftingMenu;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CraftingTableBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -25,7 +15,9 @@ import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
 /**
- * A wooden crafting table. Server-side it behaves exactly like vanilla's. What a client is sent
+ * A wooden crafting table. Server-side it behaves exactly like vanilla's, which with this mod means
+ * a grid that keeps its items: {@code CraftingTableBlockMixin} gives vanilla's table that grid, and
+ * this inherits it. What a client is sent
  * comes in three tiers: one that also runs this mod (see {@link SensibleStorage#HANDSHAKE}) gets
  * the real block state and draws it from its own block model; one with this server's resource pack
  * gets a full-block state Polymer set aside for this table, which the pack draws with the same
@@ -39,8 +31,6 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
 public class PlankedCraftingTableBlock extends CraftingTableBlock
         implements PolymerTexturedBlock, PolymerClientDecoded {
     private static final BlockState CLIENT_STATE = Blocks.CRAFTING_TABLE.defaultBlockState();
-    // Vanilla's own title, which CraftingTableBlock keeps private.
-    private static final Component CONTAINER_TITLE = Component.translatable("container.crafting");
 
     private final WoodType wood;
     private final @Nullable BlockState packState;
@@ -63,14 +53,6 @@ public class PlankedCraftingTableBlock extends CraftingTableBlock
         return wood;
     }
 
-    /** Vanilla's crafting menu, kept open by this block rather than by vanilla's. */
-    @Override
-    protected MenuProvider getMenuProvider(BlockState state, Level level, BlockPos pos) {
-        return new SimpleMenuProvider((containerId, inventory, player) -> new Menu(
-                containerId, inventory, ContainerLevelAccess.create(level, pos), this),
-                CONTAINER_TITLE);
-    }
-
     /**
      * A client that also runs this mod <em>and registered this wood</em> gets the real state (and
      * draws it itself); one with the resource pack gets the state set aside for this table; every
@@ -88,24 +70,5 @@ public class PlankedCraftingTableBlock extends CraftingTableBlock
             return packState;
         }
         return CLIENT_STATE;
-    }
-
-    // Vanilla's crafting menu, valid at this table: CraftingMenu#stillValid wants
-    // Blocks.CRAFTING_TABLE itself at the position, so would close the menu a tick after opening.
-    private static final class Menu extends CraftingMenu {
-        private final ContainerLevelAccess access;
-        private final Block table;
-
-        private Menu(int containerId, Inventory inventory, ContainerLevelAccess access,
-                Block table) {
-            super(containerId, inventory, access);
-            this.access = access;
-            this.table = table;
-        }
-
-        @Override
-        public boolean stillValid(Player player) {
-            return stillValid(this.access, player, this.table);
-        }
     }
 }

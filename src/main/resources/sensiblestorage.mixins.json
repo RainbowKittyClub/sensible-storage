@@ -5,8 +5,10 @@
   "compatibilityLevel": "JAVA_25",
   "mixins": [
     "AbstractContainerMenuMixin",
+    "AbstractCraftingMenuMixin",
     "ArmorStandMixin",
     "ComparatorBlockMixin",
+    "CraftingTableBlockMixin",
     "ServerEntityMixin"
   ],
   "injectors": {
