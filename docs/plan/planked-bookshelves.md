@@ -21,8 +21,8 @@ are prerequisites, independent of each other and of everything else. The plain b
 S4, and is complete at S4. The chiseled bookshelf is S5, S6, S7, and needs S1 and S2 but nothing
 from S3–S4. S6 draws vanilla's own six books in their vanilla slots, so geometry can be checked
 against a vanilla shelf before S7 makes the books random, on the planked shelves and vanilla's own
-alike. S8 gives a vanilla client with the pack the planked chiseled frame on empty and full shelves,
-using S7's models, and completes the feature.
+alike. S8 gives a vanilla client with the pack the planked chiseled frame on every shelf, S7's
+books drawn over it by a display entity, and completes the feature.
 
 ## Findings that reshape the work
 
@@ -63,24 +63,52 @@ slabs all fall through because nothing else matches. Every one of the 28 woods h
 `<namespace>:<wood>_slab` in `#minecraft:wooden_slabs` (all five modded jars checked), so the
 per-wood recipe has one to name.
 
-**The chiseled bookshelf can afford a resource-pack tier for a few of its states, not all of them.**
-Its state is `facing` × six occupancy flags: 256 states per wood, 6,912 across 27 woods, against a
-`FULL_BLOCK` budget of 1149 note block states, of which the live server's pack already uses 427
-(`note_block.json` in the live `polymer/resource_pack.zip` under
+**A pack client can have the planked chiseled frame on every shelf, but only if the books leave the
+block state.** The shelf's state is `facing` × six occupancy flags: 256 states per wood, 6,912
+across 27 woods, against a `FULL_BLOCK` budget of 1149 note block states, of which the live server's
+pack already uses 427 (`note_block.json` in the live `polymer/resource_pack.zip` under
 `/mnt/WORKSPACE/minecraft-server-data/data/`) and the tables and plain bookshelves take 27 each. The
-plain bookshelf is stateless, like the table. So S8 reserves states for the two occupancy patterns a
-shelf spends most of its life in — all six slots empty, all six full — in each facing: 8 per wood,
-216 in all, bringing the pool to 697 of 1149. Any partly filled shelf falls back to vanilla's
-chiseled bookshelf, facing and occupied slots copied across (`Block#withPropertiesOf`,
-`Block.java:541`), so what a pack client sees is never a wrong slot, only an oak frame while the
-shelf is partly filled. A reserved state can carry the full shelf's random books too:
-`MultiPolymerBlockModel` is a list of weighted parts (`MultiPolymerBlockModel.java`, one
-`PolymerBlockModel[]` per part), which Polymer writes into `note_block.json` as multipart entries
-beside vanilla's variants, and 26.2 lets one blockstate file hold both — variants claim their
-states, the multipart fills the rest (`BlockStateModelDispatcher.java:46-63`). Neither the note
-block nor the chiseled shelf overrides `getSeed`, so all three tiers draw the same books at the same
-position: when one book comes out of a full shelf and its frame goes to oak, the other five books
-stay as they were.
+plain bookshelf is stateless, like the table. Reserving only the all-empty and all-full patterns
+(216 states) was the first plan and was dropped: a partly filled shelf would fall back to vanilla's
+oak frame, so a shelf's frame would change as books went in and out. What the frame needs from the
+state is only its facing, 4 states per wood and 108 in all, bringing the pool to 589 of 1149. The
+occupancy and the books then go to one item display entity per shelf, which the server keeps in
+step with the block:
+
+- **One entity carries all six slots.** 26.2 item definitions can be a `composite` of `select`
+  models keyed on the stack's `custom_model_data` strings by index (`CompositeModel.java`,
+  `CustomModelDataProperty.java`), so a stack whose string *n* is slot *n*'s book, or empty,
+  draws exactly the filled slots. A `select` with no `fallback` draws the missing model
+  (`SelectItemModel.java:90`), so each gets an `empty` one. Block models, and block-atlas
+  sprites, are fine as item models (`CuboidItemModelWrapper#validateAtlasUsage`), so S7's book
+  models are reused as they are.
+- **The display draws books and nothing else.** Terrain draws the whole frame, filled slots
+  included, as their empty slots; the display adds each book and the shadow it casts, the one
+  part of an occupied slot's background that differs from its empty slot (Findings: vanilla's
+  occupied sheet), from a per-wood sheet holding only the shadow. Drawing the occupied background
+  on the entity instead would reproduce the same pixels, but light a filled slot's frame as an
+  entity and an empty one's as terrain.
+- **The server picks the books the client would.** Terrain draws a slot's book from a random source
+  seeded by position (Reference: how a slot's book is chosen), all of it common code: the server
+  can run the same `SingleThreadedRandomSource` through the same steps and get the same book, so a
+  display over a planked shelf matches what a client running the mod draws there, and what any
+  pack client draws on vanilla's shelf at that position.
+- **Placing it.** An item model is centred on the entity (`ItemTransform.java:25,45`) and turned a
+  further 180° about Y by the renderer (`DisplayRenderer.java:197`, kalic0re's
+  `ItemDisplayPose`). An entity is lit by the block its eye is in (`EntityRenderer.java:52`,
+  `Entity.java:2001`), and an item display is sized 0×0 (`EntityTypes.java:567-570`), so its eye is
+  its position: placed inside the shelf it would be lit as solid, which is black. The entity sits
+  in the block in front, whose light is what terrain lights the front face with, and its
+  transformation carries the model back onto the face, just in front of it.
+- **What differs from terrain, accepted for now.** Items are shaded by vanilla's two directional
+  lights (`light.glsl`, `Lighting.java:20-21`) whatever a face's `shade` says
+  (`VertexConsumer#putBakedQuad` ignores it), where terrain darkens a face by a fixed amount: a book
+  on a north- or south-facing shelf comes out at 0.74 of full brightness against terrain's 0.8, on
+  an east- or west-facing one 0.50 against 0.6. An entity takes one light value, so the books miss
+  smooth lighting's gradient across the face. A display stops drawing beyond 64 blocks × its view
+  range × the entity-distance setting (`Display.java:403`), past which a pack client sees empty
+  fronts. And a pack client hears the note block's wood sounds, not the chiseled shelf's, stepping
+  on, hitting or breaking one. The lighting and the entity count were deferred on review.
 
 **The chiseled bookshelf's block entity hard-codes vanilla's type.**
 `ChiseledBookShelfBlockEntity`'s only constructor passes `BlockEntityTypes.CHISELED_BOOKSHELF`
@@ -290,7 +318,7 @@ the pack carries 27 bookshelf states beside the tables' 27. In-game, a client ru
 vanilla client with the pack both see each wood's tinted frame, and planked shelves power an
 enchanting table.
 
-## S5 — Chiseled bookshelf blocks, registration and disguise — **in progress**
+## S5 — Chiseled bookshelf blocks, registration and disguise — **done**
 
 **Build.** `PlankedChiseledBookshelfBlock`, extending `ChiseledBookShelfBlock` and implementing
 `PolymerBlock` and `PolymerClientDecoded` (public constructor, `ChiseledBookShelfBlock.java:65`).
@@ -316,11 +344,11 @@ final. On the dev server a planked shelf's block entity is vanilla's `minecraft:
 `item replace` and a hopper above both fill slots, `slot_<n>_occupied` following; and a comparator
 reads 3 after a book goes into slot 2, exactly as it does beside a vanilla shelf. In-game, from a
 client running the mod, the shelf and its redstone behave, and a vanilla client, with the pack or
-without, sees vanilla's shelf in its place with the same slots filled. Still to observe: the hover
-label over a planked shelf. `ShelfLabels` takes any `ChiseledBookShelfBlock` with vanilla's block
-entity, so it should name the book as it does on vanilla's.
+without, sees vanilla's shelf in its place with the same slots filled. The hover label over a
+planked shelf was not checked on its own; `ShelfLabels` takes any `ChiseledBookShelfBlock` with
+vanilla's block entity. Signed off in-game with the rest of the feature on 2026-09-26.
 
-## S6 — Chiseled bookshelf datagen, vanilla's books — **in progress**
+## S6 — Chiseled bookshelf datagen, vanilla's books — **done**
 
 **Build.**
 - **Textures, per wood:** `colourise` over the three gray overlays gives top, side and the empty
@@ -391,10 +419,10 @@ cut-out layer's favour (Findings). Against the build before: the 18 book texture
 models changed and the six custom book templates went; every book quad now has its background's
 exact corners and UVs, and both geometry renders above still come out pixel-identical to vanilla.
 The advancement fires for a planked shelf read by a comparator. A vanilla client with the pack draws
-vanilla's shelf with these same book quads, and they render as expected there; the fix is still to
-be seen from a client running the mod.
+vanilla's shelf with these same book quads, and they render as expected there. Signed off in-game
+with the rest of the feature on 2026-09-26.
 
-## S7 — Random books — **in progress**
+## S7 — Random books — **done**
 
 **Build.** Replace each slot's single book with a weighted list of all 18, the same list in every
 facing and every wood, with slot *s*'s 18 weights summing to the *s*-th of six distinct primes near
@@ -442,30 +470,85 @@ every slot, no two neighbouring shelves alike, and at 256 positions every slot's
 whether the other five are full or empty. The dev server's pack carries the override, the 18 book
 sprites and vanilla's copied sheets. In-game, a vanilla client with the pack sees random books,
 placed consistently, on vanilla's shelf and on planked ones disguised as it, and a vanilla client
-without the pack sees vanilla's fixed six. Still to observe from a client running the mod: vanilla's
-shelf's random books, the same books a pack client sees on the same shelf, and a refilled slot
-bringing back its book.
+without the pack sees vanilla's fixed six. Signed off in-game with the rest of the feature on
+2026-09-26.
 
-## S8 — Resource-pack tier for empty and full chiseled shelves — **planned**
+## S8 — Pack tier: the frame by reserved state, the books by display entity — **done**
 
-**Build.** `PlankedChiseledBookshelfBlock` swaps `PolymerBlock` for `PolymerTexturedBlock`, without
-which polymer-blocks remaps a reserved state back to a plain note block (see
-`planked-crafting-tables.md`). At registration each wood requests eight `FULL_BLOCK` states from
-`PolymerBlockResourceUtils.requestBlock`, one per facing and pattern, rotated `y` as S6's blockstate
-is. The empty pattern is the wood's inventory model: body plus the empty front. The full pattern is
-a `MultiPolymerBlockModel` of S6–S7's own parts: the body, six occupied backgrounds and six weighted
-book lists — S7's single definition, entries, order and weights unchanged. `getPolymerBlockState`
-sends the real state to a client running the mod; the reserved state to one with the pack, when the
-shelf is all empty or all full and the state was granted; and vanilla's chiseled shelf with the same
-properties otherwise. A request that comes back null, because another mod took the pool first,
-leaves that wood and pattern on vanilla's shelf; nothing else changes. Registration order puts every
-wood's full pattern before any empty one, so a short pool costs empty shelves first.
+**Build.**
+- **Model ids in main code.** The chiseled shelf's model ids — body, empty and occupied slots, the
+  108 books, and the new per-wood book item definitions — move from `ChiseledBookshelfModelProvider`
+  into a main-code `ChiseledBookshelfModels`, which datagen writes from and the runtime names, so
+  the two cannot drift. Datagen output is unchanged by the move.
+- **Frame.** `PlankedChiseledBookshelfBlock` swaps `PolymerBlock` for `PolymerTexturedBlock`,
+  without which polymer-blocks remaps a reserved state back to a plain note block (see
+  `planked-crafting-tables.md`). `BookshelfBlocks` requests four `FULL_BLOCK` states per wood, one
+  per facing, each a `MultiPolymerBlockModel` of the parts S7's multipart draws for an empty shelf
+  in that facing: the wood's body, `y`-rotated with `uvlock`, and its six empty slots, `y`-rotated.
+  A wood any of whose four comes back null takes none, so no shelf's frame depends on which way it
+  faces. `getPolymerBlockState` sends the real state to a client running the mod; the facing's
+  reserved state to one with the pack, when the wood has them; vanilla's chiseled shelf with the
+  same properties to everyone else.
+- **Books.** The block implements `BlockWithElementHolder`, and for a wood with reserved states each
+  placed shelf gets a `ChiseledBooksHolder` with one item display. It is watched only by clients
+  that have the pack and do not run the mod (`ChestElementHolder`'s check, plus the pack). Its stack
+  is `minecraft:book` with `item_model` `sensiblestorage:<wood>_chiseled_bookshelf_books` and
+  `custom_model_data` strings, one per slot: the slot's book number when occupied, empty otherwise;
+  a shelf with no books shows no stack. `ChiseledBooks#book(pos, slot)` gives the number. The
+  holder works out the six books once, from the position, and restacks and reposes on
+  `BLOCK_STATE_UPDATE`; it never ticks, and reads nothing from the level, being built during chunk
+  load.
+- **Pose.** The element sits one block out along the facing. Its left rotation is `Axis.YP` by
+  `-facing.toYRot()`, which with the renderer's 180° turns the north-authored front to the facing,
+  and its translation is one block back less 1/512, so the quads land 1/512 in front of the face.
+- **Shadows.** Per wood, a `shadow` sheet: the occupied background's 20 shadow pixels, colourised
+  as there, transparent elsewhere; and six shadow models, vanilla's slot templates over it. The
+  right-hand slots' books cast no shadow, so their two draw nothing, kept so every slot is alike.
+- **Item definitions.** Per wood, `assets/sensiblestorage/items/<wood>_chiseled_bookshelf_books.json`:
+  a `composite` holding, per slot, a `select` on that slot's string whose one case, any of the 18
+  numbers, draws the slot's shadow, then a `select` with one case per book drawing that book.
+  Everything else is transparent, so terrain's frame shows through.
 
-**Done when.** The dev server's Polymer pack has 216 more reserved `note_block` states than before,
-counted in `note_block.json`, and in-game a vanilla client with the pack sees each wood's planked
-frame on an empty shelf and on a full one, with the same random books a client running the mod sees
-there; taking one book from a full shelf turns its frame to vanilla's, every other book staying as
-it was, and putting it back restores the planked frame.
+**Done when.** `generateAssets` is byte-identical to S7's output but for the 27 item definitions,
+27 shadow sheets and 162 shadow models, and each wood's empty sheet under its shadow sheet is its
+occupied sheet;
+the dev server's pack has 108 more reserved `note_block` states; `ChiseledBooks#book`, run on
+Minecraft's own classes, agrees with S7's reimplementation at every position sampled; and in-game a
+vanilla client with the pack sees each wood's planked frame in all four facings, empty, partly
+filled and full, with the books a client running the mod draws there. The check for the books:
+fill a vanilla shelf, note its books, and set a planked one with the same state in its place — the
+books stay. Taking a book out and putting it back leaves the others as they were; a vanilla client
+without the pack still sees vanilla's shelf with vanilla's books; a client running the mod sees no
+display over its shelves.
+
+### As built
+
+The first build drew each occupied slot's whole background on the display, which reviewing it
+showed would light a filled slot's frame as an entity; it now draws books and shadows only, as the
+Build says. `ChiseledBookshelfModels` holds the ids; `ChiseledSlot` takes its slot names from it,
+and the provider's own name helpers delegate to it. The holder is `ChiseledBooksHolder`, in
+`display/` beside the chest's. Polymer ticks a block-bound holder only when the block asks
+(`BlockBoundAttachment`'s `autoTick`, from `tickElementHolder`), and an element sends its changed
+data only when ticked, so the holder ticks itself once after each state change instead. A pack
+client is also sent vanilla's chiseled bookshelf block entity over a note block, which is harmless:
+Polymer drops only its own types from chunk packets (`ClientboundLevelChunkPacketDataMixin`), and
+the client loads chunk block-entity data only into a block entity the block has already made
+(`LevelChunk.java:541-545`), which a note block never does.
+
+Against S7's output: only the 27 item definitions, 27 shadow sheets and 162 shadow models were
+added. For all 27 woods, the empty sheet with the shadow sheet laid over it is the occupied sheet to
+the pixel, so terrain's empty slot plus the display's shadow is terrain's occupied background.
+`ChiseledBooks#book`, run on Minecraft's own classes from the mod's runtime classpath, matched the
+Python reimplementation of the client's pick (`MultiPartModel`'s reset, `nextInt`, the weight walk,
+over a full shelf's multipart) at 2,000 positions, eight near the origin and the rest across the
+world border's range. On the dev server the pack's `note_block.json` has 108 multipart states, each
+the wood's body and six empty slots in one facing, and none claimed by any of its variant keys,
+which would win; the item definitions, shadow sheets and shadow models are in the pack. Placing
+shelves by command and filling and emptying a slot with `item replace` runs the holder's
+construction and update with no errors. A test courtyard at (20, -60, 20) has five woods per side,
+facing inward in all four facings, with empty, partial and full shelves, and a full vanilla shelf at
+(20, -58, 16) for the swap check. Signed off in-game with the books-only display on 2026-09-26,
+which completes the feature.
 
 ## Reference: chiseled bookshelf slot geometry
 
@@ -554,6 +637,12 @@ reserved note block state and vanilla's shelf all share; and the same weighted l
 entry for entry, which S7 guarantees by generating every list from one definition. Because the seed
 is reset before every part, which other parts a state has — body, backgrounds, other slots — makes
 no difference. A client that runs neither the mod nor the pack draws vanilla's own fixed six.
+
+Every step above is common code, so the server can take them itself: seed a
+`SingleThreadedRandomSource` with `Mth.getSeed(pos)` (the renderer's source is one,
+`RandomSource.createThreadLocalInstance`, reseeded per block), draw one `nextLong()` and reseed with
+it, then `nextInt` the slot's total and walk its weights. That is `ChiseledBooks#book`, which S8's
+display entities show, so a pack client's books over a planked shelf are terrain's books.
 
 ## Reference: random-book weighting
 
