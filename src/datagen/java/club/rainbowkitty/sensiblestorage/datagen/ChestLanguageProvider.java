@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
 
 import net.minecraft.core.HolderLookup;
 
+import club.rainbowkitty.sensiblestorage.block.BookshelfBlocks;
 import club.rainbowkitty.sensiblestorage.block.ChestBlocks;
 import club.rainbowkitty.sensiblestorage.block.CraftingTableBlocks;
 import club.rainbowkitty.sensiblestorage.cart.ChestCarts;
@@ -48,5 +49,7 @@ public final class ChestLanguageProvider extends FabricLanguageProvider {
         }
         CraftingTableBlocks.tables().forEach(
                 (wood, table) -> builder.add(table, wood.displayName() + " Crafting Table"));
+        BookshelfBlocks.bookshelves().forEach(
+                (wood, shelf) -> builder.add(shelf, wood.displayName() + " Bookshelf"));
     }
 }

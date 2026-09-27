@@ -20,9 +20,9 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
 /**
  * The per-wood crafting table textures, for every wood with a table (so not oak): vanilla's own
- * three faces with every oak-plank pixel replaced by the same pixel of the wood's planks, plus the
- * wood's planks untouched for the bottom. Written under {@code textures/block/crafting_table/},
- * one-to-one with the sprites {@link CraftingTableModelProvider} binds.
+ * three faces with every oak-plank pixel replaced by the same pixel of the wood's planks. Written
+ * under {@code textures/block/crafting_table/}, one-to-one with the sprites
+ * {@link CraftingTableModelProvider} binds; the bottom is {@link PlankSpriteProvider}'s.
  *
  * <p>An overlay here is a mask, not art: transparent where the wood shows, and
  * {@link PngAssets#CUTOUT} magenta wherever vanilla's frame, tools and worktop should stay. The
@@ -32,11 +32,7 @@ public final class CraftingTableTextureProvider implements DataProvider {
     // Faces with an overlay, named by vanilla's own texture suffixes.
     static final List<String> FACES = List.of("front", "side", "top");
 
-    // The bottom face's sprite suffix; vanilla draws that face as bare planks.
-    static final String BOTTOM = "bottom";
-
-    // Same three datagen-only directories ChestTextureProvider reads, for the same reasons.
-    private static final String PLANK_DIR = "sensiblestorage_planks/";
+    // Same datagen-only directories ChestTextureProvider reads, for the same reasons.
     private static final String OVERLAY_DIR = "sensiblestorage_overlay/block/";
     private static final String VANILLA_DIR = "sensiblestorage_vanilla/";
     private static final int SIZE = 16;
@@ -66,12 +62,11 @@ public final class CraftingTableTextureProvider implements DataProvider {
 
         List<CompletableFuture<?>> writes = new ArrayList<>();
         for (WoodType wood : CraftingTableBlocks.tables().keySet()) {
-            BufferedImage planks = read(loader, PLANK_DIR + wood.id() + "_planks.png");
+            BufferedImage planks = WoodTints.planks(loader, wood);
             for (String face : FACES) {
                 BufferedImage cut = PngAssets.composite(planks, overlays.get(face));
                 writes.add(save(cache, wood, face, PngAssets.composite(vanilla.get(face), cut)));
             }
-            writes.add(save(cache, wood, BOTTOM, planks));
         }
         return CompletableFuture.allOf(writes.toArray(CompletableFuture[]::new));
     }

@@ -27,6 +27,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
+import club.rainbowkitty.sensiblestorage.block.BookshelfBlocks;
 import club.rainbowkitty.sensiblestorage.block.ChestBlocks;
 import club.rainbowkitty.sensiblestorage.block.CraftingTableBlocks;
 import club.rainbowkitty.sensiblestorage.cart.ChestCarts;
@@ -34,22 +35,23 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
 /**
  * Per-wood crafting recipes: a plank ring → chest (the vanilla chest recipe shape), a chest +
- * tripwire hook → trapped chest, and a 2×2 plank square → crafting table. The table has the same
- * collision as the chest and the same fix, {@code data/minecraft/recipe/crafting_table.json}, and
- * all that follows about the ring holds for the square. Vanilla's own {@code minecraft:chest}
- * recipe also matches a uniform plank ring - {@code #minecraft:planks} takes any wood, not just
- * this one's - so {@code data/minecraft/recipe/chest.json} is a hand-written override naming a
- * custom serializer, {@link club.rainbowkitty.sensiblestorage.recipe.PlankFallbackRecipe}, that
- * refuses any grid another recipe here also matches; see that class for why a wood's own recipe
- * cannot simply be trusted to win a tie against vanilla's. Oak has no table, since vanilla's own
- * crafting table is already oak, so a uniform oak square has nothing else to match and still makes
- * that. {@code trapped_chest}
- * gets a plain, opt-in-only override instead ({@code disable_vanilla_recipes} built-in data pack,
- * {@code BuiltinDataPacks}, off by default) - it never collides with a wood's own trapped-chest
- * recipe (different items entirely), so disabling it is a look-and-feel choice, not a correctness
- * one. A modded wood's ring uses its {@code data/sensiblestorage/tags/item/<wood>_planks.json} tag
- * (a single, {@code required: false} entry) instead of a direct item reference, since this mod is
- * never a build dependency of the wood's source mod - see {@code ChestBlocks#DATAGEN}.
+ * tripwire hook → trapped chest, a 2×2 plank square → crafting table, and planks around three books
+ * → bookshelf. The table and the bookshelf have the same collision as the chest and the same fix,
+ * {@code data/minecraft/recipe/crafting_table.json} and {@code bookshelf.json}, and all that
+ * follows about the ring holds for them. Vanilla's own {@code minecraft:chest} recipe also matches
+ * a uniform plank ring - {@code #minecraft:planks} takes any wood, not just this one's - so
+ * {@code data/minecraft/recipe/chest.json} is a hand-written override naming a custom serializer,
+ * {@link club.rainbowkitty.sensiblestorage.recipe.PlankFallbackRecipe}, that refuses any grid
+ * another recipe here also matches; see that class for why a wood's own recipe cannot simply be
+ * trusted to win a tie against vanilla's. Oak has no table or bookshelf, since vanilla's own are
+ * already oak, so a uniform oak grid has nothing else to match and still makes vanilla's.
+ * {@code trapped_chest} gets a plain, opt-in-only override instead ({@code disable_vanilla_recipes}
+ * built-in data pack, {@code BuiltinDataPacks}, off by default) - it never collides with a wood's
+ * own trapped-chest recipe (different items entirely), so disabling it is a look-and-feel choice,
+ * not a correctness one. A modded wood's ring uses its
+ * {@code data/sensiblestorage/tags/item/<wood>_planks.json} tag (a single, {@code required: false}
+ * entry) instead of a direct item reference, since this mod is never a build dependency of the
+ * wood's source mod - see {@code ChestBlocks#DATAGEN}.
  *
  * <p>Also one cart recipe per cargo — each of the 28 woods' chests and trapped chests, plus
  * vanilla's trapped chest, the barrel, the eight copper chests and the seventeen shulker boxes. Of
@@ -96,8 +98,9 @@ public final class ChestRecipeProvider extends FabricRecipeProvider {
                     Block chest = ChestBlocks.chests().get(wood);
                     Block trapped = ChestBlocks.trappedChests().get(wood);
                     Block table = CraftingTableBlocks.tables().get(wood);
+                    Block bookshelf = BookshelfBlocks.bookshelves().get(wood);
 
-                    // The recipes' *outputs* (chest/trapped/table, above) still need conditioning
+                    // The recipes' *outputs* (the blocks above) still need conditioning
                     // though the planks ingredient below no longer does: ChestBlocks#DATAGEN
                     // registers every wood's block for this pass regardless, but on a real server
                     // missing this wood's mod, ChestBlocks#init skips it - so the block this recipe
@@ -113,11 +116,20 @@ public final class ChestRecipeProvider extends FabricRecipeProvider {
                             .pattern("###"), wood)
                             .save(output);
 
-                    // No table for oak: PlankFallbackRecipe leaves a uniform oak square to vanilla.
+                    // No table or bookshelf for oak, whose are vanilla's own: with nothing else
+                    // to match, PlankFallbackRecipe leaves an oak grid to them.
                     if (table != null) {
                         withPlanks(this.shaped(RecipeCategory.DECORATIONS, table)
                                 .pattern("##")
                                 .pattern("##"), wood)
+                                .save(output);
+                    }
+                    if (bookshelf != null) {
+                        withPlanks(this.shaped(RecipeCategory.BUILDING_BLOCKS, bookshelf)
+                                .define('X', Items.BOOK)
+                                .pattern("###")
+                                .pattern("XXX")
+                                .pattern("###"), wood)
                                 .save(output);
                     }
 

@@ -69,7 +69,7 @@ public final class CraftingTableModelProvider implements DataProvider {
         Identifier front = sprite(wood, "front");
         Identifier side = sprite(wood, "side");
         Map<String, Identifier> faces = new LinkedHashMap<>();
-        faces.put("down", sprite(wood, CraftingTableTextureProvider.BOTTOM));
+        faces.put("down", PlankSpriteProvider.sprite(wood));
         faces.put("east", side);
         faces.put("north", front);
         faces.put("particle", front);

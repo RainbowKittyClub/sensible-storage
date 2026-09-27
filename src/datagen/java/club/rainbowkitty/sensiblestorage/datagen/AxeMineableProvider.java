@@ -13,12 +13,14 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Block;
 
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
+import club.rainbowkitty.sensiblestorage.block.BookshelfBlocks;
 import club.rainbowkitty.sensiblestorage.block.CraftingTableBlocks;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
 /**
  * Adds every block this mod registers to {@code minecraft:mineable/axe}, as vanilla has its own
- * chests and crafting table: each wood's chest, trapped chest and crafting table.
+ * chests, crafting table and bookshelves: each wood's chest, trapped chest, crafting table and
+ * bookshelf.
  *
  * <p>The tag lives in the {@code minecraft} namespace because that is the tag the mining speed is
  * read from; one under this mod's own namespace would be a tag nothing reads. It used to be
@@ -48,6 +50,9 @@ public final class AxeMineableProvider extends FabricTagsProvider.BlockTagsProvi
         }
         for (WoodType wood : CraftingTableBlocks.tables().keySet()) {
             axe.addOptional(block(wood.craftingTableId()));
+        }
+        for (WoodType wood : BookshelfBlocks.bookshelves().keySet()) {
+            axe.addOptional(block(wood.bookshelfId()));
         }
     }
 
