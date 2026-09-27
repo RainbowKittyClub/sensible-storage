@@ -1,14 +1,18 @@
 package club.rainbowkitty.sensiblestorage.block;
 
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import eu.pb4.polymer.blocks.api.BlockModelType;
+import eu.pb4.polymer.blocks.api.MultiPolymerBlockModel;
 import eu.pb4.polymer.blocks.api.PolymerBlockModel;
 import eu.pb4.polymer.blocks.api.PolymerBlockResourceUtils;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityType;
 import net.fabricmc.fabric.api.registry.FlammableBlockRegistry;
+import org.jspecify.annotations.Nullable;
 
+import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -19,6 +23,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChiseledBookShelfBlock;
 import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -78,6 +83,7 @@ public final class BookshelfBlocks {
             ResourceKey<Block> chiseledKey =
                     ResourceKey.create(Registries.BLOCK, SensibleStorage.id(chiseledPath));
             PlankedChiseledBookshelfBlock chiseled = new PlankedChiseledBookshelfBlock(wood,
+                    requestChiseledStates(wood),
                     BlockBehaviour.Properties.ofFullCopy(Blocks.CHISELED_BOOKSHELF)
                             .setId(chiseledKey));
             Registry.register(BuiltInRegistries.BLOCK, SensibleStorage.id(chiseledPath), chiseled);
@@ -89,6 +95,31 @@ public final class BookshelfBlocks {
                     .component(DataComponents.CONTAINER, ItemContainerContents.EMPTY));
             CHISELED.put(wood, chiseled);
         }
+    }
+
+    // A set-aside state per facing, drawn as the parts the wood's multipart blockstate draws for an
+    // empty shelf facing that way: the body turned with uvlock, the six empty slots turned without.
+    // Null unless Polymer gave all four, so no shelf's frame depends on which way it faces.
+    private static @Nullable Map<Direction, BlockState> requestChiseledStates(WoodType wood) {
+        Map<Direction, BlockState> states = new EnumMap<>(Direction.class);
+        for (Direction facing : Direction.Plane.HORIZONTAL) {
+            // The blockstate's y: 0 for north, then 90 a quarter-turn clockwise.
+            int y = ((int) facing.toYRot() + 180) % 360;
+            MultiPolymerBlockModel model = MultiPolymerBlockModel.of().with(PolymerBlockModel.of(
+                    ChiseledBookshelfModels.body(wood.id()), 0, y, true));
+            for (int slot = 0; slot < ChiseledBookShelfBlock.SLOT_OCCUPIED_PROPERTIES.size();
+                    slot++) {
+                model.with(PolymerBlockModel.of(
+                        ChiseledBookshelfModels.emptySlot(wood.id(), slot), 0, y));
+            }
+            BlockState state =
+                    PolymerBlockResourceUtils.requestBlock(BlockModelType.FULL_BLOCK, model);
+            if (state == null) {
+                return null;
+            }
+            states.put(facing, state);
+        }
+        return states;
     }
 
     // As CraftingTableBlocks#registerItem: the real item for a client running this mod, the
