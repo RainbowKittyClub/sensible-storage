@@ -239,7 +239,7 @@ A claim needs a second player who is not its member.
 A stage is not finished until its "Done when" has been observed, so a failure at one stage points
 at that stage and not the ones before it.
 
-## S1 — Grid block entity and a menu that keeps it — **planned**
+## S1 — Grid block entity and a menu that keeps it — **done**
 
 **Build.** A new kalic0re package, `common/craft/`, released as 0.20.0 and added to this mod's
 `kalic0re_shared_packages`. It holds four classes.
@@ -309,7 +309,73 @@ Also record the answer to this question: `ResultSlot#onTake` consumes through
 `setChanged`, and Ledger's per-slot snapshot only updates on `setChanged`. Does Ledger log the
 consumed ingredients as removals, late, or not at all?
 
-## S2 — Vanilla's crafting table — **planned**
+### As built
+
+Built as planned, with these departures:
+- **The hand-off is a tail inject, not a `NEW` target.** A handler replacing the `new` would
+  have to return a `TransientCraftingContainer`, which the grid is not. Instead
+  `AbstractCraftingMenuMixin` shadows `craftSlots` `@Mutable` and assigns
+  `CraftingGridHandoff.take()` at the tail of `AbstractCraftingMenu`'s constructor, which runs
+  before `CraftingMenu` builds any slot. The unused transient grid is still built.
+- **The grid tracks its menus through `attach` and `detach`**, beside `startOpen` and
+  `stopOpen`, and `clearContent` notifies them too. `PersistentCraftingMenu` is final, as
+  Checkstyle requires.
+- **`PlankedCraftingTableBlock` no longer overrides `getMenuProvider`.** It inherits S2's mixin,
+  and its private `Menu` became kalic0re's `BlockCraftingMenu`.
+
+Observed over RCON, opening menus as a Fabric `FakePlayer` through a temporary command, since
+removed:
+- The menu is a `PersistentCraftingMenu` whose grid slots sit on the block entity.
+- A 2×2 of planks shows a crafting table in the output as it opens.
+- Closing leaves all four stacks in place, and `data get block` lists them before and after a
+  restart.
+- A table with a `lock` component returns no menu to a player without the key.
+- Breaking a filled table drops the table and its grid.
+
+Still to observe in-game: two players on one table, crafting and shift-crafting, the cake's
+buckets, the recipe book, the name as the menu title, and GOML and Ledger (both installed in
+`run/mods-server/`).
+
+Later the same day:
+- **The facing is also re-taken whenever a change leaves the grid empty.** It comes from the
+  player whose click or recipe-book placement emptied it (`PersistentCraftingMenu` names them
+  through `beginAction`), or else from the first non-spectator with the grid open. A spectator's
+  facing is never taken.
+- **The grid tells its menus only of real changes.** Vanilla's click path calls `setChanged` up
+  to five times for one pickup. Each call recomputed and resent every viewer's output under a new
+  state id, where a vanilla table sends one or two. The grid now keeps copies of what it last
+  reported and notifies only when the contents differ, and the display refreshes only on a
+  content or facing change.
+  - The recompute stays immediate, because shift-crafting needs the output current after each
+    take.
+  - This was suspected of causing a ghost item on the modded client, a sensiblestorage item left on
+    the cursor after being put down. It was not the cause; see below.
+- **`PlankFallbackRecipe` sorts out the crafting recipes once per recipe list**, rather than
+  scanning every recipe on each check.
+
+The ghost item, traced with logging on both sides that is kept on the `debug/ghost-diagnostics`
+branch:
+- **Every hash check fails for a sensiblestorage item on a handshake client.** The server sends
+  the real item (`PolymerModelBlockItem#getPolymerItem` returns it when `HANDSHAKE.supportsAll`),
+  and the client shows it. The client's click packets report the stack under the vanilla
+  fallback's id, though, with all four of Polymer's added components matching. Polymer's check
+  (`RemoteSlotSynchronizedMixin`) re-translates the server's stack to the real item. So after
+  every pickup the server corrects the cursor, and after every put-down it resends the slot.
+  The id turns into the fallback's on the client: Polymer's `ByteBufCodecsRegistryMixin`, which
+  swaps a Polymer item for its replacement as an item id is encoded, runs on both sides. On the
+  client it asks our `getPolymerItem`, and `HANDSHAKE.supportsAll` reads false there, since the
+  markers are registered clientbound. A vanilla client is unaffected: it is sent the fallback, so
+  both sides agree. It is a Polymer bug; a draft report is on the `debug/ghost-diagnostics` branch,
+  in `docs/debug/`.
+- **A drag-place turns those corrections into a ghost.** It is three packets sent in the same
+  millisecond. The server answers each, and its cursor corrections after the first two
+  (`ClientboundSetCursorItemPacket`, which carries no state id) land after the client has finished
+  the drag. The third packet's reported cursor is empty, which matches, so nothing clears them.
+- **Fixed by `AbstractContainerMenuMixin`**, which bumps the state id after every cursor
+  correction. A click already in flight then arrives stale and is answered with a full resync,
+  cursor included. Confirmed in-game: no ghost. The needless corrections remain, harmless.
+
+## S2 — Vanilla's crafting table — **done**
 
 **Build.** A `$`-prefixed `CraftingTableBlockMixin` makes `CraftingTableBlock` implement
 `EntityBlock`, and S1's block entity type becomes valid for `Blocks.CRAFTING_TABLE` as well:
@@ -332,7 +398,16 @@ client-side block entities that the server never fills. That is harmless, but ch
 - A table placed before this build was installed opens and keeps its items.
 - A handshake client shows no errors near crafting tables.
 
-## S3 — Game rules — **planned**
+### As built
+
+Built as planned. The mixin also carries S4's comparator methods and S6's
+`BlockWithElementHolder`, and `getMenuProvider` is an inject at its head that returns the grid.
+
+Observed: `setblock … minecraft:crafting_table` gets a `sensiblestorage:crafting_table` block
+entity, which keeps items as S1 describes. Still to observe: a table placed before this build,
+and a handshake client near crafting tables.
+
+## S3 — Game rules — **done**
 
 **Build.** Two rules, both registered with Fabric's
 `GameRuleBuilder.forBoolean(…).buildAndRegister(…)`, with `gamerule.sensiblestorage.<path>` names
@@ -375,7 +450,32 @@ With both rules on:
 
 With either rule off, none of those three reach the grid.
 
-## S4 — Comparator output and kept names — **planned**
+### As built
+
+Built as planned, with one addition: a player who gets a grid of their own through S8 skips the
+leftover drop, so a table never spills its owner's items on a stranger.
+
+Observed:
+- With `hold_items` off, opening a table that held three sticks gives vanilla's menu, empties the
+  grid and drops the sticks at the table.
+- Hoppers above and below a table move nothing with `hoppers_can_access` off, and fill and drain
+  it once it is on. Each flip took effect at once.
+- With `hold_items` off, a hopper above does nothing even with `hoppers_can_access` on.
+
+Still to observe: a dropper.
+
+Later: a spectator opening a table with `hold_items` off gets vanilla's menu without spilling
+the leftovers.
+
+After an in-game look: **leftovers go to the player instead of the ground.** A table opened with
+`hold_items` off no longer drops what it kept. `BlockCraftingMenu#fillGrid` moves the stacks into
+the opener's own grid, in the same slots, and works out the output once. The grid empties, and
+the menu hands them back to that player's inventory on close like anything else in it, dropping
+only what doesn't fit, as vanilla's does. A spectator still takes nothing, and a player given a
+grid of their own through S8 still leaves the table alone. The Ledger note above no longer
+applies: nothing is dropped.
+
+## S4 — Comparator output and kept names — **done**
 
 **Build.** The comparator signal is the number of filled slots, 0–9, as the crafter's is
 (`CrafterBlockEntity.java:258-269`, `CrafterBlock.java:64-71`):
@@ -401,7 +501,26 @@ Placing a named table already applies the name (`BaseContainerBlockEntity.java:1
   title.
 - An unnamed table drops the same item it does today.
 
-## S5 — Item model extents — **planned**
+### As built
+
+Built as planned. The generated override of `minecraft:blocks/crafting_table` has no
+`random_sequence`: Fabric's loot provider omits it, as it does for every table this mod
+generates, and it only matters to a table with random rolls. A byte comparison of the
+regenerated `src/main/generated` against the previous run shows exactly the expected changes:
+- the 27 planked tables' loot tables gain `copy_components`;
+- `data/minecraft/loot_table/blocks/crafting_table.json` is new;
+- the language file gains the two game rule names.
+
+The other 3,000-odd files are identical.
+
+Observed over RCON:
+- Comparators read 5, 2 and then 4 as the grids changed.
+- `loot spawn … mine` drops "Bench" from a renamed spruce table and "Oak Bench" from a renamed
+  vanilla one, and a plain crafting table from an unnamed one.
+
+Still to observe: a renamed table's name as the menu title.
+
+## S5 — Item model extents — **done**
 
 **Build.** kalic0re `common/display/ItemModelExtents` resolves a stack to its model's box in model
 units (0–16), plus whether it is a flat sprite. The box is for placing the item, not for sizing it
@@ -440,7 +559,53 @@ vanilla client may be drawing a Polymer item's vanilla fallback instead.
 - a Terrestria log, a cube read from Terrestria's own jar;
 - an id with no model file, the fallback, without throwing.
 
-## S6 — Container contents display — **planned**
+### As built
+
+Built as planned. A temporary startup log, since removed, gave:
+- stone 16³, a stone slab 16×8×16;
+- a stick, a torch, an oak door, a cake and a bell each flat;
+- a chest 1–15 × 0–14 × 1–15, from its block's shape;
+- a player head 4–12 × 0–8 × 4–12, from its block's shape;
+- a trident and a shield the full-block fallback;
+- an oak fence −2 to 18 along z, its inventory model's rails reaching past the block;
+- a Terrestria redwood log a cube, read from Terrestria's own jar.
+
+Still to observe: an id with no model file.
+
+Later the same day, after an in-game look:
+- **Each box carries the model's front.** That is the y of its `display.fixed` rotation,
+  inherited through parents; a special model takes it from its `base`. Vanilla's chest
+  (`item/template_chest`, fixed y 180) and the planked chest built on it are authored facing
+  south.
+- **A mod can name the model its items really draw with.** A planked chest's own `item_model`
+  names no definition, because Polymer gives it `<wood>_chest_whole` on the way out.
+  `registerModelSource` takes such a mapping, and sensible-storage supplies kalic0re's
+  `PolymerModelBlockItem#model` and `PolymerModelItem#model`.
+- **The client jar is fetched in the background.** Polymer downloads it when it isn't cached, so
+  `prepare()` fetches it off-thread as a server starts. Nothing is cached until that has settled.
+
+After a second in-game look:
+- **Transformations are applied.** A trident and a shield sat centred on their square's corner. In
+  26.2 every item model node may carry a `transformation`, composed down the tree and applied
+  after the model is centred (`ItemStackRenderState#applyTransform`). A special item with no
+  block is an entity model built around its own origin, which a trident's and a shield's only
+  flip (`scale [1, -1, -1]`). Such an item now stands in with a block-sized box centred on that
+  origin, run through the transformations, so it centres on its square. A block item's special
+  model still takes its block's shape, which is where its transformations put its geometry.
+- **Special models are measured at build time.** The box above still left a trident's pole, which
+  reaches about 1.7 blocks below its origin, inside the table. kalic0re's
+  `SpecialModelExtentsProvider` now bakes every special renderer vanilla's item definitions use,
+  from vanilla's own entity models, and records the points each reports through `getExtents`,
+  the call a client sizes items by. The result is 68 boxes in
+  `kalic0re/special_model_extents.json`, keyed by the renderer's sorted JSON. A measured box is
+  used first, under the node's transformations; then a block's shape; then the box around the
+  origin. That needs a client datagen run, so sensible-storage now has `datagen_client=true`. Its
+  other 3,185 generated files came out byte-identical. The measured boxes for chests, heads,
+  conduits and shulker boxes match the block shapes they replace. Banners and decorated pots
+  measure taller than their blocks, as drawn. A planked chest's renderer names its own texture,
+  so it is not in the table and keeps its block shape.
+
+## S6 — Container contents display — **done**
 
 **Build.** In kalic0re, `common/display/ContainerDisplay`: a generic `ElementHolder` that shows a
 container's slots as items. It is configured with:
@@ -490,7 +655,82 @@ In this mod, the crafting grid's configuration:
   client's settings.
 - The actual requirement is the look. Judge it in-game.
 
-## S7 — Pistons move an empty table — **planned**
+### As built
+
+Built as two classes rather than one `ContainerDisplay`, following STYLE.md's split between
+geometry and holder:
+- `ContainerContentsVisual` holds the slot layout, the one scale and the pose maths.
+- `ContainerContentsHolder` owns the elements.
+
+The holder pulls its contents from a supplier, filling itself the first time a player starts
+watching and on each `refresh()` after that. That made the block-entity load event unnecessary.
+Its elements draw in `NONE` with no interpolation, so a changed slot snaps rather than morphs.
+
+The logged poses put slot 0 on the far-left square for both facings tried, a cube's bottom on the
+top face, and a flat item face-up, 1/512 above it.
+
+Nothing about the look has been observed yet. A showcase stands at (41, −54, 42) and
+(44, −54, 42), nine mixed items each, with an empty spruce table at (47, −54, 42) for the facing.
+
+Later:
+- **Planked chests stood 180° off**, backs to the opener, and vanilla's would have too. Each
+  upright item now turns by its model's front (S5).
+- **The holder's source now finds the grid through the holder's current attachment**, rather
+  than a position remembered at creation. Polymer carries the holder to the table's new place
+  when a piston moves it, so before this a moved table's display read the empty spot it left.
+  This came out of the code review.
+
+After an in-game look at tridents and shields:
+- **An item whose inventory icon is a flat sprite lies flat as that icon.** A trident standing
+  upright, nearly two blocks of model tall, looked bad. The display now resolves each item in
+  both contexts (`ItemModelExtents#of` takes the context, and a `select` on `display_context`
+  picks its case as a client does). When the inventory look is flat, it draws that in
+  `ItemDisplayContext.GUI`. Only the trident, the spyglass and the seven spears change model,
+  from what a hand holds to their icon. Every other flat item draws the same as before, and an
+  amethyst bud also takes the inventory's 2 px centring nudge, its model's only `gui` transform.
+  In vanilla, 722 items lie flat as icons, 814 block items stand, and the shield is the only
+  other item left standing.
+- **Standing models are smaller: 5/32 to the block**, where an icon's canvas stays 3/16 wide, the
+  spacing between squares. `ContainerContentsVisual` takes the two sizes separately.
+
+After another look, the blocks drowned out the flat icons:
+- **Icons stand upright too**, facing the player the grid faces, like every other item. An icon's
+  front is its face (`item/generated`'s `fixed` rotation, 180, as a chest's), so the same turn
+  serves both. Its box is the whole canvas, so a sprite with empty rows at the bottom stands a
+  pixel or two above the table. The pose no longer has a lying branch.
+- **`sensiblestorage:crafting_tables_show_inventory`**, default `true`, hides every table's display
+  when off. The display's source reads it and shows every square empty. A display is only
+  reread on a change, so `CraftingTableGrids` keeps a weak set of the displays it made and
+  refreshes them all from Fabric's `GameRuleEvents.changeCallback`, and a flip shows at once. The
+  language file gains the rule's name and nothing else changes in the generated output.
+
+Then, to lift the items off the table and toward the player:
+- **Everything hovers 1/16 above the top** (`SlotLayout.topGrid` takes a height).
+- **Items billboard.** Icons are `CENTER`, facing the viewer outright. Models are `VERTICAL`,
+  turning about the upright only, because a cube billboarded `CENTER` only ever shows its front
+  face and reads as a flat square. A billboard's frame turns its +z toward the viewer, so a
+  billboarded item takes the turn it would for a player facing north. It pivots about its own
+  centre, placed where it would be standing upright. Tilted toward a viewer above, a cube's
+  lower back corners dip by up to about a thirtieth of a block, which the 1/16 covers. The
+  table's facing now only orders the squares.
+
+And after a look at that: **the hover is 1/32, and models don't billboard.** They stand facing
+the player the grid faces again, their bottoms 1/32 above the top. Icons still face the viewer
+`CENTER`. Turned about its centre, an icon's lowest edge never drops below where it would stand
+upright, so the smaller hover is enough.
+
+Then: **the hover is 1/64, a block of model is 2/16, and an icon's canvas is 5/32**, a little
+narrower than the 3/16 spacing between squares.
+
+**A full hopper below made the display flicker.** `HopperBlockEntity#tryTakeInItemFromSlot` takes
+one item out before it knows it has room, and puts it back when it has none, every 8 ticks. On a
+slot holding one item, that emptied it and filled it again within the tick, and each change
+refreshed the display at once, removing the item's element and adding it back. A display now
+refreshes as the tick ends (`ContainerContentsHolder#refreshAtTickEnd`, flushed from
+`ServerTickEvents.END_SERVER_TICK`), once however many changes the tick made, so a change
+undone within it sends nothing. Menus are still told at once, which shift-crafting needs.
+
+## S7 — Pistons move an empty table — **done**
 
 **Build.** kalic0re `common/piston/PistonMovable` is a registry of rules that say "this
 block-entity block may be moved now". This mod registers one: a `CraftingTableBlock` whose grid is
@@ -513,7 +753,20 @@ and an empty table has no displays anyway.
 - A moved table opens and keeps items in its new place.
 - The modded client shows the move smoothly.
 
-## S8 — Claim-exemption fallback — **planned**
+### As built
+
+Built as planned. Observed:
+- A piston pushes an empty vanilla table, and the moved table has a fresh, empty block entity.
+- A sticky piston pushes and pulls back an empty spruce table, which then keeps an item put in
+  it.
+- A spruce table holding one stick does not move.
+
+Still to observe: the move on the modded client.
+
+The display after a move was broken until S6's attachment fix, and is still to be observed
+in-game.
+
+## S8 — Claim-exemption fallback — **done**
 
 **Build.** kalic0re `common/claim/ClaimExemptions` is a registry of probes. Each asks whether a
 player would be refused at a block if the claim mod didn't exempt that block. The table asks
@@ -556,7 +809,29 @@ With GOML and Flan left at their defaults, the non-member is refused outright, a
 
 Record FTB Chunks as untested until a 26.2 build exists.
 
-## S9 — Planked tables follow vanilla's claim exemptions — **planned**
+### As built
+
+Built as planned, with three departures:
+- **GOML's probe calls `ClaimUtils#canModify`.** Its signature has only Minecraft types, whereas
+  `getClaimsAt` returns types from a library nested in GOML's jar. It is the same membership
+  test GOML's own Common Protection provider uses.
+- **A probe that stops linking answers strictly rather than disabling itself.** It refuses
+  without an exemption and never allows a stand-in, logged once, so a broken probe can hand out
+  a private grid but never a stored one.
+- **FTB Chunks' probe also needs `ftb-teams-fabric:26.1.2.4`** on the compile classpath, for
+  `PrivacyProperty`.
+
+Observed: with GOML, Flan and Open Parties and Claims installed together, every probe linked and
+answered for a fake player where there is no claim: not refused, and the stand-in allowed.
+
+Still to observe: each setup in the Done-when, which needs a claim and a second player. Flan,
+OPAC and Forge Config API Port, which OPAC needs, are parked in `run/mods/disabled/claims/`,
+which the loader does not scan. Move one mod at a time into `run/mods-server/` to test it.
+
+Later: a probe whose mod throws an ordinary exception answers strictly for that call, instead of
+breaking the table's use.
+
+## S9 — Planked tables follow vanilla's claim exemptions — **done**
 
 **Build.** A planked table should be usable wherever vanilla's would be. The claim mods decide by
 block id, so a planked table misses every exemption written for `minecraft:crafting_table`.
@@ -604,6 +879,29 @@ for a non-member in each setup:
 - Flan with `minecraft:crafting_table` in its `interactBlockBlacklist`: both give a private grid.
 
 A member gets the stored grid at both, in every setup. Record FTB Chunks as untested, as in S8.
+
+### As built
+
+Built as planned, with two refinements to the listener:
+- **It takes over only when needed.** It asks the probes about the real block too, and does
+  nothing when every claim mod would allow the planked table as it is. Other mods' use-block
+  listeners are skipped only when the stand-in rule is what lets the player in.
+- **It uses the table as vanilla does with an empty hand**, through
+  `BlockState#useWithoutItem`, in the main hand only. It passes when the player sneaks holding
+  anything.
+
+Nothing in-game has been observed yet.
+
+Documented: a protection mod with neither a probe nor the Common Protection API is skipped for a
+use the listener takes over.
+
+## Settled decisions
+
+- **Comparators through a crafting table: kept.** A comparator reads a block's own signal, instead
+  of reading through it, whenever the block has one (`ComparatorBlock.java:102-104`), and every
+  crafting table now has one. A build where a comparator reads a container behind a crafting
+  table now reads the table's filled-slot count instead. That is accepted as the cost of the
+  signal.
 
 ## Reference: what lives where
 
