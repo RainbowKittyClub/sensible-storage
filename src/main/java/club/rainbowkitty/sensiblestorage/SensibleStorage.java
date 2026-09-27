@@ -10,6 +10,7 @@ import net.minecraft.resources.Identifier;
 import club.rainbowkitty.kalic0re.common.label.HoverScanner;
 import club.rainbowkitty.kalic0re.common.net.PolymerClientHandshake;
 import club.rainbowkitty.sensiblestorage.armorstands.ArmorStandLabels;
+import club.rainbowkitty.sensiblestorage.block.BookshelfBlocks;
 import club.rainbowkitty.sensiblestorage.block.ChestBlocks;
 import club.rainbowkitty.sensiblestorage.block.CraftingTableBlocks;
 import club.rainbowkitty.sensiblestorage.books.BookText;
@@ -37,6 +38,7 @@ public class SensibleStorage implements ModInitializer {
         PlankFallbackRecipe.register();
         ChestBlocks.init();
         CraftingTableBlocks.init();
+        BookshelfBlocks.init();
         ChestCarts.init();
         ChestBlocks.registerCreativeTab();
         BuiltinDataPacks.register();
