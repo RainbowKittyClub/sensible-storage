@@ -9,6 +9,7 @@
     "ArmorStandMixin",
     "ComparatorBlockMixin",
     "CraftingTableBlockMixin",
+    "PistonBaseBlockMixin",
     "ServerEntityMixin"
   ],
   "injectors": {

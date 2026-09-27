@@ -18,6 +18,7 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.CraftingTableBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -29,6 +30,7 @@ import club.rainbowkitty.kalic0re.common.display.ContainerContentsVisual;
 import club.rainbowkitty.kalic0re.common.display.ItemModelExtents;
 import club.rainbowkitty.kalic0re.common.item.PolymerModelBlockItem;
 import club.rainbowkitty.kalic0re.common.item.PolymerModelItem;
+import club.rainbowkitty.kalic0re.common.piston.PistonMovable;
 
 /**
  * What every crafting table with a grid does beyond vanilla's: vanilla's own through
@@ -71,12 +73,13 @@ public final class CraftingTableGrids {
     }
 
     /**
-     * Has the grid's displays measure this mod's items by the model clients draw them with,
-     * fetching vanilla's models as a server starts; brings each changed display up to date as the
-     * tick ends; and refreshes every display when {@link CraftingTableRules#SHOW_INVENTORY}
-     * changes. Call once during mod initialization.
+     * Lets pistons move an empty crafting table, has the grid's displays measure this mod's items
+     * by the model clients draw them with, fetching vanilla's models as a server starts, brings
+     * each changed display up to date as the tick ends, and refreshes every display when
+     * {@link CraftingTableRules#SHOW_INVENTORY} changes. Call once during mod initialization.
      */
     public static void init() {
+        PistonMovable.register(CraftingTableGrids::pistonMayMove);
         ContainerContentsHolder.init();
         GameRuleEvents.changeCallback(CraftingTableRules.SHOW_INVENTORY)
                 .register((shown, server) -> refreshDisplays());
@@ -166,5 +169,14 @@ public final class CraftingTableGrids {
         return new ContainerContentsHolder.Contents(
                 CraftingTableRules.showInventory(attachment.getWorld()) ? grid.getItems() : HIDDEN,
                 grid.facing());
+    }
+
+    // A crafting table may move while its grid is empty or it has none, as before it had one.
+    private static boolean pistonMayMove(BlockState state, Level level, BlockPos pos) {
+        if (!(state.getBlock() instanceof CraftingTableBlock)) {
+            return false;
+        }
+        return !(level.getBlockEntity(pos) instanceof CraftingGridBlockEntity grid)
+                || grid.isEmpty();
     }
 }
