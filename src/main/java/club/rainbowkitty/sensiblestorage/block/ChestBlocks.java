@@ -72,10 +72,10 @@ public final class ChestBlocks {
 
     /**
      * Registers a dedicated {@code sensiblestorage:chests} creative tab holding every chest, then
-     * every trapped chest, crafting table and bookshelf, then every minecart. A Polymer server-side
-     * tab: adding entries to the vanilla tabs does not reliably sync to Polymer clients, but a
-     * Polymer-registered tab does (and shows in {@code /polymer creative}). Call after
-     * {@link #init()}, {@link CraftingTableBlocks#init()}, {@link BookshelfBlocks#init()} and
+     * every trapped chest, crafting table, bookshelf and chiseled bookshelf, then every minecart. A
+     * Polymer server-side tab: adding entries to the vanilla tabs does not reliably sync to Polymer
+     * clients, but a Polymer-registered tab does (and shows in {@code /polymer creative}). Call
+     * after {@link #init()}, {@link CraftingTableBlocks#init()}, {@link BookshelfBlocks#init()} and
      * {@code ChestCarts#init()}, since it reads all four.
      *
      * <p>What this tab is <em>not</em> is a way onto a vanilla client's own creative screen. That
@@ -94,6 +94,7 @@ public final class ChestBlocks {
                     TRAPPED.values().forEach(output::accept);
                     CraftingTableBlocks.tables().values().forEach(output::accept);
                     BookshelfBlocks.bookshelves().values().forEach(output::accept);
+                    BookshelfBlocks.chiseledBookshelves().values().forEach(output::accept);
                     output.acceptAll(ChestCarts.carts());
                 })
                 .build();

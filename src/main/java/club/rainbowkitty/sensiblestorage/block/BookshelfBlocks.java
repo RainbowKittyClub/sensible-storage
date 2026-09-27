@@ -6,16 +6,20 @@ import java.util.Map;
 import eu.pb4.polymer.blocks.api.BlockModelType;
 import eu.pb4.polymer.blocks.api.PolymerBlockModel;
 import eu.pb4.polymer.blocks.api.PolymerBlockResourceUtils;
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityType;
 import net.fabricmc.fabric.api.registry.FlammableBlockRegistry;
 
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -25,12 +29,15 @@ import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
 /**
- * Registers a bookshelf per {@link WoodType} but oak, with its block item. Vanilla's own bookshelf
- * is already oak, and the tinted oak frame reproduces it to within a few levels per channel, so an
- * oak one here would only be a second copy of it.
+ * Registers a bookshelf and a chiseled bookshelf per {@link WoodType} but oak, each with its block
+ * item. Vanilla's own are already oak: the tinted oak frame reproduces vanilla's bookshelf to
+ * within a few levels per channel, and vanilla's chiseled shelf gets the random books through this
+ * mod's override of its blockstate, so oak ones here would only be second copies.
  */
 public final class BookshelfBlocks {
     private static final Map<WoodType, PlankedBookshelfBlock> BOOKSHELVES = new LinkedHashMap<>();
+    private static final Map<WoodType, PlankedChiseledBookshelfBlock> CHISELED =
+            new LinkedHashMap<>();
 
     private BookshelfBlocks() {}
 
@@ -39,8 +46,13 @@ public final class BookshelfBlocks {
         return BOOKSHELVES;
     }
 
+    /** All registered chiseled bookshelves, wood order; never one for oak. */
+    public static Map<WoodType, PlankedChiseledBookshelfBlock> chiseledBookshelves() {
+        return CHISELED;
+    }
+
     /**
-     * Builds and registers a bookshelf and its item for every wood but oak that
+     * Builds and registers both shelves and their items for every wood but oak that
      * {@link ChestBlocks#init()} registered a chest for, so call after it — the same reuse, and for
      * the same reasons, as {@link CraftingTableBlocks#init()}.
      */
@@ -59,16 +71,32 @@ public final class BookshelfBlocks {
             Registry.register(BuiltInRegistries.BLOCK, SensibleStorage.id(path), shelf);
             // Vanilla's own entry (FireBlock#bootStrap) is by block, so it does not reach these.
             FlammableBlockRegistry.getDefaultInstance().add(shelf, 30, 20);
-            registerItem(path, shelf, Items.BOOKSHELF);
+            registerItem(path, shelf, Items.BOOKSHELF, new Item.Properties());
             BOOKSHELVES.put(wood, shelf);
+
+            String chiseledPath = wood.chiseledBookshelfId();
+            ResourceKey<Block> chiseledKey =
+                    ResourceKey.create(Registries.BLOCK, SensibleStorage.id(chiseledPath));
+            PlankedChiseledBookshelfBlock chiseled = new PlankedChiseledBookshelfBlock(wood,
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.CHISELED_BOOKSHELF)
+                            .setId(chiseledKey));
+            Registry.register(BuiltInRegistries.BLOCK, SensibleStorage.id(chiseledPath), chiseled);
+            // Vanilla's block entity, whose constructor names vanilla's type, and whose type
+            // accepts only vanilla's shelf until told otherwise.
+            ((FabricBlockEntityType) BlockEntityTypes.CHISELED_BOOKSHELF).addValidBlock(chiseled);
+            // Vanilla's item carries an empty container, which pick-block with contents fills.
+            registerItem(chiseledPath, chiseled, Items.CHISELED_BOOKSHELF, new Item.Properties()
+                    .component(DataComponents.CONTAINER, ItemContainerContents.EMPTY));
+            CHISELED.put(wood, chiseled);
         }
     }
 
     // As CraftingTableBlocks#registerItem: the real item for a client running this mod, the
     // vanilla item drawn with this block's model for one with the pack, the plain one otherwise.
-    private static void registerItem(String path, Block block, Item fallback) {
+    private static void registerItem(String path, Block block, Item fallback,
+            Item.Properties properties) {
         ItemRegistration.register(SensibleStorage.MOD_ID, path, key -> new PolymerModelBlockItem(
                 block, fallback, SensibleStorage.id(path), SensibleStorage.HANDSHAKE::supportsAll,
-                new Item.Properties().useBlockDescriptionPrefix().setId(key)));
+                properties.useBlockDescriptionPrefix().setId(key)));
     }
 }
