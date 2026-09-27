@@ -3,6 +3,7 @@ package club.rainbowkitty.sensiblestorage.block;
 import net.minecraft.resources.Identifier;
 
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
+import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
 /**
  * The ids of the models a chiseled bookshelf is drawn from, named once for the datagen that writes
@@ -48,6 +49,14 @@ public final class ChiseledBookshelfModels {
     }
 
     /**
+     * A named shelf's quad holding only the shadow an occupied slot's book casts, transparent
+     * elsewhere; for the pack tier's display, which draws over the empty slot terrain draws.
+     */
+    public static Identifier shadowSlot(String name, int slot) {
+        return slot(name, "shadow", slot);
+    }
+
+    /**
      * Book {@code book} drawn in a slot, on that slot's own quad.
      *
      * @param slot the slot, 0 to 5
@@ -58,7 +67,16 @@ public final class ChiseledBookshelfModels {
                 "block/chiseled_bookshelf_book_" + position(slot) + "_" + book);
     }
 
-    // A named shelf's quad for one slot, empty or occupied.
+    /**
+     * The item model a wood's shelf shows its books through for a client with the pack but not the
+     * mod: an item definition drawing each occupied slot's book and its shadow, and nothing else,
+     * picked by the stack's {@code custom_model_data} strings (see {@code ChiseledBooksHolder}).
+     */
+    public static Identifier books(WoodType wood) {
+        return SensibleStorage.id(wood.id() + "_chiseled_bookshelf_books");
+    }
+
+    // A named shelf's quad for one slot: empty, occupied or shadow.
     private static Identifier slot(String name, String state, int slot) {
         return SensibleStorage.id(
                 "block/" + name + "_chiseled_bookshelf_" + state + "_slot_" + position(slot));

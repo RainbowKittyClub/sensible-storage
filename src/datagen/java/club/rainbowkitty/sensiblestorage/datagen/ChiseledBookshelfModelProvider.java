@@ -8,6 +8,7 @@ import java.util.concurrent.CompletableFuture;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 
 import net.minecraft.data.CachedOutput;
@@ -41,7 +42,11 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
  * chiseled bookshelf, redrawn the same way from copies of its own sheets so it takes the random
  * books too.
  *
- * <p>Every model id is {@link ChiseledBookshelfModels}'.
+ * <p>Per wood it also writes the item definition a client with the pack but not the mod sees a
+ * shelf's books through, the frame it is sent having no books of its own: the same books, and their
+ * shadows from a sheet holding nothing else, picked per slot by a display's stack rather than by
+ * the block state ({@code ChiseledBooksHolder}). Every model id is
+ * {@link ChiseledBookshelfModels}', which the runtime names too.
  */
 public final class ChiseledBookshelfModelProvider implements DataProvider {
     // Vanilla's body (no north face) and its inventory model (with one), both over top/side keys.
@@ -80,9 +85,16 @@ public final class ChiseledBookshelfModelProvider implements DataProvider {
         for (WoodType wood : BookshelfBlocks.chiseledBookshelves().keySet()) {
             Identifier id = SensibleStorage.id(wood.chiseledBookshelfId());
             putShelfModels(files, wood.id());
+            Identifier shadow = ChiseledBookshelfTextureProvider.sprite(wood,
+                    ChiseledBookshelfTextureProvider.SHADOW);
+            for (ChiseledSlot slot : ChiseledSlot.values()) {
+                files.put(this.models.json(shadowSlot(wood.id(), slot)),
+                        PackJson.model(slotTemplate(slot), "texture", shadow));
+            }
             files.put(this.models.json(inventoryModel(wood.id())), inventoryModelJson(wood.id()));
             files.put(this.blockStates.json(id), blockState(wood.id()));
             files.put(this.items.json(id), PackJson.itemDefinition(inventoryModel(wood.id())));
+            files.put(this.items.json(ChiseledBookshelfModels.books(wood)), booksItem(wood.id()));
         }
         // Vanilla's shelf, redrawn the same way from its own sheets so it takes the random books
         // too. Its item keeps vanilla's own definition and inventory model, so neither is written.
@@ -146,6 +158,62 @@ public final class ChiseledBookshelfModelProvider implements DataProvider {
             books.add(book);
         }
         return books;
+    }
+
+    // The item definition a pack client's display draws a named shelf's books through
+    // (ChiseledBooksHolder): per slot, the book's shadow when the slot's custom_model_data string
+    // names any book, and that book; transparent elsewhere, so terrain's frame shows through.
+    private static JsonObject booksItem(String name) {
+        JsonArray models = new JsonArray();
+        for (ChiseledSlot slot : ChiseledSlot.values()) {
+            JsonArray anyBook = new JsonArray();
+            JsonArray books = new JsonArray();
+            for (int n = 1; n <= ChiseledBooks.BOOKS; n++) {
+                anyBook.add(Integer.toString(n));
+                books.add(switchCase(
+                        new JsonPrimitive(Integer.toString(n)), itemModel(bookModel(slot, n))));
+            }
+            JsonArray shadow = new JsonArray();
+            shadow.add(switchCase(anyBook, itemModel(shadowSlot(name, slot))));
+            models.add(select(slot, shadow));
+            models.add(select(slot, books));
+        }
+        JsonObject composite = new JsonObject();
+        composite.addProperty("type", "minecraft:composite");
+        composite.add("models", models);
+        JsonObject root = new JsonObject();
+        root.add("model", composite);
+        return root;
+    }
+
+    // An item model picking by one slot's custom_model_data string, drawing nothing when no case
+    // matches; without a fallback it would draw the missing model.
+    private static JsonObject select(ChiseledSlot slot, JsonArray cases) {
+        JsonObject fallback = new JsonObject();
+        fallback.addProperty("type", "minecraft:empty");
+        JsonObject select = new JsonObject();
+        select.addProperty("type", "minecraft:select");
+        select.addProperty("property", "minecraft:custom_model_data");
+        select.addProperty("index", slot.ordinal());
+        select.add("cases", cases);
+        select.add("fallback", fallback);
+        return select;
+    }
+
+    // One case of a select: the value, or values, it matches and the model it draws.
+    private static JsonObject switchCase(JsonElement when, JsonObject model) {
+        JsonObject switchCase = new JsonObject();
+        switchCase.add("when", when);
+        switchCase.add("model", model);
+        return switchCase;
+    }
+
+    // An item model drawing one block model as it is.
+    private static JsonObject itemModel(Identifier model) {
+        JsonObject item = new JsonObject();
+        item.addProperty("type", "minecraft:model");
+        item.addProperty("model", model.toString());
+        return item;
     }
 
     // The inventory model of a named shelf: vanilla's, with its sheets and the empty front.
@@ -220,5 +288,11 @@ public final class ChiseledBookshelfModelProvider implements DataProvider {
     // A named shelf's quad behind an occupied slot's book.
     private static Identifier occupiedSlot(String name, ChiseledSlot slot) {
         return ChiseledBookshelfModels.occupiedSlot(name, slot.ordinal());
+    }
+
+    // A named shelf's quad holding only an occupied slot's shadow. The right-hand slots' books sit
+    // against the frame and cast none, so theirs draw nothing, kept so every slot is alike.
+    private static Identifier shadowSlot(String name, ChiseledSlot slot) {
+        return ChiseledBookshelfModels.shadowSlot(name, slot.ordinal());
     }
 }

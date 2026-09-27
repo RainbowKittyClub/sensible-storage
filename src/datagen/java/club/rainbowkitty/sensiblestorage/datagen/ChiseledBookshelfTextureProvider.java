@@ -43,6 +43,12 @@ public final class ChiseledBookshelfTextureProvider implements DataProvider {
     public static final String OCCUPIED = "occupied";
 
     /**
+     * The per-wood sheet of the books' shadows alone, transparent elsewhere, which the pack tier's
+     * display draws beside its books; terrain has the same pixels in the occupied background.
+     */
+    public static final String SHADOW = "shadow";
+
+    /**
      * The name vanilla's own sheets go under, for the override of vanilla's chiseled bookshelf that
      * gives it the random books too: copied untinted, so the override draws vanilla's look from
      * this mod's namespace, and a texture pack's version no longer reaches it.
@@ -97,6 +103,8 @@ public final class ChiseledBookshelfTextureProvider implements DataProvider {
         Map<Integer, Integer> shadow = shadow(vanillaEmpty,
                 read(loader, VANILLA_DIR + "chiseled_bookshelf_occupied.png"), books);
         BufferedImage occupied = withShadow(overlays[SHEETS.indexOf("empty")], shadow);
+        BufferedImage shadowOnly = withShadow(new BufferedImage(16, 16,
+                BufferedImage.TYPE_INT_ARGB), shadow);
         int reference = WoodTints.referenceGray(loader);
 
         List<CompletableFuture<?>> writes = new ArrayList<>();
@@ -115,6 +123,8 @@ public final class ChiseledBookshelfTextureProvider implements DataProvider {
             }
             writes.add(save(cache, sprite(wood, OCCUPIED),
                     PngAssets.colourise(occupied, median, reference)));
+            writes.add(save(cache, sprite(wood, SHADOW),
+                    PngAssets.colourise(shadowOnly, median, reference)));
         }
         for (int n = 1; n <= ChiseledBooks.BOOKS; n++) {
             writes.add(save(cache, book(n), bookSheet(books.get(n - 1))));
