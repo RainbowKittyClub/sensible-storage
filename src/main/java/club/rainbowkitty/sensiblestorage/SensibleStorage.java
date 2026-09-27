@@ -13,6 +13,7 @@ import club.rainbowkitty.sensiblestorage.armorstands.ArmorStandLabels;
 import club.rainbowkitty.sensiblestorage.block.BookshelfBlocks;
 import club.rainbowkitty.sensiblestorage.block.ChestBlocks;
 import club.rainbowkitty.sensiblestorage.block.CraftingTableBlocks;
+import club.rainbowkitty.sensiblestorage.block.CraftingTableClaims;
 import club.rainbowkitty.sensiblestorage.block.CraftingTableGrids;
 import club.rainbowkitty.sensiblestorage.block.CraftingTableRules;
 import club.rainbowkitty.sensiblestorage.block.Flammability;
@@ -43,6 +44,7 @@ public class SensibleStorage implements ModInitializer {
         CraftingTableBlocks.init();
         CraftingTableRules.init();
         CraftingTableGrids.init();
+        CraftingTableClaims.init();
         BookshelfBlocks.init();
         Flammability.register();
         ChestCarts.init();

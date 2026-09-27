@@ -1,6 +1,7 @@
 package club.rainbowkitty.sensiblestorage.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 
 import club.rainbowkitty.kalic0re.common.craft.CraftingGridBlockEntity;
@@ -27,6 +28,11 @@ public class CraftingTableBlockEntity extends CraftingGridBlockEntity {
     @Override
     protected boolean hoppersCanAccess() {
         return CraftingTableRules.hoppersCanAccess(level);
+    }
+
+    @Override
+    protected boolean needsOwnGrid(Player player) {
+        return CraftingTableClaims.needsOwnGrid(player, worldPosition);
     }
 
     @Override
