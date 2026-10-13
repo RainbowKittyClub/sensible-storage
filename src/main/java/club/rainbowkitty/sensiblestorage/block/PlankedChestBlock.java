@@ -27,6 +27,7 @@ import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
+import club.rainbowkitty.kalic0re.common.mining.VanillaCreativeBreak;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.display.ChestElementHolder;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
@@ -38,7 +39,8 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
  * drawn by a Polymer display entity wired in {@link club.rainbowkitty.sensiblestorage.display}.
  */
 public class PlankedChestBlock extends ChestBlock
-        implements PolymerBlock, BlockWithElementHolder, PolymerClientDecoded {
+        implements PolymerBlock, BlockWithElementHolder, PolymerClientDecoded,
+        VanillaCreativeBreak {
     private static final BlockState CLIENT_STATE = Blocks.BARRIER.defaultBlockState();
 
     private final WoodType wood;
@@ -119,8 +121,8 @@ public class PlankedChestBlock extends ChestBlock
 
     /**
      * A client that also runs this mod <em>and registered this wood</em> gets the real state (and
-     * renders it itself); every other client gets the barrier block. Mining is server-side either
-     * way because this is a PolymerBlock.
+     * renders it itself); every other client gets the barrier block. Outside creative, mining is
+     * server-side either way because this is a PolymerBlock ({@link VanillaCreativeBreak}).
      */
     @Override
     public BlockState getPolymerBlockState(BlockState state, @Nullable PacketContext context) {

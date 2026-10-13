@@ -11,6 +11,7 @@ import net.minecraft.world.level.block.CraftingTableBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
+import club.rainbowkitty.kalic0re.common.mining.VanillaCreativeBreak;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
@@ -29,7 +30,7 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
  * remaps every state it has handed out back to a plain one for any block not carrying the marker.
  */
 public class PlankedCraftingTableBlock extends CraftingTableBlock
-        implements PolymerTexturedBlock, PolymerClientDecoded {
+        implements PolymerTexturedBlock, PolymerClientDecoded, VanillaCreativeBreak {
     private static final BlockState CLIENT_STATE = Blocks.CRAFTING_TABLE.defaultBlockState();
 
     private final WoodType wood;
