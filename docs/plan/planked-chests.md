@@ -111,11 +111,9 @@ one birch chest; breaking in survival drops the item. (Still a barrier visually 
 not `getSignal`. Block-entities extend `PlankedChestBlockEntity` (trapped extends that too, for the
 `getDefaultName` reuse) rather than `TrappedChestBlockEntity`, which fixes the vanilla type.
 `SERVER_SIDE_MINING_CHECK` turned out unnecessary — `PolymerBlock.handleMiningOnServer` defaults
-true, so a barrier client state is already server-mined. Every planked block leaves a creative
-break to vanilla (kalic0re `VanillaCreativeBreak`, 2026-10-13): Polymer sends the breaker its break
-event in every game mode, and a creative client has already played its own. In-world: container,
-double chest, hoppers, trapped redstone and crafting all confirmed by the user; survival drop
-confirmed once the dev world's `block_drops` rule was turned back on.
+true, so a barrier client state is already server-mined. In-world: container, double chest, hoppers,
+trapped redstone and crafting all confirmed by the user; survival drop confirmed once the dev
+world's `block_drops` rule was turned back on.
 
 Recipes and loot were later moved from hand-written `src/main/resources` files to datagen, and
 item registration switched to `kalic0re`'s shaded `ItemRegistration` + `PolymerModelBlockItem` (the
