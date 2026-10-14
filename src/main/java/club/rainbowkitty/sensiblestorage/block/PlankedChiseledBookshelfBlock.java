@@ -18,7 +18,6 @@ import net.minecraft.world.level.block.ChiseledBookShelfBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
-import club.rainbowkitty.kalic0re.common.mining.VanillaCreativeBreak;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.display.ChiseledBooksHolder;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
@@ -36,8 +35,7 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
  * with the same facing and slots filled, so what it shows is never a wrong slot.
  */
 public class PlankedChiseledBookshelfBlock extends ChiseledBookShelfBlock
-        implements PolymerTexturedBlock, BlockWithElementHolder, PolymerClientDecoded,
-        VanillaCreativeBreak {
+        implements PolymerTexturedBlock, BlockWithElementHolder, PolymerClientDecoded {
     private final WoodType wood;
     private final @Nullable Map<Direction, BlockState> packStates;
 

@@ -11,7 +11,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
-import club.rainbowkitty.kalic0re.common.mining.VanillaCreativeBreak;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
@@ -26,7 +25,7 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
  * every state it has handed out back to a plain one for any block not carrying the marker.
  */
 public class PlankedBookshelfBlock extends Block
-        implements PolymerTexturedBlock, PolymerClientDecoded, VanillaCreativeBreak {
+        implements PolymerTexturedBlock, PolymerClientDecoded {
     private static final BlockState CLIENT_STATE = Blocks.BOOKSHELF.defaultBlockState();
 
     private final WoodType wood;
