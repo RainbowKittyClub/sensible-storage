@@ -208,10 +208,10 @@ entity swaps between them (S5). 120 item defs + 24 textures. `PolymerResourcePac
 `PlankedChestBlock.createElementHolder` (`tickElementHolder` → true), bound by Polymer via
 `BlockBoundAttachment`.
 
-- One `ItemDisplayElement` holding an `Items.CHEST` stack whose `minecraft:item_model` component
-  points at the model for the bound block's `ChestType` and lid openness step
-  (`ChestModels.itemModel`). Lid animation is the item swap between the 5 baked-openness models,
-  driven each tick from `ChestBlockEntity#getOpenNess`.
+- Two `ItemDisplayElement`s per chest (`display/ChestVisual`), a base and a lid, each holding an
+  item whose `minecraft:item_model` names the per-wood base or lid model for the bound block's
+  `ChestType`. The lid turns about its hinge by eased openness × 90° (`setRightRotation`), driven
+  each tick from the server-side `LidTween`; the client interpolates between ticks.
 - `ChestType` (SINGLE / LEFT / RIGHT) is read from the bound state; the LEFT/RIGHT models carry the
   vanilla half-chest geometry via `minecraft:special` `chest_type`, textured from the matching
   `_left` / `_right` overlays (supplied later, see the As built notes).
@@ -227,8 +227,8 @@ entity swaps between them (S5). 120 item defs + 24 textures. `PolymerResourcePac
   corrects; `polymer-blocks`' interaction-consuming states (note block / target / slab) all
   proved broken on 26.2 (see open decisions), so the flicker is accepted.
 - Lid openness is tweened server-side from `ChestBlockEntity.getOpenCount` (the lid controller is
-  client-only render state, so `getOpenNess` reads 0 server-side); `openStep` applies vanilla's
-  ease-out curve and quantises to one of `OPENNESS_STEPS` (20) baked models, ramping at 0.1/tick.
+  client-only render state, so `getOpenNess` reads 0 server-side); kalic0re `LidTween` steps 0.1 a
+  tick and `LidTween.easeOut` applies vanilla's ease-out curve to the lid's rotation, no baked steps.
 - The display sits at `ItemDisplayContext.HEAD` with the display entity's identity scale and
   translation; it is rotated to `-facing.toYRot()` to match `ChestRenderer`.
 
@@ -256,8 +256,9 @@ decisions for the reasoning left standing):
   leaked this mod's last-loaded chest texture onto the vanilla chest item.
 - Held-item render and an intermittent "single chest doesn't animate" both turned out to be
   Polymer client flakiness that cleared on a resource reload, not code bugs.
-- Lid animation is a 20-step model swap with vanilla's ease-out curve, tweened server-side from
-  `getOpenCount` because the server never runs a chest's lid controller. Not truly interpolated.
+- Lid animation is a separate lid display rotated by the eased server-side tween (`LidTween`,
+  0.1 a tick, because the server never runs a chest's lid controller); the client interpolates each
+  tick's rotation, so it is smooth but a tick behind vanilla's own lid.
 - Double chests: `ChestType` is read from the bound state and the matching special-model
   `chest_type` half (left/right, textured from the supplied `_left`/`_right` overlays) is shown.
 - A chunk-load deadlock (holder constructed inside `LevelChunk`'s constructor) was fixed by taking
