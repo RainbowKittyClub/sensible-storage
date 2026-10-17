@@ -4,10 +4,8 @@ import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import eu.pb4.polymer.blocks.api.BlockModelType;
 import eu.pb4.polymer.blocks.api.MultiPolymerBlockModel;
 import eu.pb4.polymer.blocks.api.PolymerBlockModel;
-import eu.pb4.polymer.blocks.api.PolymerBlockResourceUtils;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityType;
 import org.jspecify.annotations.Nullable;
 
@@ -27,6 +25,8 @@ import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
+import club.rainbowkitty.kalic0re.common.carrier.CarrierTiers;
+import club.rainbowkitty.kalic0re.common.carrier.Carriers;
 import club.rainbowkitty.kalic0re.common.item.ItemRegistration;
 import club.rainbowkitty.kalic0re.common.item.PolymerModelBlockItem;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
@@ -66,8 +66,10 @@ public final class BookshelfBlocks {
                 continue;
             }
             String path = wood.bookshelfId();
-            // A note block state Polymer sets aside and the pack redraws with this shelf's model.
-            BlockState packState = PolymerBlockResourceUtils.requestBlock(BlockModelType.FULL_BLOCK,
+            // A note block state Polymer sets aside and the pack redraws with this shelf's model,
+            // grouped with the anchor wood's shelf so a client's own flash of it still shows one.
+            BlockState packState = Carriers.request(SensibleStorage.id(path), "",
+                    CarrierTiers.BOOKSHELF,
                     PolymerBlockModel.of(SensibleStorage.id("block/" + path)));
             PlankedBookshelfBlock shelf = new PlankedBookshelfBlock(wood, packState,
                     BlockBehaviour.Properties.ofFullCopy(Blocks.BOOKSHELF)
@@ -109,8 +111,9 @@ public final class BookshelfBlocks {
                 model.with(PolymerBlockModel.of(
                         ChiseledBookshelfModels.emptySlot(wood.id(), slot), 0, y));
             }
-            BlockState state =
-                    PolymerBlockResourceUtils.requestBlock(BlockModelType.FULL_BLOCK, model);
+            // Grouped by colour, so a client's own flash of it shows something alike.
+            BlockState state = Carriers.request(SensibleStorage.id(wood.chiseledBookshelfId()),
+                    "facing=" + facing.getSerializedName(), "", model);
             if (state == null) {
                 return null;
             }

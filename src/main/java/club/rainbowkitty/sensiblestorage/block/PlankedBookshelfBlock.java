@@ -34,7 +34,7 @@ public class PlankedBookshelfBlock extends Block
     /**
      * @param wood the wood this shelf is made of
      * @param packState the state a client with this server's resource pack is sent, from
-     *     {@code PolymerBlockResourceUtils.requestBlock}; null if Polymer had none left to give, in
+     *     kalic0re's {@code Carriers.request}; null if Polymer had none left to give, in
      *     which case such a client gets vanilla's bookshelf like everyone else
      */
     public PlankedBookshelfBlock(WoodType wood, @Nullable BlockState packState,

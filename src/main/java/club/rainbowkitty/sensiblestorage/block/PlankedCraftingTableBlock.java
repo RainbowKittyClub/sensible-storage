@@ -38,7 +38,7 @@ public class PlankedCraftingTableBlock extends CraftingTableBlock
     /**
      * @param wood the wood this table is made of
      * @param packState the state a client with this server's resource pack is sent, from
-     *     {@code PolymerBlockResourceUtils.requestBlock}; null if Polymer had none left to give, in
+     *     kalic0re's {@code Carriers.request}; null if Polymer had none left to give, in
      *     which case such a client gets vanilla's table like everyone else
      */
     public PlankedCraftingTableBlock(WoodType wood, @Nullable BlockState packState,

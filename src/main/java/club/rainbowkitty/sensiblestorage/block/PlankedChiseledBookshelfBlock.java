@@ -42,7 +42,7 @@ public class PlankedChiseledBookshelfBlock extends ChiseledBookShelfBlock
     /**
      * @param wood the wood this shelf is made of
      * @param packStates the state a client with this server's resource pack is sent, per facing,
-     *     from {@code PolymerBlockResourceUtils.requestBlock}; null if Polymer could not give all
+     *     from kalic0re's {@code Carriers.request}; null if Polymer could not give all
      *     four, in which case such a client is treated like one without the pack
      */
     public PlankedChiseledBookshelfBlock(WoodType wood,

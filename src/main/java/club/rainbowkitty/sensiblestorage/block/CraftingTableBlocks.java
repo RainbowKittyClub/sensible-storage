@@ -5,9 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import eu.pb4.polymer.blocks.api.BlockModelType;
 import eu.pb4.polymer.blocks.api.PolymerBlockModel;
-import eu.pb4.polymer.blocks.api.PolymerBlockResourceUtils;
 import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
 
 import net.minecraft.core.Registry;
@@ -22,6 +20,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
+import club.rainbowkitty.kalic0re.common.carrier.Carriers;
 import club.rainbowkitty.kalic0re.common.item.ItemRegistration;
 import club.rainbowkitty.kalic0re.common.item.PolymerModelBlockItem;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
@@ -65,8 +64,9 @@ public final class CraftingTableBlocks {
                 continue;
             }
             String path = wood.craftingTableId();
-            // A note block state Polymer sets aside and the pack redraws with this table's model.
-            BlockState packState = PolymerBlockResourceUtils.requestBlock(BlockModelType.FULL_BLOCK,
+            // A note block state Polymer sets aside and the pack redraws with this table's model,
+            // grouped by colour so a client's own flash of it shows something alike.
+            BlockState packState = Carriers.request(SensibleStorage.id(path), "", "",
                     PolymerBlockModel.of(SensibleStorage.id("block/" + path)));
             PlankedCraftingTableBlock table = new PlankedCraftingTableBlock(wood, packState,
                     BlockBehaviour.Properties.ofFullCopy(Blocks.CRAFTING_TABLE)
