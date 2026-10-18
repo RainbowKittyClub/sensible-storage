@@ -154,8 +154,12 @@ public class PlankedChestMinecart extends CargoMinecartChest {
             return new ChestCartDisplay(this, copperChest);
         }
         // Vanilla's own chest art, drawn by us so that the plain look still gets a lid that opens —
-        // vanilla's cargo renderer bakes a chest's openness in at model bake and cannot animate it.
-        // Anything else is a block a client can draw for itself, so vanilla is left to draw it.
+        // vanilla's cargo renderer bakes a chest's openness in at model bake and cannot animate it,
+        // and a pack client draws vanilla's chest sheets as nothing. Anything else is a block a
+        // client can draw for itself, so vanilla is left to draw it.
+        if (cargo.value() == Blocks.TRAPPED_CHEST) {
+            return new ChestCartDisplay(this, ChestModels.VANILLA_TRAPPED_CHEST_ID);
+        }
         return cargo.value() == Blocks.CHEST
                 ? new ChestCartDisplay(this, ChestModels.VANILLA_CHEST_ID)
                 : null;

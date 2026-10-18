@@ -6,10 +6,13 @@
   "mixins": [
     "AbstractContainerMenuMixin",
     "AbstractCraftingMenuMixin",
+    "AbstractMinecartMixin",
     "ArmorStandMixin",
     "ChestBlockEntityMixin",
+    "ChestMenuMixin",
     "ComparatorBlockMixin",
     "CraftingTableBlockMixin",
+    "LootrInventoryMixin",
     "PistonBaseBlockMixin",
     "ServerEntityMixin"
   ],

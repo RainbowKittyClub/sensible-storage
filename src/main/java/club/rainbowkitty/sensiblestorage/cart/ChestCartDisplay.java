@@ -4,14 +4,16 @@ import com.mojang.math.Axis;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.level.block.state.properties.ChestType;
 
 import club.rainbowkitty.kalic0re.common.vehicle.CargoDisplayHolder;
 import club.rainbowkitty.sensiblestorage.display.ChestVisual;
 
 /**
- * The visible chest riding a {@link PlankedChestMinecart} — the same two elements a placed chest
- * uses, mounted as cart passengers and posed where vanilla draws a cart's cargo.
+ * The visible chest riding a {@link PlankedChestMinecart}, or a vanilla chest minecart
+ * ({@link VanillaCartDisplay}) — the same two elements a placed chest uses, mounted as cart
+ * passengers and posed where vanilla draws a cart's cargo.
  *
  * <p>Unlike the placed chest's holder this one is sent to <em>every</em> connection, including a
  * client running this mod. That client renders a placed planked chest for real, but it still cannot
@@ -36,18 +38,19 @@ public class ChestCartDisplay extends CargoDisplayHolder {
     // levels its own taller cargo against them, and reading them beats copying them.
     static final float CARGO_MODEL_TOP = 14.0f;
 
-    private final PlankedChestMinecart cart;
     private final ChestVisual visual;
 
     private float openness;
 
+    // Whether the last tick moved the lid.
+    private boolean lidMoved;
+
     /**
      * @param cart the cart this chest rides
-     * @param chestId {@code wood.chestId()}, naming the per-wood base and lid models
+     * @param chestId {@code wood.chestId()} or a vanilla chest id, naming the base and lid models
      */
-    public ChestCartDisplay(PlankedChestMinecart cart, String chestId) {
+    public ChestCartDisplay(AbstractMinecart cart, String chestId) {
         super(cart);
-        this.cart = cart;
         this.visual = new ChestVisual(chestId, this::placeHinge);
 
         addCargoElement(visual.base());
@@ -70,10 +73,21 @@ public class ChestCartDisplay extends CargoDisplayHolder {
         poseNow();
     }
 
+    /** Whether anyone has the cart open, which the lid follows; a planked cart's own count. */
+    protected boolean isOpen() {
+        return cart() instanceof PlankedChestMinecart planked && planked.isCargoOpen();
+    }
+
+    /** Whether the last tick moved the lid. */
+    protected boolean lidMoved() {
+        return lidMoved;
+    }
+
     @Override
     protected void onTick() {
-        float easedOpenness = visual.tweenOpenness(cart.isCargoOpen());
-        if (easedOpenness != openness) {
+        float easedOpenness = visual.tweenOpenness(isOpen());
+        lidMoved = easedOpenness != openness;
+        if (lidMoved) {
             openness = easedOpenness;
             // The lid angle lives in the pose, and the cart may not have turned this tick.
             markPoseDirty();
