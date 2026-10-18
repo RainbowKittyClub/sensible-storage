@@ -23,6 +23,7 @@ import club.rainbowkitty.sensiblestorage.cart.ChestCarts;
 import club.rainbowkitty.sensiblestorage.cart.VanillaCarts;
 import club.rainbowkitty.sensiblestorage.display.ChestBlockDisplays;
 import club.rainbowkitty.sensiblestorage.display.ChestLids;
+import club.rainbowkitty.sensiblestorage.display.HeldPacks;
 import club.rainbowkitty.sensiblestorage.display.VanillaChestDisplays;
 import club.rainbowkitty.sensiblestorage.display.VanillaChestPack;
 import club.rainbowkitty.sensiblestorage.frame.FrameLabels;
@@ -50,6 +51,7 @@ public class SensibleStorage implements ModInitializer {
         VanillaChestDisplays.register();
         ChestBlockDisplays.register();
         VanillaChestPack.register();
+        HeldPacks.register();
         CraftingTableBlocks.init();
         CraftingTableRules.init();
         CraftingTableGrids.init();

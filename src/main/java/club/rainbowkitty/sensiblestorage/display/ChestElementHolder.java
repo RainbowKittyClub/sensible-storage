@@ -46,10 +46,12 @@ public class ChestElementHolder extends ElementHolder {
         /** A planked chest's: every client sent the vanilla stand-in, so without the handshake. */
         STAND_IN(player -> !SensibleStorage.HANDSHAKE.supportsAll(player)),
         /**
-         * A vanilla chest's: every client holding this server's pack, which draws vanilla's own
-         * chest invisible ({@link VanillaChestPack}), handshake or not.
+         * A vanilla chest's: every client holding a pack that draws vanilla's own chest invisible,
+         * handshake or not. That is this server's pack ({@link VanillaChestPack}), or, on a server
+         * sending none, the one the proxy vouches the player kept from another ({@link HeldPacks}).
          */
-        PACK(player -> VanillaChestPack.blanked() && PolymerResourcePackUtils.hasMainPack(player));
+        PACK(player -> VanillaChestPack.blanked() && PolymerResourcePackUtils.hasMainPack(player)
+                || HeldPacks.vouched(player));
 
         private final Predicate<ServerGamePacketListenerImpl> includes;
 
