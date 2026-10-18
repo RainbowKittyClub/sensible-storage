@@ -349,10 +349,12 @@ it and deferred.
 
 ## Open decisions
 
-The *Client selection box*, *Lid animation*, and *Right-click ghost-placement flicker* items below
-apply to **vanilla / Polymer-only clients**. A client that installs this jar plus Polymer renders
-the real block (`docs/plan/client-mod-support.md`) and hits none of them — the barrier and display
-entity are not used for it.
+The vanilla-client *Client selection box*, *Lid animation* and *Right-click ghost-placement
+flicker* are resolved and no longer listed. A vanilla client is sent a vanilla chest in a planked
+chest's place, with that chest's outline, and predicts no placement onto it
+(`docs/plan/vanilla-chest-stand-in.md` S1, S2). The lid is its own display, rotated and
+interpolated (S5 As built). A client that installs this jar plus Polymer renders the real block
+(`docs/plan/client-mod-support.md`).
 
 - **Held-item render.** The custom chest model renders correctly in the GUI and on a vanilla
   client, but a client render mod (not Fresh Animations / EMF — still unidentified) draws the
@@ -363,22 +365,6 @@ entity are not used for it.
 - **Dev-world `block_drops` default.** The skeleton's `zz_dev_defaults` datapack turns `block_drops`
   off, which hid that survival breaking works. Reconsider that default in
   `fabric_mod_skeleton/gradle/devserver.gradle` (the user flagged it).
-- **Lid animation.** 20 baked-openness models swapped with vanilla's ease-out curve — reads as
-  motion but is not truly interpolated (an item swap can't interpolate). Genuine interpolation
-  needs the lid as its own display element with a rotating transform, which needs hand-built
-  base/lid geometry and a blocks-atlas texture path (the reason S4 chose the special model).
-- **Right-click ghost-placement flicker.** Barrier client state: a block-in-hand right-click
-  predicts a placement for one frame before the server corrects — whether the block is placed
-  against an existing chest or is a chest itself, since the client predicts from the item in hand
-  and cannot know the server will answer with a barrier plus a display entity. Observed again on a
-  vanilla client 2026-09-12; ping-bound, so it cannot be shortened from the server side. `polymer-blocks` states that
-  would consume the interaction were all unusable on 26.2 — the plain `PolymerBlockModel` form
-  blanks every unclaimed variant of the borrowed block, and the `MultiPolymerBlockModel` form
-  emits a blockstate file with both `variants` and `multipart`, which the client resolves to the
-  borrowed block's real model (note block stayed visible in world). Revisit when polymer-blocks
-  fixes variant-block generation, or with a client mixin.
-- **Client selection box.** Barrier gives a full-cube outline on hover, not a chest silhouette.
-  Acceptable.
 
 ## Reference: verified APIs and numbers
 

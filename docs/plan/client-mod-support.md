@@ -1,8 +1,9 @@
 # Client-optional real rendering
 
-`sensible-storage` is server-side. To a vanilla client a chest is an invisible `Blocks.BARRIER` with a
-Polymer `ItemDisplayElement` drawn over it — which means a full-cube selection/collision outline and
-a 20-step item-swap "lid animation" instead of real interpolation. Neither is fixable server-side.
+`sensible-storage` is server-side. To a vanilla client a chest is a vanilla chest or trapped chest
+stand-in with the same properties, drawn over by Polymer `ItemDisplayElement`s
+(`vanilla-chest-stand-in.md`). It gets the chest's outline, hitbox and collision, but its display
+lid runs a tick behind vanilla's own.
 
 A client that installs **the same jar** (plus Polymer client-side) now gets the real block instead:
 exact chest hitbox, a real `ChestBlockEntity`, and vanilla-smooth lid animation from a normal Fabric
@@ -15,8 +16,8 @@ block state. Chunk packets carry block states as numeric `BLOCK_STATE_REGISTRY` 
 values depend on the whole loaded mod set; the live server has ~100 mods, so a client with only this
 one has different IDs. Polymer's login-time registry sync plus its real-state side channel
 (`PolymerSectionUpdateS2CPayload`, gated on the client negotiating the polymer-core S2C protocol)
-reconcile them. Without polymer-core client-side, planked chests arrive as the barrier substitute
-like on any vanilla client — the mod jar alone does nothing.
+reconcile them. Without polymer-core client-side, planked chests arrive as the vanilla chest
+stand-in like on any vanilla client — the mod jar alone does nothing.
 
 Polymer stays a hard `depends` on both sides. A client without it fails to launch with a clear
 message; client users install Polymer (one Modrinth file) alongside the jar. Not bundled via Loom
@@ -26,7 +27,7 @@ message; client users install Polymer (one Modrinth file) alongside the jar. Not
 
 | Client | Handshake | `getPolymerBlockState` | Renders |
 | --- | --- | --- | --- |
-| Vanilla / Polymer-only | absent | `Blocks.BARRIER` | display entity (unchanged) |
+| Vanilla / Polymer-only | absent | the stand-in, `PlankedChestBlock.standIn()` | display entity |
 | this jar + polymer-core | present | the real state | own `BlockEntityRenderer`; no display entity |
 
 - `PlankedChestBlock implements PolymerClientDecoded` (an opt-in marker) so a polymer-core client
@@ -34,7 +35,7 @@ message; client users install Polymer (one Modrinth file) alongside the jar. Not
   `PolymerClientProtocolHandler` (`libs/polymer`, `section.setBlockState` only when
   `checkDecode(block)`).
 - `getPolymerBlockState(state, ctx)` returns `state` when `SensibleStorage.HANDSHAKE.has(ctx)` says the
-  client runs this mod, else the barrier — the `fabric_mod_skeleton` `PolymerExampleBlock` pattern.
+  client runs this mod, else the stand-in with the state's properties.
 - `ChestElementHolder.startWatching(ServerGamePacketListenerImpl)` returns `false` for
   handshake-positive connections, so those clients never receive the display entity.
 - `ChestBlocks.registerSyncedBlockEntity` gates the block entity per connection —
@@ -43,8 +44,12 @@ message; client users install Polymer (one Modrinth file) alongside the jar. Not
   real block state but no `ChestBlockEntity` for the renderer to draw.
 - The real block model is particle-only (`ChestBlockStateProvider`), like vanilla
   `minecraft:block/chest`; the BER draws the chest. No `RenderShape` change.
-- `PolymerModelBlockItem` is passed `HANDSHAKE::has`, so a mod client also sees the real *item*
-  (correct name/tooltip), not the `Items.CHEST` fallback.
+- `UnpinnedBlockItem`, a kalic0re `PolymerModelBlockItem`, is passed `HANDSHAKE::has`, so a mod
+  client also sees the real *item* (correct name/tooltip), not the `Items.CHEST` fallback.
+
+A client holding the server pack, handshake or not, also gets every vanilla and Lootr chest drawn
+by the server, since the pack draws vanilla's chest sheets transparent
+(`vanilla-chest-stand-in.md` S9–S11).
 
 All four per-connection gates key on `HANDSHAKE.has(context)`, evaluated when each packet is built.
 Polymer's registry sync finishes before a joining client's first chunks (observed in the dev log),
@@ -78,8 +83,9 @@ server-wide setting affecting every Polymer mod — tracked separately, not by t
 ## What this resolves
 
 For a mod-installed client: the *Client selection box*, *Lid animation*, and *Right-click
-ghost-placement flicker* open decisions in `planked-chests.md` — the barrier and display entity are
-simply not used. Vanilla clients keep all three as-is.
+ghost-placement flicker* open decisions `planked-chests.md` used to list — the stand-in and display
+entity are simply not used. A vanilla client has them resolved by the stand-in and the rotating
+display lid instead.
 
 ## Follow-up: a chest *inside a cart*, for a mod client
 

@@ -523,7 +523,10 @@ What was actually established, by putting the substitution back and looking:
   (`AbstractMinecart.java:579-585`), `BuiltInBlockModels.createAir` maps air to an
   `EmptyBlockModel`, and `AbstractMinecartRenderer#submit` skips the cargo when the model is empty.
   Whatever bridges that gap was not found, and two attempts to reason it out from the sources were
-  both wrong. Recorded as an observation, not a theory.
+  both wrong. Recorded as an observation, not a theory. Answered since
+  (`vanilla-chest-stand-in.md` S7): the entity data writes `Optional.of(air)` as id 0, the id of
+  an empty optional, so the client reads it back empty and `getDisplayBlockState` falls back to
+  the default chest (`EntityDataSerializers.java:73-86`, `AbstractMinecart.java:579-580`).
 - **The override does reach the client.** A cart carrying `minecraft:furnace` — which needs no
   stand-in, so the real state goes into the slot — draws a furnace. So the substitution forwards
   tracked data fine, and only the air case behaves oddly.
@@ -974,6 +977,10 @@ One correction to the text above: **"copied through" is pixel-for-pixel, not byt
 `ChestTextureProvider` decodes and re-encodes through `PngAssets` like every other texture, so the
 written `vanilla.png` is a different file from the vendored `chest.png` on disk while decoding to
 identical 64×64 RGBA. That matters only if someone ever tries to assert the copy with a checksum.
+
+Since `vanilla-chest-stand-in.md` S9 the `vanilla` sheet is neither vendored nor written by
+datagen: the pack build copies vanilla's sheets out of the client jar (`VanillaChestPack`), and the
+cargo reads that copy, switching to the Christmas sheet on 24 to 26 December as vanilla's does.
 
 Two things this stage quietly settled that S4 inherits. Making the wood nullable rather than adding a
 28th `WoodType` was the right call for the reason given, but the payoff is bigger than stated: every
