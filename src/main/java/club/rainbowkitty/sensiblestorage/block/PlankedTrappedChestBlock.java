@@ -9,6 +9,8 @@ import net.minecraft.stats.Stat;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
@@ -44,6 +46,11 @@ public class PlankedTrappedChestBlock extends PlankedChestBlock {
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new PlankedTrappedChestBlockEntity(blockEntityType(), pos, state);
+    }
+
+    @Override
+    protected Block standIn() {
+        return Blocks.TRAPPED_CHEST;
     }
 
     // TrappedChestBlock overrides, verbatim.

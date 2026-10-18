@@ -107,10 +107,8 @@ public final class ChestBlocks {
     private static BlockBehaviour.Properties chestProperties(String path) {
         return BlockBehaviour.Properties.ofFullCopy(Blocks.CHEST)
                 .setId(ResourceKey.create(Registries.BLOCK, SensibleStorage.id(path)))
-                // Vanilla derives this from the collision shape, which is never a full cube for a
-                // chest. Polymer reports the barrier client-state's full-cube shape for non-player
-                // collision queries, so the default predicate would make this a redstone conductor
-                // and a chest directly below it would refuse to open (isBlockedChestByBlock).
+                // Polymer answers shape queries with the client state's, and a chest below must
+                // open whatever that is (isBlockedChestByBlock).
                 .isRedstoneConductor((state, level, pos) -> false);
     }
 
