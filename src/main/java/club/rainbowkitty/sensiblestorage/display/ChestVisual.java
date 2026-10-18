@@ -65,6 +65,14 @@ public final class ChestVisual {
         this.hingePlacement = hingePlacement;
     }
 
+    /**
+     * Where the lid's pivot sits from the chest's centre, for a chest turned by
+     * {@code orientation}: world axes, at the model's authored scale.
+     */
+    public static Vector3f hinge(Quaternionfc orientation) {
+        return orientation.transform(new Vector3f(HINGE));
+    }
+
     /** The static lower half of the chest. */
     public ItemDisplayElement base() {
         return base;
@@ -134,7 +142,7 @@ public final class ChestVisual {
         base.setLeftRotation(orientation);
         base.startInterpolationIfDirty();
 
-        hingePlacement.place(orientation.transform(new Vector3f(HINGE)));
+        hingePlacement.place(hinge(orientation));
         lid.setLeftRotation(orientation);
         // ItemDisplayPose.RENDERER_YAW_OFFSET (see HINGE) is also why this reads as the opposite
         // sign from vanilla's own lid.xRot = -(open * pi/2).

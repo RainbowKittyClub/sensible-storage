@@ -8,10 +8,13 @@
     "AbstractCraftingMenuMixin",
     "AbstractMinecartMixin",
     "ArmorStandMixin",
+    "BlockDisplayAccessor",
+    "BlockDisplayMixin",
     "ChestBlockEntityMixin",
     "ChestMenuMixin",
     "ComparatorBlockMixin",
     "CraftingTableBlockMixin",
+    "DisplayAccessor",
     "LootrInventoryMixin",
     "PistonBaseBlockMixin",
     "ServerEntityMixin"
