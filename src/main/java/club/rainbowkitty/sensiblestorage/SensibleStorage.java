@@ -20,6 +20,9 @@ import club.rainbowkitty.sensiblestorage.block.Flammability;
 import club.rainbowkitty.sensiblestorage.books.BookText;
 import club.rainbowkitty.sensiblestorage.books.ShelfLabels;
 import club.rainbowkitty.sensiblestorage.cart.ChestCarts;
+import club.rainbowkitty.sensiblestorage.display.ChestLids;
+import club.rainbowkitty.sensiblestorage.display.VanillaChestDisplays;
+import club.rainbowkitty.sensiblestorage.display.VanillaChestPack;
 import club.rainbowkitty.sensiblestorage.frame.FrameLabels;
 import club.rainbowkitty.sensiblestorage.recipe.PlankFallbackRecipe;
 
@@ -41,6 +44,9 @@ public class SensibleStorage implements ModInitializer {
         HANDSHAKE.register();
         PlankFallbackRecipe.register();
         ChestBlocks.init();
+        ChestLids.register();
+        VanillaChestDisplays.register();
+        VanillaChestPack.register();
         CraftingTableBlocks.init();
         CraftingTableRules.init();
         CraftingTableGrids.init();

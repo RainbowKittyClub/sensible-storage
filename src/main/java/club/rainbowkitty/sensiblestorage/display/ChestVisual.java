@@ -56,8 +56,8 @@ public final class ChestVisual {
     private @Nullable ChestType shownType;
 
     /**
-     * @param chestId {@code wood.chestId()} or {@code wood.trappedChestId()}, which names the
-     *     per-wood base and lid models
+     * @param chestId {@code wood.chestId()}, {@code wood.trappedChestId()} or one of
+     *     {@link ChestModels}' vanilla chest ids, which names the base and lid models
      * @param hingePlacement how this holder positions the lid's pivot
      */
     public ChestVisual(String chestId, HingePlacement hingePlacement) {
@@ -75,16 +75,37 @@ public final class ChestVisual {
         return lid;
     }
 
-    /** Swaps in the models for a chest half, if they are not already showing. */
-    public void applyItems(ChestType type) {
+    /**
+     * Swaps in the models for a chest half, if they are not already showing.
+     *
+     * @return whether they changed
+     */
+    public boolean applyItems(ChestType type) {
         if (type == shownType) {
-            return;
+            return false;
         }
         shownType = type;
         base.setItem(ItemDisplays.modelStack(Items.CHEST,
                 ChestModels.baseModel(chestId, type)));
         lid.setItem(ItemDisplays.modelStack(Items.CHEST,
                 ChestModels.lidModel(chestId, type)));
+        return true;
+    }
+
+    /**
+     * Advances the lid's own progress one tick toward open or closed, for a holder that eases it
+     * itself; {@link #lidProgress} reads the result.
+     *
+     * @param open whether anything currently has the chest open
+     * @return whether the lid moved
+     */
+    public boolean advanceLid(boolean open) {
+        return tween.advance(open);
+    }
+
+    /** The lid's own progress as last advanced, 0 closed to 1 fully open, before any easing. */
+    public float lidProgress() {
+        return tween.progress();
     }
 
     /**
@@ -106,7 +127,8 @@ public final class ChestVisual {
      *
      * @param orientation the whole chest's rotation, from ItemDisplayPose.orientation and
      *     whatever tilt the holder adds
-     * @param easedOpenness the value {@link #tweenOpenness} returned this tick
+     * @param easedOpenness the openness to draw, from {@link #tweenOpenness} or the holder's own
+     *     easing of {@link #lidProgress}
      */
     public void applyTransforms(Quaternionfc orientation, float easedOpenness) {
         base.setLeftRotation(orientation);

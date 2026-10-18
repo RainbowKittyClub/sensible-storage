@@ -35,7 +35,9 @@ public final class ChestTextureProvider implements DataProvider {
     // (asset-index objects, not on the mod classpath) and cannot be read at runtime.
     private static final String PLANK_DIR = "sensiblestorage_planks/";
     private static final String OVERLAY_DIR = "sensiblestorage_overlay/block/";
-    // Vanilla's entity/chest/normal.png, vendored for the same reason the planks are.
+    // Vanilla's copper chest sheets, vendored for the same reason the planks are. Vanilla's plain,
+    // trapped and Christmas sheets are copied from the client jar at pack build instead
+    // (VanillaChestPack).
     private static final String VANILLA_DIR = "sensiblestorage_vanilla/";
 
     private final PackOutput.PathProvider textures;
@@ -79,16 +81,8 @@ public final class ChestTextureProvider implements DataProvider {
             }
         }
 
-        // Vanilla's own chest sheet, copied through rather than composited. It is already in this
-        // 64x64 layout, and it is the one chest here that is not made of planks — see
-        // ChestModels#VANILLA.
-        writes.add(PngAssets.save(cache,
-                this.textures.file(SensibleStorage.id(ChestModels.VANILLA), "png"),
-                PngAssets.read(loader, VANILLA_DIR + "chest.png"), "sensibleStorageTextures"));
-
-        // The four copper chest sheets, the same way. Only the weathering half of the collection is
-        // walked: a waxed chest draws from its twin's sheet, so the other four would be duplicates.
-        // Each file is named after its variant, which is also vanilla's own name for the sheet.
+        // The four copper sheets, copied as they are (already this layout), each under vanilla's
+        // own name; only the weathering half, since a waxed chest draws from its twin's sheet.
         ChestModels.COPPER.weathering().forEach(variant -> writes.add(PngAssets.save(cache,
                 this.textures.file(SensibleStorage.id(variant), "png"),
                 PngAssets.read(loader, VANILLA_DIR + variant + ".png"),

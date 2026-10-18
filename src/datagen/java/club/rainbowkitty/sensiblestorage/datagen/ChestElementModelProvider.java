@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import org.jspecify.annotations.Nullable;
@@ -20,6 +21,7 @@ import club.rainbowkitty.kalic0re.common.datagen.EntityModelBoxes;
 import club.rainbowkitty.kalic0re.common.datagen.PackJson;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.display.ChestModels;
+import club.rainbowkitty.sensiblestorage.display.VanillaChestPack;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
 /**
@@ -29,18 +31,28 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
  * hand — shared across every wood as a parent, with a thin per-wood child that only binds the
  * {@code #chest} texture variable to that wood's sprite. {@code ChestElementHolder} rotates the lid
  * about its hinge at runtime; nothing here bakes an openness value.
+ *
+ * <p>Vanilla's own chest and trapped chest get the same parts, drawn from the sheets
+ * {@link VanillaChestPack} copies out of the client jar, plus the item definitions that pack puts
+ * in place of vanilla's chest items.
  */
 public final class ChestElementModelProvider implements DataProvider {
     // The texture variable every chest model binds its wood's sheet to. The unwrap itself lives in
     // EntityModelBoxes, shared with the shulker boxes, which read the same kind of entity sheet.
     private static final String TEXTURE_KEY = "chest";
 
+    // The dates vanilla's chest item switches to the Christmas sheet on, by the client's clock
+    // (assets/minecraft/items/chest.json; SpecialDates.CHRISTMAS_RANGE for the block entity).
+    private static final String[] CHRISTMAS_DATES = {"12-24", "12-25", "12-26"};
+
     private final PackOutput.PathProvider models;
     private final PackOutput.PathProvider items;
+    private final Path packOverrides;
 
     public ChestElementModelProvider(FabricPackOutput output) {
         this.models = output.createPathProvider(PackOutput.Target.RESOURCE_PACK, "models");
         this.items = output.createPathProvider(PackOutput.Target.RESOURCE_PACK, "items");
+        this.packOverrides = output.getOutputFolder().resolve(VanillaChestPack.OVERRIDES_ROOT);
     }
 
     @Override
@@ -54,7 +66,9 @@ public final class ChestElementModelProvider implements DataProvider {
             addVariant(files, wood.chestId(), wood.id());
             addVariant(files, wood.trappedChestId(), wood.id() + "_trapped");
         }
-        addCargoVariant(files, ChestModels.VANILLA_CHEST_ID, ChestModels.VANILLA);
+        addVanillaVariant(files, ChestModels.VANILLA_CHEST_ID, ChestModels.VANILLA, "chest");
+        addVanillaVariant(files, ChestModels.VANILLA_TRAPPED_CHEST_ID, ChestModels.VANILLA_TRAPPED,
+                "trapped_chest");
         // Four rather than eight: a waxed copper chest draws as its unwaxed twin.
         ChestModels.COPPER.weathering().forEach(
                 variant -> addCargoVariant(files, ChestModels.chestId(variant), variant));
@@ -120,6 +134,61 @@ public final class ChestElementModelProvider implements DataProvider {
         return SensibleStorage.id("block/chest_" + part + "_" + type.getSerializedName());
     }
 
+    // Vanilla's chest or trapped chest: every part a wood gets, each item definition switching to
+    // the Christmas sheet on vanilla's dates, plus the item definition the pack puts in place of
+    // vanilla's own item `vanillaItem`.
+    private void addVanillaVariant(Map<Path, JsonObject> files, String chestId,
+            String variantBase, String vanillaItem) {
+        String christmasId = ChestModels.VANILLA_CHRISTMAS_CHEST_ID;
+        String christmasBase = ChestModels.VANILLA_CHRISTMAS;
+        for (ChestType type : ChestType.values()) {
+            addChristmasPart(files, ChestModels.baseModel(chestId, type),
+                    ChestModels.baseModel(christmasId, type), geometryId("base", type),
+                    variantBase, christmasBase, type);
+            addChristmasPart(files, ChestModels.lidModel(chestId, type),
+                    ChestModels.lidModel(christmasId, type), geometryId("lid", type),
+                    variantBase, christmasBase, type);
+        }
+        Identifier whole = thinModel(files, ChestModels.wholeModel(chestId),
+                geometryId("whole", ChestType.SINGLE), variantBase, ChestType.SINGLE);
+        Identifier christmasWhole = thinModel(files, ChestModels.wholeModel(christmasId),
+                geometryId("whole", ChestType.SINGLE), christmasBase, ChestType.SINGLE);
+        files.put(packOverrides.resolve("assets/minecraft/items/" + vanillaItem + ".json"),
+                christmasSelect(christmasWhole, whole));
+    }
+
+    // One part's thin models for the plain and the Christmas sheet, and an item definition
+    // choosing between them by date.
+    private void addChristmasPart(Map<Path, JsonObject> files, Identifier itemDefId,
+            Identifier christmasDefId, Identifier geometry, String variantBase,
+            String christmasBase, ChestType type) {
+        Identifier plain = thinModel(files, itemDefId, geometry, variantBase, type);
+        Identifier christmas = thinModel(files, christmasDefId, geometry, christmasBase, type);
+        files.put(this.items.json(itemDefId), christmasSelect(christmas, plain));
+    }
+
+    // Vanilla's chest item definition shape: `christmas` on its dates, `plain` otherwise.
+    private static JsonObject christmasSelect(Identifier christmas, Identifier plain) {
+        JsonArray when = new JsonArray();
+        for (String date : CHRISTMAS_DATES) {
+            when.add(date);
+        }
+        JsonObject christmasCase = new JsonObject();
+        christmasCase.add("when", when);
+        christmasCase.add("model", PackJson.itemDefinition(christmas).get("model"));
+        JsonArray cases = new JsonArray();
+        cases.add(christmasCase);
+        JsonObject select = new JsonObject();
+        select.addProperty("type", "minecraft:select");
+        select.addProperty("property", "minecraft:local_time");
+        select.addProperty("pattern", "MM-dd");
+        select.add("cases", cases);
+        select.add("fallback", PackJson.itemDefinition(plain).get("model"));
+        JsonObject root = new JsonObject();
+        root.add("model", select);
+        return root;
+    }
+
     // A variant that only ever rides in a minecart: the SINGLE base and lid, and nothing else. It
     // is never placed, so it is never half of a double chest, and it has no item of its own to want
     // a whole-chest icon.
@@ -147,11 +216,19 @@ public final class ChestElementModelProvider implements DataProvider {
     // geometry it parents; the item def id (and so its items/ path) is the caller-supplied one.
     private void addPart(Map<Path, JsonObject> files, Identifier itemDefId, Identifier geometry,
             String variantBase, ChestType type) {
+        Identifier modelId = thinModel(files, itemDefId, geometry, variantBase, type);
+        files.put(this.items.json(itemDefId), PackJson.itemDefinition(modelId));
+    }
+
+    // Writes the thin model for `itemDefId` under models/block/, binding the sprite of
+    // `variantBase` and `type` to the shared geometry; returns its id.
+    private Identifier thinModel(Map<Path, JsonObject> files, Identifier itemDefId,
+            Identifier geometry, String variantBase, ChestType type) {
         Identifier sprite =
                 SensibleStorage.id("block/chest/" + ChestModels.sprite(variantBase, type));
         Identifier modelId = SensibleStorage.id("block/" + itemDefId.getPath());
         files.put(this.models.json(modelId), variantModel(geometry, sprite));
-        files.put(this.items.json(itemDefId), PackJson.itemDefinition(modelId));
+        return modelId;
     }
 
     // Binds this mod's texture key to the shared model shape.

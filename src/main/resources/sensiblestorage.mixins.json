@@ -7,6 +7,7 @@
     "AbstractContainerMenuMixin",
     "AbstractCraftingMenuMixin",
     "ArmorStandMixin",
+    "ChestBlockEntityMixin",
     "ComparatorBlockMixin",
     "CraftingTableBlockMixin",
     "PistonBaseBlockMixin",

@@ -13,18 +13,34 @@ import club.rainbowkitty.sensiblestorage.SensibleStorage;
  */
 public final class ChestModels {
     /**
-     * Variant base for the vanilla-textured chest — the one chest here not built from a wood's
-     * planks. It exists only as a minecart's cargo, so that the plain chest look is still available
-     * to a cart whose lid animates; no block, item or wood corresponds to it.
+     * Variant base for vanilla's own chest, drawn from vanilla's sheet rather than a wood's planks:
+     * a placed vanilla chest for a client holding the pack, which draws vanilla's own chest
+     * invisible ({@code VanillaChestPack}), and a minecart's plain chest cargo. Its sheets are
+     * copied out of the client jar at pack build, never shipped.
      */
     public static final String VANILLA = "vanilla";
 
     /** Chest id for {@link #VANILLA}, which names its base and lid models. */
     public static final String VANILLA_CHEST_ID = chestId(VANILLA);
 
+    /** Variant base for vanilla's trapped chest; see {@link #VANILLA}. */
+    public static final String VANILLA_TRAPPED = "vanilla_trapped";
+
+    /** Chest id for {@link #VANILLA_TRAPPED}, which names its base and lid models. */
+    public static final String VANILLA_TRAPPED_CHEST_ID = chestId(VANILLA_TRAPPED);
+
+    /**
+     * Variant base for vanilla's Christmas sheet, which plain and trapped chests alike switch to
+     * on the client's 24 to 26 December; only ever reached through their item definitions.
+     */
+    public static final String VANILLA_CHRISTMAS = "vanilla_christmas";
+
+    /** Chest id for {@link #VANILLA_CHRISTMAS}, which names its base and lid models. */
+    public static final String VANILLA_CHRISTMAS_CHEST_ID = chestId(VANILLA_CHRISTMAS);
+
     /**
      * Variant base per copper weather state, each named after the vanilla sheet it is drawn from.
-     * Like {@link #VANILLA} these exist only as a minecart's cargo.
+     * These exist only as a minecart's cargo.
      *
      * <p>Built with {@code same} because a waxed copper chest is the same metal as its unwaxed twin
      * and vanilla draws the pair from one sheet — so this maps all eight blocks onto four variants,

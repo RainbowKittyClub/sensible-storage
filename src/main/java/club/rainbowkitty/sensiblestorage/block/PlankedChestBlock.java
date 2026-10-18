@@ -186,15 +186,14 @@ public class PlankedChestBlock extends ChestBlock
         return planks;
     }
 
-    /** The visible chest: a display entity bound to this block. */
+    /**
+     * The visible chest: a display entity bound to this block, for every client sent the stand-in.
+     * It ticks only while its lid moves
+     * ({@link club.rainbowkitty.sensiblestorage.display.ChestLids}), so Polymer never ticks it.
+     */
     @Override
     public ElementHolder createElementHolder(ServerLevel world, BlockPos pos, BlockState state) {
-        return new ChestElementHolder(world, pos, this, state);
-    }
-
-    /** Ticked so the display can follow the block entity's lid openness. */
-    @Override
-    public boolean tickElementHolder(ServerLevel world, BlockPos pos, BlockState state) {
-        return true;
+        return new ChestElementHolder(world, pos, registryPath(),
+                ChestElementHolder.Audience.STAND_IN, state);
     }
 }
