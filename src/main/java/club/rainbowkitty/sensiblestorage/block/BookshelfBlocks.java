@@ -28,7 +28,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import club.rainbowkitty.kalic0re.common.carrier.CarrierTiers;
 import club.rainbowkitty.kalic0re.common.carrier.Carriers;
 import club.rainbowkitty.kalic0re.common.item.ItemRegistration;
-import club.rainbowkitty.kalic0re.common.item.PolymerModelBlockItem;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
@@ -123,10 +122,11 @@ public final class BookshelfBlocks {
     }
 
     // As CraftingTableBlocks#registerItem: the real item for a client running this mod, the
-    // vanilla item drawn with this block's model for one with the pack, the plain one otherwise.
+    // UnpinnedBlockItem client item drawn with this block's model for one with the pack, the
+    // plain vanilla item otherwise.
     private static void registerItem(String path, Block block, Item fallback,
             Item.Properties properties) {
-        ItemRegistration.register(SensibleStorage.MOD_ID, path, key -> new PolymerModelBlockItem(
+        ItemRegistration.register(SensibleStorage.MOD_ID, path, key -> new UnpinnedBlockItem(
                 block, fallback, SensibleStorage.id(path), SensibleStorage.HANDSHAKE::supportsAll,
                 properties.useBlockDescriptionPrefix().setId(key)));
     }

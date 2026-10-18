@@ -23,7 +23,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import club.rainbowkitty.kalic0re.common.datagen.DatagenRun;
 import club.rainbowkitty.kalic0re.common.item.ItemRegistration;
-import club.rainbowkitty.kalic0re.common.item.PolymerModelBlockItem;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.display.ChestModels;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
@@ -126,11 +125,11 @@ public final class ChestBlocks {
     }
 
     // A client running this mod and carrying this wood gets the real item (real name + model); a
-    // client with only the resource pack sees a vanilla chest carrying the custom model (step 0 =
-    // closed); everyone else sees a plain vanilla chest. The wood gate is not cosmetic: the real
-    // item id is unresolvable on a client whose sensible-storage never registered this wood.
+    // client with only the resource pack holds the UnpinnedBlockItem client item with the custom
+    // model (step 0 = closed); everyone else holds a plain vanilla chest. The wood gate is not
+    // cosmetic: the real item id is unresolvable on a client whose mod never registered this wood.
     private static void registerItem(String path, Block block, Item fallback) {
-        ItemRegistration.register(SensibleStorage.MOD_ID, path, key -> new PolymerModelBlockItem(
+        ItemRegistration.register(SensibleStorage.MOD_ID, path, key -> new UnpinnedBlockItem(
                 block, fallback, ChestModels.wholeModel(path),
                 SensibleStorage.HANDSHAKE::supportsAll,
                 new Item.Properties().useBlockDescriptionPrefix().setId(key)));

@@ -22,7 +22,6 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import club.rainbowkitty.kalic0re.common.carrier.Carriers;
 import club.rainbowkitty.kalic0re.common.item.ItemRegistration;
-import club.rainbowkitty.kalic0re.common.item.PolymerModelBlockItem;
 import club.rainbowkitty.sensiblestorage.SensibleStorage;
 import club.rainbowkitty.sensiblestorage.wood.WoodType;
 
@@ -90,10 +89,10 @@ public final class CraftingTableBlocks {
     }
 
     // A client running this mod and carrying this wood gets the real item; a client with only the
-    // resource pack sees a vanilla crafting table drawn with this table's own model; everyone else
-    // sees a plain vanilla crafting table. The model id is the item's own, as for any block item.
+    // resource pack holds the UnpinnedBlockItem client item drawn with this table's own model;
+    // everyone else holds a plain vanilla crafting table. The model id is the item's own.
     private static void registerItem(String path, PlankedCraftingTableBlock table) {
-        ItemRegistration.register(SensibleStorage.MOD_ID, path, key -> new PolymerModelBlockItem(
+        ItemRegistration.register(SensibleStorage.MOD_ID, path, key -> new UnpinnedBlockItem(
                 table, Items.CRAFTING_TABLE, SensibleStorage.id(path),
                 SensibleStorage.HANDSHAKE::supportsAll,
                 new Item.Properties().useBlockDescriptionPrefix().setId(key)));
