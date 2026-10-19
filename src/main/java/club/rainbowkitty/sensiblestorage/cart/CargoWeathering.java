@@ -116,10 +116,15 @@ public final class CargoWeathering {
             if (waxed == null) {
                 return null;
             }
-            // No sound of our own: this is the one of the three level events that carries its
-            // sound with it (LevelEventHandler:426-427), where the two axe events are particles
-            // alone. Vanilla's HoneycombItem#useOn plays nothing either, for the same reason.
+            // On 26.2 the wax-on level event carries its sound (LevelEventHandler:426-427), so
+            // vanilla's HoneycombItem#useOn plays none; on 26.3 it is particles alone, as the
+            // two axe events are, and useOn plays the sound.
+            //? if >=26.3 {
+            /*replace(cart, level, waxed, SoundEvents.HONEYCOMB_WAX_ON,
+                    LevelEvent.PARTICLES_WAX_ON);
+            *///?} else {
             replace(cart, level, waxed, null, LevelEvent.PARTICLES_AND_SOUND_WAX_ON);
+            //?}
             held.shrink(1);
             return InteractionResult.SUCCESS_SERVER;
         }
@@ -131,14 +136,25 @@ public final class CargoWeathering {
         // block is in neither weathering map, so one click on waxed oxidized copper takes the wax
         // off and leaves the oxidation, and the next click takes the oxidation.
         Block scraped = WeatheringCopper.getPrevious(cargo).orElse(null);
+        // 26.3 holds the axe sounds as registry holders.
         if (scraped != null) {
+            //? if >=26.3 {
+            /*replace(cart, level, scraped, SoundEvents.AXE_SCRAPE.value(),
+                    LevelEvent.PARTICLES_SCRAPE);
+            *///?} else {
             replace(cart, level, scraped, SoundEvents.AXE_SCRAPE, LevelEvent.PARTICLES_SCRAPE);
+            //?}
         } else {
             Block unwaxed = HoneycombItem.WAX_OFF_BY_BLOCK.get().get(cargo);
             if (unwaxed == null) {
                 return null;
             }
+            //? if >=26.3 {
+            /*replace(cart, level, unwaxed, SoundEvents.AXE_WAX_OFF.value(),
+                    LevelEvent.PARTICLES_WAX_OFF);
+            *///?} else {
             replace(cart, level, unwaxed, SoundEvents.AXE_WAX_OFF, LevelEvent.PARTICLES_WAX_OFF);
+            //?}
         }
         held.hurtAndBreak(1, player, hand.asEquipmentSlot());
         return InteractionResult.SUCCESS_SERVER;
