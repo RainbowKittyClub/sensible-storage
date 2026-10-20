@@ -5,7 +5,8 @@
 // fresh clone that skipped `generateAssets` would ship a jar with no chest art and no crafting. This
 // can't live in processResources: runDatagen depends on :classes -> :processResources, so that
 // check would always fire on a truly fresh clone before runDatagen has produced anything.
-// shadowJar — the jar actually shipped — has no such cycle.
+// shadowJar — the jar actually shipped — has no such cycle. Each version node checks its own
+// versions/<v>/src/main/generated.
 tasks.named('shadowJar') {
 	doFirst {
 		def generated = file('src/main/generated')
@@ -31,6 +32,27 @@ tasks.named('shadowJar') {
 					"Generated datagen output is missing: ${missing*.name.join(', ')}. " +
 							'Run: ./gradlew generateAssets')
 		}
+	}
+}
+
+if (project != rootProject) {
+	// Datagen writes into each node's own versions/<v>/src/main/generated. Stonecutter also maps the
+	// shared tree's src/main/generated into each node, where a single-version run's leftover output
+	// would ship beside the node's own or clash with it, so drop that mapping.
+	afterEvaluate {
+		def resources = sourceSets.main.resources
+		def shared = [rootProject.file('src/main/generated'),
+				layout.buildDirectory.dir('generated/stonecutter/main/generated').get().asFile]
+		// Keep the tasks behind the remaining dirs (stonecutterGenerate), which plain Files drop.
+		def builders = resources.sourceDirectories.buildDependencies.getDependencies(null)
+		resources.srcDirs = [files(resources.srcDirs - shared).builtBy(builders)]
+	}
+	// A file in versions/<v>/src/main/resources replaces the shared one at its path, for data whose
+	// format differs by version.
+	def own = file('src/main/resources').toPath()
+	sourceSets.main.resources.exclude { element ->
+		!element.directory && !element.file.toPath().startsWith(own)
+				&& own.resolve(element.relativePath.pathString).toFile().exists()
 	}
 }
 

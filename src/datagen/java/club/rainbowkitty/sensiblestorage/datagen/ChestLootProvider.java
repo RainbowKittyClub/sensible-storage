@@ -11,7 +11,11 @@ import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+//? if >=26.3 {
+/*import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
+*///?} else {
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+//?}
 
 import club.rainbowkitty.sensiblestorage.block.BookshelfBlocks;
 import club.rainbowkitty.sensiblestorage.block.ChestBlocks;
@@ -59,8 +63,14 @@ public final class ChestLootProvider extends FabricBlockLootSubProvider {
             }
             Block bookshelf = BookshelfBlocks.bookshelves().get(wood);
             if (bookshelf != null) {
+                // 26.3 counts drops in whole numbers.
+                //? if >=26.3 {
+                /*output.add(bookshelf, createSingleItemTableWithSilkTouch(
+                        bookshelf, Items.BOOK, ContextIntProviders.exactly(3)));
+                *///?} else {
                 output.add(bookshelf, createSingleItemTableWithSilkTouch(
                         bookshelf, Items.BOOK, ConstantValue.exactly(3.0F)));
+                //?}
             }
             Block chiseled = BookshelfBlocks.chiseledBookshelves().get(wood);
             if (chiseled != null) {

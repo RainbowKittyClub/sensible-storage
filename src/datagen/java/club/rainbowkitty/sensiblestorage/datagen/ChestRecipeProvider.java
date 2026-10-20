@@ -6,6 +6,8 @@ import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
 import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditions;
 
+//? if >=26.3
+/*import net.minecraft.advancements.Advancement;*/
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -15,6 +17,8 @@ import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.TransmuteRecipeBuilder;
+//? if >=26.3
+/*import net.minecraft.data.worldgen.BootstrapContext;*/
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
@@ -86,10 +90,17 @@ public final class ChestRecipeProvider extends FabricRecipeProvider {
         super(output, registriesFuture);
     }
 
+    // 26.3 builds recipes into registry bootstrap contexts rather than a RecipeOutput.
     @Override
+    //? if >=26.3 {
+    /*protected RecipeProvider createRecipeProvider(HolderLookup.Provider registries,
+            BootstrapContext<Recipe<?>> recipes, BootstrapContext<Advancement> advancements) {
+        return new RecipeProvider(recipes, advancements) {
+    *///?} else {
     protected RecipeProvider createRecipeProvider(HolderLookup.Provider registries,
             RecipeOutput output) {
         return new RecipeProvider(registries, output) {
+    //?}
             @Override
             public void buildRecipes() {
                 for (WoodType wood : WoodType.values()) {
