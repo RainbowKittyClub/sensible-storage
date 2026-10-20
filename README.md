@@ -31,7 +31,3 @@ via Polymer's server resource pack — no client mod needed.
 Install the **same jar** plus [Polymer](https://modrinth.com/mod/polymer) on your client gets rid of the
 full-block outlines and ghost block placement if you open the chest while holding a block.
 Without it, everything still works, but the visual jank is an unavoidable limitation of how Polymer works.
-
-## Build
-
-See [`docs/BUILDING.md`](docs/BUILDING.md).
