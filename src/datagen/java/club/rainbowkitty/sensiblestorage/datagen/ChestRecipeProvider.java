@@ -45,10 +45,8 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
  * another recipe here also matches; see that class for why a wood's own recipe cannot simply be
  * trusted to win a tie against vanilla's. Oak has no table or bookshelf, since vanilla's own are
  * already oak, so a uniform oak grid has nothing else to match and still makes vanilla's.
- * {@code trapped_chest} gets a plain, opt-in-only override instead ({@code disable_vanilla_recipes}
- * built-in data pack, {@code BuiltinDataPacks}, off by default) - it never collides with a wood's
- * own trapped-chest recipe (different items entirely), so disabling it is a look-and-feel choice,
- * not a correctness one. A modded wood's ring uses its
+ * Vanilla's {@code trapped_chest} recipe stays as it is: it never collides with a wood's own
+ * trapped-chest recipe (different items entirely). A modded wood's ring uses its
  * {@code data/sensiblestorage/tags/item/<wood>_planks.json} tag (a single, {@code required: false}
  * entry) instead of a direct item reference, since this mod is never a build dependency of the
  * wood's source mod - see {@code ChestBlocks#DATAGEN}.
