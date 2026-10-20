@@ -44,8 +44,8 @@ public final class ChestBlocks {
     // Registration below ignores the mod-presence gate under datagen, so every WoodType still gets
     // a Block for the lang/recipe/loot providers to read: the 16 modded woods are never Gradle
     // dependencies of this mod (only their id strings are needed - see
-    // docs/plan/modded-wood-types.md), so isModLoaded is always false for them here regardless of
-    // what a real target server has installed.
+    // rkc/docs/sensible-storage/plan/modded-wood-types.md), so isModLoaded is always false for them
+    // here regardless of what a real target server has installed.
     private static final boolean DATAGEN = DatagenRun.ACTIVE;
 
     private ChestBlocks() {}

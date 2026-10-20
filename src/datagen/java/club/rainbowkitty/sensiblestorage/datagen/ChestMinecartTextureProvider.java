@@ -40,7 +40,7 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
  * from vanilla's own shading. That is no longer how the icons are drawn — the overlays are authored
  * now, and a derived one carries no cut-out colour for {@code composite} to read — so neither
  * vanilla icon is vendored any more. The reasoning is recorded in
- * {@code docs/plan/chest-minecarts.md}.
+ * {@code rkc/docs/sensible-storage/plan/chest-minecarts.md}.
  */
 public final class ChestMinecartTextureProvider implements DataProvider {
     // Both inputs live in the datagen-only source set, for the reasons ChestTextureProvider gives:

@@ -61,7 +61,6 @@ public class SensibleStorage implements ModInitializer {
         ChestCarts.init();
         VanillaCarts.register();
         CreativeTabs.register();
-        BuiltinDataPacks.register();
 
         // Advertise the woods this installation actually registered. A client that registered a
         // different set — a different mix of the wood mods — is sent the fallback for the woods it
