@@ -15,8 +15,8 @@ import net.minecraft.util.RandomSource;
  * the same random number, and a weighted list picks with {@code nextInt(totalWeight)}. Identical
  * lists would therefore put the same book in every slot. Each slot's weights instead sum to a
  * different prime near 1000, which leaves the six choices independent of one another and every
- * book within 1.7% of equally likely; {@code docs/plan/planked-bookshelves.md} has the
- * measurements.
+ * book within 1.7% of equally likely;
+ * {@code rkc/docs/sensible-storage/plan/planked-bookshelves.md} has the measurements.
  *
  * <p>The one place books are sent is the resource-pack tier, whose display entities draw a planked
  * shelf's books over its frame; {@link #book} works out the number each shows by repeating the
