@@ -7,8 +7,8 @@ import club.rainbowkitty.kalic0re.common.datagen.SpecialModelExtentsProvider;
 
 /**
  * Datagen entrypoint: per-wood chest, crafting table and both bookshelves' textures, cart icons,
- * blockstates, models, item-model definitions, lang, the cart cargo, axe-mineable and bookshelf
- * tags, recipes and loot. Also the measurements of vanilla's special item models, which the
+ * blockstates, models, item-model definitions, lang, the cart cargo, planked chest, axe-mineable
+ * and bookshelf tags, recipes and loot. Also the measurements of vanilla's special item models, which the
  * crafting table grid's display positions items by.
  */
 public final class SensibleStorageDataGenerator implements DataGeneratorEntrypoint {
@@ -31,6 +31,7 @@ public final class SensibleStorageDataGenerator implements DataGeneratorEntrypoi
         pack.addProvider(ShulkerAtlasProvider::new);
         pack.addProvider(ChestLanguageProvider::new);
         pack.addProvider(ChestCartCargoProvider::new);
+        pack.addProvider(ChestTagsProvider::new);
         pack.addProvider(AxeMineableProvider::new);
         pack.addProvider(BookshelfTagsProvider::new);
         pack.addProvider(BookshelfItemTagsProvider::new);

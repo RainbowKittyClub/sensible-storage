@@ -31,6 +31,18 @@
     "sensiblestorage.mixins.json"
   ],
 
+  "custom": {
+    "fawe:lifecycle": {
+      "route": "native",
+      "blocks": [
+        "#sensiblestorage:planked_chests"
+      ],
+      "containers": [
+        "#sensiblestorage:planked_chests"
+      ]
+    }
+  },
+
   "depends": {
     "fabricloader": ">=${project.fabric_loader_version}",
     "fabric-api": "*",
