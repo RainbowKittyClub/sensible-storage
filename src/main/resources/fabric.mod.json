@@ -36,10 +36,14 @@
       "route": "native",
       "blocks": [
         "#sensiblestorage:planked_chests",
-        "#sensiblestorage:planked_bookshelves"
+        "#sensiblestorage:planked_bookshelves",
+        "#sensiblestorage:chiseled_bookshelves",
+        "#sensiblestorage:crafting_tables"
       ],
       "containers": [
-        "#sensiblestorage:planked_chests"
+        "#sensiblestorage:planked_chests",
+        "#sensiblestorage:chiseled_bookshelves",
+        "#sensiblestorage:crafting_tables"
       ]
     }
   },
