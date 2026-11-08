@@ -35,7 +35,8 @@
     "fawe:lifecycle": {
       "route": "native",
       "blocks": [
-        "#sensiblestorage:planked_chests"
+        "#sensiblestorage:planked_chests",
+        "#sensiblestorage:planked_bookshelves"
       ],
       "containers": [
         "#sensiblestorage:planked_chests"

@@ -25,11 +25,15 @@ import club.rainbowkitty.sensiblestorage.wood.WoodType;
  * {@code mineable/axe} ({@link AxeMineableProvider}): {@code minecraft:enchantment_power_provider},
  * which is how an enchanting table counts the shelves around it, and Fabric's
  * {@code c:bookshelves}, which lists vanilla's bookshelf and so should list these; and this mod's
- * {@link #CHISELED_BOOKSHELVES}.
+ * {@link #CHISELED_BOOKSHELVES} and {@link #PLANKED_BOOKSHELVES}.
  *
  * <p>Every planked entry is optional, for {@link ChestCartCargoProvider}'s reason.
  */
 public final class BookshelfTagsProvider extends FabricTagsProvider.BlockTagsProvider {
+    /** Plain planked bookshelves declared to FAWE, excluding vanilla and chiseled shelves. */
+    public static final TagKey<Block> PLANKED_BOOKSHELVES =
+            TagKey.create(Registries.BLOCK, SensibleStorage.id("planked_bookshelves"));
+
     /**
      * Every chiseled bookshelf, vanilla's included, which the "Power of Books" advancement override
      * reads in place of vanilla's one block.
@@ -56,11 +60,13 @@ public final class BookshelfTagsProvider extends FabricTagsProvider.BlockTagsPro
     protected void addTags(HolderLookup.Provider registries) {
         TagAppender<Block> power = builder(BlockTags.ENCHANTMENT_POWER_PROVIDER);
         TagAppender<Block> convention = builder(C_BOOKSHELVES);
+        TagAppender<Block> planked = builder(PLANKED_BOOKSHELVES);
         for (WoodType wood : BookshelfBlocks.bookshelves().keySet()) {
             ResourceKey<Block> shelf =
                     ResourceKey.create(Registries.BLOCK, SensibleStorage.id(wood.bookshelfId()));
             power.addOptional(shelf);
             convention.addOptional(shelf);
+            planked.addOptional(shelf);
         }
         TagAppender<Block> chiseled = builder(CHISELED_BOOKSHELVES).add(
                 BuiltInRegistries.BLOCK.getResourceKey(Blocks.CHISELED_BOOKSHELF).orElseThrow());
